@@ -1,0 +1,118 @@
+{
+    "capexTable": {
+        "expenses": [
+            {
+                "expense_name": "Placeholder",
+                "amount": 0,
+                "purchase_year": 2024,
+                "depreciation_life": 5,
+                "source_link": "",
+                "source_string": "Placeholder",
+                "notes": "This is a placeholder item"
+            }
+        ]
+    },
+    "opexTable": {
+        "expenses": [
+            {
+                "expense_name": "Placeholder",
+                "amount": 0,
+                "frequency": "",
+                "source_link": "",
+                "source_string": "Placeholder",
+                "notes": "This is a placeholder item"
+            }
+        ]
+    },
+    "employeesTable": {
+        "employees": [
+            {
+                "role": "Placeholder Role",
+                "number": 0,
+                "wage": 0,
+                "wage_type": "salary",
+                "monthly_hours": 0,
+                "notes": "This is a placeholder item",
+                "source_link": "",
+                "source_string": "Placeholder"
+            }
+        ]
+    },
+    "comparablesTable": {
+        "Enterprise Value": {
+            "value": 0,
+            "notes": "Placeholder enterprise value."
+        },
+        "Market Cap": {
+            "value": 0,
+            "notes": "Placeholder market cap."
+        },
+        "EBITDA": {
+            "value": 0,
+            "notes": "Placeholder EBITDA."
+        },
+        "Equity Beta": {
+            "value": 0,
+            "notes": "Placeholder equity beta."
+        },
+        "Asset Beta": {
+            "value": 0,
+            "notes": "Placeholder asset beta."
+        },
+        "EV/EBITDA": {
+            "value": 0,
+            "notes": "Placeholder EV/EBITDA."
+        }
+    },
+    "financialsTable": {
+        "1995": {
+            "Revenue": null,
+            "Direct Costs": null,
+            "SG&A": null,
+            "Employee Salaries": null,
+            "EBITDA": null,
+            "Depreciation": null,
+            "EBIT": null,
+            "Interest": null,
+            "Taxes": null,
+            "Net Income": null
+        }
+    },
+    "ingredientsTable": {
+        "purchases_table": [
+            {
+                "ingredient_id": 1,
+                "ingredient_name": "Ingredient A",
+                "price_data_raw": [
+                    {
+                        "unit_name": "Standard Box",
+                        "price": 5.0,
+                        "selling_quantity": "10",
+                        "unit": "box",
+                        "company": "Example Inc.",
+                        "source": "example.com"
+                    }
+                ]
+            }
+        ]
+    },
+    "revenueTable": {
+        "recipes": [
+            {
+                "name": "Recipe 1",
+                "price": 50,
+                "price_notes": "Sample price note",
+                "ingredients": [
+                    {
+                        "amount": 2,
+                        "ingredient_id": 1,
+                        "ingredient_name": "Ingredient A",
+                        "notes": "Sample ingredient note",
+                        "price": 10,
+                        "unit": "kg"
+                    }
+                ]
+            }
+        ]
+    }
+}

@@ -1,0 +1,22 @@
+{
+    "comparables": [
+        {
+            "company_name": "Iron Mountain",
+            "market_cap": 5000000000,
+            "enterprise_value": 7500000000,
+            "ebitda": 1000000000,
+            "ev_to_ebitda": 7.5,
+            "equity_beta": 1.2,
+            "asset_beta": 0.8
+        },
+        {
+            "company_name": "Pierce Leahy",
+            "market_cap": 3000000000,
+            "enterprise_value": 4500000000,
+            "ebitda": 750000000,
+            "ev_to_ebitda": 6.0,
+            "equity_beta": 1.1,
+            "asset_beta": 0.9
+        }
+    ]
+}

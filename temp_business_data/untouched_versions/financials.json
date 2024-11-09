@@ -1,0 +1,28 @@
+{
+    "financials": [
+        {
+            "year": 2010,
+            "revenue": 9910000,
+            "expenses": 7200000,
+            "profit_margin": 0.273
+        },
+        {
+            "year": 2011,
+            "revenue": 10100000,
+            "expenses": 7350000,
+            "profit_margin": 0.273
+        },
+        {
+            "year": 2012,
+            "revenue": 10230000,
+            "expenses": 7470000,
+            "profit_margin": 0.274
+        },
+        {
+            "year": 2013,
+            "revenue": 10300000,
+            "expenses": 7409000,
+            "profit_margin": 0.282
+        }
+    ]
+}

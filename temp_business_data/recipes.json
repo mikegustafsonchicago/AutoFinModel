@@ -1,0 +1,43 @@
+{
+    "packages": [
+        {
+            "name": "Active Medical Record Storage",
+            "price": 200,
+            "price_notes": "Fixed fees for storage, retrieval, refiling, and delivery",
+            "ingredients": [
+                {
+                    "ingredient_id": 1,
+                    "ingredient_name": "Warehouse Storage Capacity",
+                    "amount": 100,
+                    "unit": "sq ft",
+                    "price": 2,
+                    "notes": "Cost includes shelving and facility maintenance"
+                }
+            ],
+            "processing_list": [
+                "Collection",
+                "Storage",
+                "Delivery"
+            ]
+        },
+        {
+            "name": "Information Release Management",
+            "price": 150,
+            "price_notes": "Includes handling of release requests and necessary documentation",
+            "ingredients": [
+                {
+                    "ingredient_id": 2,
+                    "ingredient_name": "Staff Time",
+                    "amount": 5,
+                    "unit": "hours",
+                    "price": 20,
+                    "notes": "Time includes processing and client communication"
+                }
+            ],
+            "processing_list": [
+                "Processing Requests",
+                "Client Communication"
+            ]
+        }
+    ]
+}

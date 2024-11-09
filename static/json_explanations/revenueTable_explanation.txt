@@ -1,0 +1,14 @@
+Packages: Each key in the JSON file represents a package (sales item), which includes:
+name: The name of the package.
+price: The total price charged for the package.
+price_notes: Notes explaining the price.
+ingredients: A list of components that make up the package. Each ingredient has:
+ingredient_id: Unique identifier.
+ingredient_name: The name of the ingredient.
+amount: The quantity used.
+unit: The unit of measurement (e.g., box, GB).
+price: The price per unit.
+notes: Additional details about the ingredient.
+processing_list: A list of processes involved in delivering the package.
+
+Packages DO NOT need to have multiple ingredients. This format is setup so that each package contributes to revenue through "price" and COGS through the ingredient prices.

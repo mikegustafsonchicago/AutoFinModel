@@ -1,0 +1,24 @@
+{
+    "employees": [
+        {
+            "role": "Records Manager",
+            "number": 10,
+            "wage": 50000,
+            "wage_type": "salary",
+            "monthly_hours": 160,
+            "notes": "Manages and oversees record retrieval and storage operations",
+            "source_string": "Bureau of Labor Statistics",
+            "source_link": "https://example.com/records-manager"
+        },
+        {
+            "role": "Information Release Specialist",
+            "number": 5,
+            "wage": 22,
+            "wage_type": "hourly",
+            "monthly_hours": 160,
+            "notes": "Handles information release requests and documentation",
+            "source_string": "Industry Benchmark",
+            "source_link": "https://example.com/industry-benchmark"
+        }
+    ]
+}

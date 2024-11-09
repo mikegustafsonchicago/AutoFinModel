@@ -1,0 +1,164 @@
+/* General page styling */
+body {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+}
+
+h1{
+    font-size: 30px;
+    margin-bottom: 20px;
+}
+
+
+h2{
+    font-size: 20px;
+    margin-bottom: 14px;
+}
+
+
+
+/* Container for left and right panes */
+.container {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: space-between;
+    height: 100vh; /* Full height of the viewport */
+    overflow: hidden; /* Hide any overflow content */
+}
+
+/* Left pane for ChatGPT prompt (fixed position) */
+#leftPane {
+    position: fixed;
+    width: 300px;
+    height: 100vh; /* Ensure it takes the full height */
+    padding: 10px;
+    background-color: #f4f4f4;
+    border-right: 1px solid #ddd;
+    overflow-y: auto; /* Ensure the left pane scrolls when content overflows */
+}
+
+.upload-zone {
+    width: 100%;
+    height: 150px;
+    border: 2px dashed #ddd;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    background-color: #f9f9f9;
+    color: #333;
+    text-align: center;
+}
+
+.upload-zone.dragover {
+    border-color: #aaa;
+    background-color: #f0f0f0;
+}
+
+
+#uploadedDocsTable th {
+    font-size: 12px; /* Adjust the size as needed */
+    padding: 5px;    /* Optional: adjust padding for a more compact look */
+    text-align: center; /* Center-align the text */
+}
+
+#uploadedDocsTable td {
+    word-wrap: break-word; /* Allow words to break if they are too long */
+    white-space: normal;    /* Enable text wrapping */
+    overflow: hidden;       /* Prevent text overflow */
+    text-overflow: ellipsis; /* Add ellipsis (...) for text that overflows */
+    max-width: 80px;       /* Set a max width for the cell (adjust as needed) */
+    text-align: left;  /* Center-align content within cells */
+	align-items: center;
+	font-size: 10px;
+}
+
+/* Center-align buttons within table cells */
+.table-cell-center {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+}
+
+#aiResponse {
+    margin-top: 20px;
+    max-height: 250px; /* Set a maximum height for the AI response box */
+    overflow-y: auto; /* Enable scrolling if content exceeds the height */
+    padding: 10px; /* Add padding for better spacing */
+    border: 1px solid #ddd; /* Add a border for clarity */
+    background-color: #f9f9f9; /* Light background to differentiate the response box */
+    box-sizing: border-box; /* Ensure padding and border are included in the element's width and height */
+}
+
+/* Right pane (content will scroll) */
+#rightPane {
+    margin-left: 310px; /* Offset to account for the left pane */
+    padding: 10px;
+    width: calc(100% - 310px);
+    overflow-y: auto; /* Allow the right pane to scroll when content overflows */
+    height: 100vh; /* Full height */
+    box-sizing: border-box; /* Ensure padding and borders are included in the width/height */
+}
+
+/* Space between sections */
+#CAPEXArea, #OPEXArea, #PurchasesArea {
+    margin-bottom: 40px;
+}
+
+/* Horizontal line to clearly separate sections */
+hr {
+    border: 1px solid #ddd;
+    margin: 30px 0;
+}
+
+/* Button and table styling */
+button {
+    margin-top: 10px;
+    padding: 10px;
+    font-size: 14px;
+}
+
+#fileUpload {
+    margin-bottom: 10px;
+}
+
+.tabulator-header .tabulator-col,
+.tabulator-row .tabulator-cell {
+    box-sizing: border-box;
+    padding: 5px;
+    white-space: normal; /* Allow wrapping */
+}
+
+.tabulator-header {
+    height: auto;
+}
+
+.tabulator-header .tabulator-col {
+    padding-top: 5px;
+    padding-bottom: 5px;
+    line-height: 1.2;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    text-align: center;
+}
+
+
+
+/* Style the "X" delete button */
+.delete-btn {
+    width: 20px;
+    height: 20px;
+    padding: 0;
+    font-size: 12px;
+    line-height: 1; /* Make line height tight to avoid extra padding */
+    text-align: center;
+    border-radius: 3px; /* Rounded edges if desired */
+}
+
+#capexTable, #opexTable {
+    height: auto;
+    margin-bottom: 20px;
+}

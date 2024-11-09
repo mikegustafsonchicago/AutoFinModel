@@ -1,0 +1,16 @@
+{
+    "financials": [
+        {
+            "year": 2024,
+            "revenue": 29000000,
+            "expenses": 21000000,
+            "profit_margin": 0.27
+        },
+        {
+            "year": 2025,
+            "revenue": 31000000,
+            "expenses": 22000000,
+            "profit_margin": 0.29
+        }
+    ]
+}

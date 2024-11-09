@@ -1,0 +1,12 @@
+{
+    "expenses": [
+        {
+            "expense_name": "Placeholder",
+            "amount": 0,
+            "frequency": "",
+            "source_link": "",
+            "source_string": "Placeholder",
+            "notes": "This is a placeholder item"
+        }
+    ]
+}

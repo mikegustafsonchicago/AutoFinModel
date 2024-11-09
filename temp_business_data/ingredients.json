@@ -1,0 +1,18 @@
+{
+    "purchases_table": [
+        {
+            "ingredient_id": 1,
+            "ingredient_name": "Ingredient A",
+            "price_data_raw": [
+                {
+                    "unit_name": "Standard Box",
+                    "price": 5.0,
+                    "selling_quantity": "10",
+                    "unit": "box",
+                    "company": "Example Inc.",
+                    "source": "example.com"
+                }
+            ]
+        }
+    ]
+}

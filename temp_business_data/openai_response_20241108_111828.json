@@ -1,0 +1,129 @@
+{
+    "revenueTable": {
+        "packages": [
+            {
+                "name": "Active Medical Record Storage",
+                "price": 200,
+                "price_notes": "Fixed fees for storage, retrieval, refiling, and delivery",
+                "ingredients": [
+                    {
+                        "ingredient_id": 1,
+                        "ingredient_name": "Warehouse Storage Capacity",
+                        "amount": 100,
+                        "unit": "sq ft",
+                        "price": 2,
+                        "notes": "Cost includes shelving and facility maintenance"
+                    }
+                ],
+                "processing_list": [
+                    "Collection",
+                    "Storage",
+                    "Delivery"
+                ]
+            },
+            {
+                "name": "Information Release Management",
+                "price": 150,
+                "price_notes": "Includes handling of release requests and necessary documentation",
+                "ingredients": [
+                    {
+                        "ingredient_id": 2,
+                        "ingredient_name": "Staff Time",
+                        "amount": 5,
+                        "unit": "hours",
+                        "price": 20,
+                        "notes": "Time includes processing and client communication"
+                    }
+                ],
+                "processing_list": [
+                    "Processing Requests",
+                    "Client Communication"
+                ]
+            }
+        ]
+    },
+    "capexTable": {
+        "expenses": [
+            {
+                "expense_name": "Shelving and Storage Systems",
+                "amount": 100000,
+                "purchase_year": 2024,
+                "depreciation_life": 10,
+                "source_string": "Industry Standard",
+                "source_link": "https://example.com/industry-standard",
+                "notes": "Investment in high-capacity shelving systems for new storage sites"
+            },
+            {
+                "expense_name": "Delivery Vans",
+                "amount": 50000,
+                "purchase_year": 2024,
+                "depreciation_life": 5,
+                "source_string": "Automotive Guidelines",
+                "source_link": "https://example.com/automotive",
+                "notes": "Purchase of vans for daily delivery and retrieval services"
+            }
+        ]
+    },
+    "employeesTable": {
+        "employees": [
+            {
+                "role": "Records Manager",
+                "number": 10,
+                "wage": 50000,
+                "wage_type": "salary",
+                "monthly_hours": 160,
+                "notes": "Manages and oversees record retrieval and storage operations",
+                "source_string": "Bureau of Labor Statistics",
+                "source_link": "https://example.com/records-manager"
+            },
+            {
+                "role": "Information Release Specialist",
+                "number": 5,
+                "wage": 22,
+                "wage_type": "hourly",
+                "monthly_hours": 160,
+                "notes": "Handles information release requests and documentation",
+                "source_string": "Industry Benchmark",
+                "source_link": "https://example.com/industry-benchmark"
+            }
+        ]
+    },
+    "financialsTable": {
+        "financials": [
+            {
+                "year": 2024,
+                "revenue": 29000000,
+                "expenses": 21000000,
+                "profit_margin": 0.27
+            },
+            {
+                "year": 2025,
+                "revenue": 31000000,
+                "expenses": 22000000,
+                "profit_margin": 0.29
+            }
+        ]
+    },
+    "comparablesTable": {
+        "comparables": [
+            {
+                "company_name": "Iron Mountain",
+                "market_cap": 5000000000,
+                "enterprise_value": 7500000000,
+                "ebitda": 1000000000,
+                "ev_to_ebitda": 7.5,
+                "equity_beta": 1.2,
+                "asset_beta": 0.8
+            },
+            {
+                "company_name": "Pierce Leahy",
+                "market_cap": 3000000000,
+                "enterprise_value": 4500000000,
+                "ebitda": 750000000,
+                "ev_to_ebitda": 6.0,
+                "equity_beta": 1.1,
+                "asset_beta": 0.9
+            }
+        ]
+    }
+}

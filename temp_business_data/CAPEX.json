@@ -1,0 +1,22 @@
+{
+    "expenses": [
+        {
+            "expense_name": "Shelving and Storage Systems",
+            "amount": 100000,
+            "purchase_year": 2024,
+            "depreciation_life": 10,
+            "source_string": "Industry Standard",
+            "source_link": "https://example.com/industry-standard",
+            "notes": "Investment in high-capacity shelving systems for new storage sites"
+        },
+        {
+            "expense_name": "Delivery Vans",
+            "amount": 50000,
+            "purchase_year": 2024,
+            "depreciation_life": 5,
+            "source_string": "Automotive Guidelines",
+            "source_link": "https://example.com/automotive",
+            "notes": "Purchase of vans for daily delivery and retrieval services"
+        }
+    ]
+}
