@@ -26,11 +26,12 @@ logging.debug(f"\n\n\n------Website Refresh at {current_time}---------\n--------
 
 # Serve the frontend HTML (if needed)
 @app.route('/')
-def index():
-    # Call the initialization function each time the webpage refreshes
+def landing():
+    return render_template('landing.html')
+
+@app.route('/app')
+def application():
     initialize_session_files()
-    
-    #Render the webpage
     return render_template('index.html')
 
 @app.route('/set_data')

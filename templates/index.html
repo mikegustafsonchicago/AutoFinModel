@@ -1,223 +1,220 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8"> <!-- Defines the character encoding for the document as UTF-8 -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Ensures the website is responsive to different screen sizes -->
-    <title>AI-Supported Business Model Creation</title> <!-- Title of the webpage, shown in the browser tab -->
-
-    <!-- Tabulator CSS (a library for table manipulation) -->
-    <link href="https://unpkg.com/tabulator-tables@5.2.7/dist/css/tabulator.min.css" rel="stylesheet"> 
-    <!-- Link to a custom CSS file located in your static folder -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AutoFinModel - Build Your Model</title>
+    <link href="https://unpkg.com/tabulator-tables@5.2.7/dist/css/tabulator.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
 </head>
 <body>
-	 <div class="container">
-		<!-- Left pane for the ChatGPT prompt -->
-        <div id="leftPane">
-            <h2>AI Prompt</h2>
-			<!-- Text Prompts -->
-			<label for="businessDescription">Business Description:</label> <!-- Label for the text area -->
-            <textarea id="businessDescription" rows="6" cols="30"></textarea>
-			<label for="chatgptPrompt">Additional instructions for AI (for all data entry fields):</label> <!-- Label for the text area -->
-            <textarea id="chatgptPrompt" rows="6" cols="30"></textarea>
-			
-			<!-- File Upload -->
-			<div id="uploadZone" class="upload-zone">
-				<p>Click or drag files to upload</p>
-				<input type="file" id="pdfUpload" accept=".pdf" multiple hidden>
-			</div>
-			<table id="uploadedDocsTable" border="1" style="margin-top: 14px;">
-				<thead>
-					<tr>
-						<th>File Name</th>
-						<th>Send to AI</th>
-						<th>Sent?</th>
-						<th>Remove</th>
-					</tr>
-				</thead>
-				<tbody>
-					<!-- Uploaded files will be listed here -->
-				</tbody>
-			</table>
-		
-			<!-- Loading spinner (initially hidden) -->
-			<div id="loading" style="display: none;">
-				<p>Loading... Please wait</p>
-				<!-- You can also use an image or spinner here -->
-			</div>
-			<!-- Area where the AI response will be displayed -->
-			<div id="aiResponse" style="margin-top: 20px;"></div> <!-- Empty div for displaying AI responses -->
+    <div class="layout">
+        <!-- AI Prompt Section - Now at top -->
+        <div class="card ai-prompt">
+            <div class="card-header">
+                <h2 class="card-title">AI Prompt</h2>
+            </div>
+            <div class="card-content">
+                <div class="input-group">
+                    <label for="businessDescription">Business Description:</label>
+                    <textarea id="businessDescription" class="textarea" rows="4"></textarea>
+                </div>
+                
+                <div class="input-group">
+                    <label for="chatgptPrompt">Additional instructions for AI:</label>
+                    <textarea id="chatgptPrompt" class="textarea" rows="4"></textarea>
+                </div>
+                
+                <div class="upload-section">
+                    <div id="uploadZone" class="upload-zone">
+                        <p>Click or drag files to upload</p>
+                        <input type="file" id="pdfUpload" accept=".pdf" multiple hidden>
+                    </div>
+
+                    <table id="uploadedDocsTable" class="table-container">
+                        <thead>
+                            <tr>
+                                <th>File Name</th>
+                                <th>Send to AI</th>
+                                <th>Sent?</th>
+                                <th>Remove</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+
+                <div class="input-group">
+                    <label>AI Response:</label>
+                    <div id="aiResponse" class="ai-response"></div>
+                </div>
+            </div>
         </div>
-		<div id="rightPane">
-			<h1>Build a financial model with AI assistance</h1> <!-- Main heading of the webpage -->
-						<!-- Delineation: Horizontal Line -->
-            <hr>
-			
-			
-			
-			
-			<!----Revenue Build Area---->
-			<div id="RevenueBuildArea">
-				<h2>Revenue Data</h2> <!-- Main heading of the section -->
 
-				<!-- Input for uploading JSON files -->
-				<!input type="file" id="revenueFileUpload" accept=".json"> <!-- 'accept' ensures only JSON files can be uploaded -->
-				
-				<!-- This is where the Tabulator table will be rendered -->
-				<div id="revenueTable"></div>
+        <!-- Main Content - Tables and forms -->
+        <main class="container">
+            <h1 class="page-title">Build a financial model with AI assistance</h1>
 
-				<!-- Button to add a new row to the table -->
-				<button onclick="addRow(revenueTable)">Add Row</button>
+            <!-- Revenue Data Section -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Revenue Data</h2>
+                </div>
+                <div class="card-content">
+                    <div id="revenueTable" class="table-container"></div>
+                    <div class="button-group">
+                        <button class="button button-outline" onclick="addRow(revenueTable)">
+                            <span class="icon">+</span>
+                            Add Row
+                        </button>
+                        <button id="revenueAIButton" class="button button-ai">
+                            <span class="icon">✨</span>
+                            Add Revenue Data with AI
+                        </button>
+                    </div>
+                </div>
+            </div>
 
-				<!-- Button that triggers the AI opex build when clicked -->
-				<button id="revenueAIButton">Add Revenue Data with AI &#x2728</button>
-				
-			</div>
-			 <!-- Delineation: Horizontal Line -->
-            <hr>
-			
-			
-			<!----Purchases Data Area---->
-			<div id="PurchasesArea">
-				<h2>Inventory and COGS Data</h2> <!-- Main heading of the section -->
+            <!-- Inventory and COGS Section -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Inventory and COGS Data</h2>
+                </div>
+                <div class="card-content">
+                    <div id="purchasesTable" class="table-container"></div>
+                    <div class="button-group">
+                        <button class="button button-outline" onclick="addRow(purchasesTable)">
+                            <span class="icon">+</span>
+                            Add Row
+                        </button>
+                        <button id="purchasesAIButton" class="button button-ai">
+                            <span class="icon">✨</span>
+                            Add Purchase Data with AI
+                        </button>
+                    </div>
+                </div>
+            </div>
 
-				<!-- Input for uploading JSON files -->
-				<!input type="file" id="purchasesFileUpload" accept=".json"> <!-- 'accept' ensures only JSON files can be uploaded -->
-				
-				<!-- This is where the Tabulator table will be rendered -->
-				<div id="purchasesTable"></div>
+            <!-- Employees Section -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Employees Data</h2>
+                </div>
+                <div class="card-content">
+                    <div id="employeesTable" class="table-container"></div>
+                    <div class="button-group">
+                        <button class="button button-outline" onclick="addRow(employeesTable)">
+                            <span class="icon">+</span>
+                            Add Row
+                        </button>
+                        <button id="employeesAIButton" class="button button-ai">
+                            <span class="icon">✨</span>
+                            Add Employee Data with AI
+                        </button>
+                    </div>
+                </div>
+            </div>
 
-				<!-- Button to add a new row to the table -->
-				<button onclick="addRow(purchasesTable)">Add Row</button>
+            <!-- CAPEX Section -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">CAPEX Data</h2>
+                </div>
+                <div class="card-content">
+                    <div id="capexTable" class="table-container"></div>
+                    <div class="button-group">
+                        <button class="button button-outline" onclick="addRow(capexTable)">
+                            <span class="icon">+</span>
+                            Add Row
+                        </button>
+                        <button id="capexAIButton" class="button button-ai">
+                            <span class="icon">✨</span>
+                            Add CAPEX Data with AI
+                        </button>
+                    </div>
+                </div>
+            </div>
 
-				<!-- Button that triggers the AI opex build when clicked -->
-				<button id="purchasesAIButton">Add Purchase Data with AI &#x2728</button>
-				
-				
-			</div>
-			 <!-- Delineation: Horizontal Line -->
-            <hr>
-			
-			
-			<!----Employees Area---->
-			<div id="EmployeesArea">
-				<h2>Employees Data</h2> <!-- Main heading of the section -->
+            <!-- OPEX Section -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">OPEX Data</h2>
+                </div>
+                <div class="card-content">
+                    <div id="opexTable" class="table-container"></div>
+                    <div class="button-group">
+                        <button class="button button-outline" onclick="addRow(opexTable)">
+                            <span class="icon">+</span>
+                            Add Row
+                        </button>
+                        <button id="opexAIButton" class="button button-ai">
+                            <span class="icon">✨</span>
+                            Add OPEX Data with AI
+                        </button>
+                    </div>
+                </div>
+            </div>
 
-				<!-- Input for uploading JSON files -->
-				<!input type="file" id="employeesFileUpload" accept=".json"> <!-- 'accept' ensures only JSON files can be uploaded -->
-				
-				<!-- This is where the Tabulator table will be rendered -->
-				<div id="employeesTable"></div>
+            <!-- Historical Financial Data Section -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Firm Historical Financial Data</h2>
+                </div>
+                <div class="card-content">
+                    <div id="historicalFinancialsTable" class="table-container"></div>
+                    <div class="button-group">
+                        <button class="button button-outline" onclick="addRow(historicalFinancialsTable)">
+                            <span class="icon">+</span>
+                            Add Row
+                        </button>
+                        <button id="historicalFinancialsAIButton" class="button button-ai">
+                            <span class="icon">✨</span>
+                            Add Historical Data with AI
+                        </button>
+                    </div>
+                </div>
+            </div>
 
-				<!-- Button to add a new row to the table -->
-				<button onclick="addRow(employeesTable)">Add Row</button>
+            <!-- Valuation Comparables Section -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Valuation Comparable Firms Data</h2>
+                </div>
+                <div class="card-content">
+                    <div id="valuationCompsTable" class="table-container"></div>
+                    <div class="button-group">
+                        <button class="button button-outline" onclick="addRow(valuationCompsTable)">
+                            <span class="icon">+</span>
+                            Add Row
+                        </button>
+                        <button id="valuationCompsAIButton" class="button button-ai">
+                            <span class="icon">✨</span>
+                            Add Comps Data with AI
+                        </button>
+                    </div>
+                </div>
+            </div>
 
-				<!-- Button that triggers the AI opex build when clicked -->
-				<button id="employeesAIButton">Add Employee Data with AI &#x2728</button>
-				
-			</div>
-			 <!-- Delineation: Horizontal Line -->
-            <hr>
-			
-			<!----CAPEX Area---->
-			<div id="CAPEXArea">
-				<h2>CAPEX Data</h2> <!-- Main heading of the section -->
+            <!-- Download Section -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Generate Model</h2>
+                </div>
+                <div class="card-content">
+                    <div class="button-group">
+                        <button id="downloadExcelButton" class="button button-ai">
+                            Download Financial Model (xlsx)
+                        </button>
+                        <button id="clearDataButton" class="button button-outline">
+                            Clear All Data
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
 
-				<!-- Input for uploading JSON files -->
-				<!input type="file" id="capexFileUpload" accept=".json"> <!-- 'accept' ensures only JSON files can be uploaded -->
-				
-				<!-- This is where the Tabulator table will be rendered -->
-				<div id="capexTable"></div>
-
-				<!-- Button to add a new row to the table -->
-				<button onclick="addRow(capexTable)">Add Row</button>
-
-				<!-- Button that triggers the AI opex build when clicked -->
-				<button id="capexAIButton">Add Capex with AI &#x2728</button>
-				
-			</div>
-			 <!-- Delineation: Horizontal Line -->
-            <hr>
-			
-			
-			<!----OPEX Area---->
-			<div id="OPEXArea">
-				<h2>OPEX Data</h2> <!-- Main heading of the section -->
-
-				<!-- Input for uploading JSON files -->
-				<!input type="file" id="opexFileUpload" accept=".json"> <!-- 'accept' ensures only JSON files can be uploaded -->
-				
-				<!-- This is where the Tabulator table will be rendered -->
-				<div id="opexTable"></div>
-
-				<!-- Button to add a new row to the table -->
-				<button onclick="addRow(opexTable)">Add Row</button>
-
-				<!-- Button that triggers the AI opex build when clicked -->
-				<button id="opexAIButton">Add Opex with AI &#x2728</button>
-				
-			</div>
-			<!-- Delineation: Horizontal Line -->
-            <hr>
-			
-			
-			<!----Historical Financial Info Area---->
-			<div id="Firm Historical Financial Area">
-				<h2>Firm Historical Financial Data</h2> <!-- Main heading of the section -->
-
-				<!-- Input for uploading JSON files -->
-				<!input type="file" id="historicalFinancialsFileUpload" accept=".json"> <!-- 'accept' ensures only JSON files can be uploaded -->
-				
-				<!-- This is where the Tabulator table will be rendered -->
-				<div id="opexTable"></div>
-
-				<!-- Button to add a new row to the table -->
-				<button onclick="addRow(historicalFinancialsTable)">Add Row</button>
-
-				<!-- Button that triggers the AI opex build when clicked -->
-				<button id="historicalFinancialsAIButton">Add Historical Data with AI &#x2728</button>
-				
-			</div>
-			<!-- Delineation: Horizontal Line -->
-            <hr>
-			
-			
-			<!----Valuation Comparables Area---->
-			<div id="Valuation Comps Area">
-				<h2>Valuation Comparable Firms Data</h2> <!-- Main heading of the section -->
-
-				<!-- Input for uploading JSON files -->
-				<!input type="file" id="valuationCompsFileUpload" accept=".json"> <!-- 'accept' ensures only JSON files can be uploaded -->
-				
-				<!-- This is where the Tabulator table will be rendered -->
-				<div id="opexTable"></div>
-
-				<!-- Button to add a new row to the table -->
-				<button onclick="addRow(valuationCompsTable)">Add Row</button>
-
-				<!-- Button that triggers the AI opex build when clicked -->
-				<button id="valuationCompsAIButton">Add Comps Data with AI &#x2728</button>
-				
-			</div>
-			<!-- Delineation: Horizontal Line -->
-            <hr>
-			
-			
-			<div id="downloadArea">
-			<h2>Generate a Model</h2> <!-- Main heading of the section -->
-				<button id="downloadExcelButton">Download Financial Model (xlsx)</button>
-			</div>
-			
-			<!-- index.html -->
-			<div id="clearDataArea">
-				<button id="clearDataButton">Clear All Data</button>
-			</div>
-		</div>
-	</div>
-    <!-- Tabulator JS (for managing and rendering the table) -->
     <script src="https://unpkg.com/tabulator-tables@5.2.7/dist/js/tabulator.min.js"></script>
-    <!-- Link to the custom JavaScript file located in your static folder -->
     <script src="{{ url_for('static', filename='js/app.js') }}"></script>
-
 </body>
 </html>
