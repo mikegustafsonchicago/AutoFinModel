@@ -195,13 +195,15 @@ FILES_AND_STRUCTURES = {
 }
 
 # Function to initialize JSON files with placeholders for a new project
-def initialize_json_files(overwrite=False):
+def initialize_json_files():
     # Only overwrite if explicitly required
     for table_name, default_content in FILES_AND_STRUCTURES.items():
         file_path = os.path.join(JSON_FOLDER, table_name)
-        if not os.path.exists(file_path) or overwrite:
+        if os.path.exists(file_path):
             with open(file_path, 'w') as json_file:
                 json.dump(default_content, json_file, indent=4)
+        else:
+            logging.info(f"Error: File path for {table_name} not found. \n attempted {file_path}")
 
 
 
