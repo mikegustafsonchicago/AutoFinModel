@@ -17,13 +17,13 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)  # Create the folder if it doesn't exi
 
 #Maps the inbound table name with the name of the json file to reference
 TABLE_MAPPING = {
+    "revenueTable": "recipes",
+    "ingredientsTable": "ingredients",
     "capexTable": "CAPEX",
     "opexTable": "OPEX",
     "employeesTable": "employees",
     "comparablesTable": "comparables",
-    "financialsTable": "financials",
-    "ingredientsTable": "ingredients",
-    "revenueTable": "recipes"
+    "financialsTable": "financials"   
 }
 
 

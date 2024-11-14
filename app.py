@@ -56,6 +56,7 @@ def call_openai():
     logging.info(f"UPDATE SCOPE IS {update_scope}\n")
 
     pdf_file_name = data.get('pdfFileName')
+    pdf_file_name = os.path.join(UPLOAD_FOLDER, pdf_file_name)
 
     response_data, status_code = api_processing.manage_api_calls(
         business_description=business_description,

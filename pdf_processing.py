@@ -9,12 +9,17 @@ logging.basicConfig(level=logging.DEBUG)
 
 # Function to count tokens for a given text
 def count_tokens(text, model=OPENAI_MODEL):
-    tokenizer = tiktoken.encoding_for_model(model)
-    tokens = tokenizer.encode(text)
-    return len(tokens)
+    if text:
+        tokenizer = tiktoken.encoding_for_model(model)
+        tokens = tokenizer.encode(text)
+        return len(tokens)
+    else:
+        logging.debug("Warning: No Text sent to count_tokens")
+        return 0
 
 # Function to extract text from a PDF, divided by pages
 def extract_pdf_pages(pdf_path):
+    logging.debug(f"The pdf path is {pdf_path}")
     try:
         pages = []
         with pdfplumber.open(pdf_path) as pdf:

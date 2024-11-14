@@ -121,6 +121,7 @@ def prepare_payload(pdf_chunk, page_start, page_end):
     user_prompt = prompt_manager.get_user_prompt()
 
     raw_response, status_code = make_openai_api_call(api_key="your_api_key", system_prompt=system_prompt, user_prompt=user_prompt)
+      
     
     if status_code != 200:
         logging.error(f"API call failed: {raw_response}")
@@ -141,7 +142,7 @@ def make_openai_api_call(api_key, system_prompt, user_prompt):
     """
     Makes the actual API call to OpenAI and returns the response.
     """
-    
+    api_key = 'ADD API KEY'
     
     payload = {
         "model": OPENAI_MODEL,
