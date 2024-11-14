@@ -19,10 +19,10 @@ sys.path.append(current_dir)
 sys.path.append(parent_dir)
 
 
-from business_entity_code import BusinessEntity
+
 from helper_functions import FormatManager
 from cellManager import CellManager
-
+from business_entity_code import BusinessEntity
 from recipes_page_code import RecipesPage
 from data_page_code import DataPage
 from title_page_code import TitlePage
