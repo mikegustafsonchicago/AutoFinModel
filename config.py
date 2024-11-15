@@ -17,30 +17,28 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)  # Create the folder if it doesn't exi
 
 #Maps the inbound table name with the name of the json file to reference
 TABLE_MAPPING = {
-    "revenueTable": "recipes",
-    "ingredientsTable": "ingredients",
-    "capexTable": "CAPEX",
-    "opexTable": "OPEX",
-    "employeesTable": "employees",
-    "comparablesTable": "comparables",
-    "financialsTable": "financials"   
+    "financial": {
+        "revenueTable": "recipes",
+        "ingredientsTable": "ingredients",
+        "capexTable": "CAPEX",
+        "opexTable": "OPEX",
+        "employeesTable": "employees",
+        "comparablesTable": "comparables",
+        "financialsTable": "financials"
+    },
+    "catalyst": {
+        "fundamentalsTable": "fundamentals",
+        "investmentTeamTable": "investment_team",
+        "feesKeyTermsTable": "fees_key_terms",
+        "seedTermsTable": "seed_terms"
+    }
 }
 
 
-EXPLANATION_FILES_DIR = os.path.join(os.getcwd(), "static", "json_explanations")
+
+EXPLANATION_FILES_DIR = os.path.join(os.getcwd(), "static", "json_explanations", "fin_model")
 RUNNING_SUMMARY_DIR = os.path.join(os.getcwd(), "temp_business_data")
-PROMPT_DIR = os.path.join(os.getcwd(), "static")
-PROMPT_FILE = os.path.join(PROMPT_DIR, "prompt.txt")
+PROMPT_DIR = os.path.join(os.getcwd(), "static", "prompts")
 
-# Explanation file paths for each table
-TABLE_EXPLANATIONS = {
-    "revenueTable": os.path.join(EXPLANATION_FILES_DIR, "revenueTable_explanation.txt"),
-    "capexTable": os.path.join(EXPLANATION_FILES_DIR, "capex_explanation.txt"),
-    "opexTable": os.path.join(EXPLANATION_FILES_DIR, "opex_explanation.txt"),
-    "employeesTable": os.path.join(EXPLANATION_FILES_DIR, "employeesTable_explanation.txt"),
-    "comparablesTable": os.path.join(EXPLANATION_FILES_DIR, "comparablesTable_explanation.txt"),
-    "financialsTable": os.path.join(EXPLANATION_FILES_DIR, "financialsTable_explanation.txt"),
-    "ingredientsTable": os.path.join(EXPLANATION_FILES_DIR, "ingredientsTable_explanation.txt"),
-}
 
 RUNNING_SUMMARY_FILE = os.path.join(RUNNING_SUMMARY_DIR,'running_summary.txt')

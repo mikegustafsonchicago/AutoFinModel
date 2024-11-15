@@ -41,7 +41,7 @@ def write_json(file_path, data):
         json.dump(data, file, indent=4)
 
 
-def load_table_data(table_names):
+def load_table_data(table_names, project_name):
     """
     Loads the corresponding JSON data for the given table names using a mapping.
     Returns a dictionary containing the table data.
@@ -51,7 +51,7 @@ def load_table_data(table_names):
 
     for table_name in table_names:
         # Map the table name to the corresponding JSON file
-        mapped_name = TABLE_MAPPING.get(table_name)
+        mapped_name = TABLE_MAPPING[project_name].get(table_name)
         if not mapped_name:
             logging.error(f"No mapping found for table name: {table_name}")
             continue
@@ -68,8 +68,8 @@ def load_table_data(table_names):
     return tables_data
 
 
-def initialize_session_files():
-    initialize_json_files()
+def initialize_session_files(project_name):
+    initialize_json_files(project_name)
     #TODO: Move this to running summary manager
     running_summary = "This is the first call for this project and there is no running summary."
     with open(RUNNING_SUMMARY_FILE, "w") as file:

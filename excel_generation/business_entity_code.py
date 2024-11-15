@@ -22,7 +22,7 @@ class BusinessEntity:
         base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         
         os.path.join(base_dir, 'sample_jsons') + "/"
-        #self.path = os.path.join(base_dir, 'temp_business_data') + "/"
+        self.path = os.path.join(base_dir, 'temp_business_data') + "/"
        
         # Load data from JSON files
         self.load_recipes_from_json(self.path+'recipes.json')
@@ -34,6 +34,13 @@ class BusinessEntity:
         self.load_valuation_comps_from_json(self.path+'comparables.json') #Load the comparables data
         self.placeholder_value = "9.99"
         self.start_year=1998
+        
+        
+        #CATALYST Loads
+        self.load_fundamentals_from_json(self.path + 'fundamentals.json')
+        self.load_investment_team_from_json(self.path + 'investment_team.json')
+        self.load_seed_terms_from_json(self.path + 'seed_terms.json')
+        self.load_fees_key_terms_from_json(self.path + 'fees_key_terms.json')
         
     def create_missing_ingredient(self, ingredient_id):
         """Create an Ingredient instance for a missing ingredient and add it to the dictionary."""
@@ -167,8 +174,59 @@ class BusinessEntity:
             print(f"Error: File {filepath} not found.")
         except json.JSONDecodeError as e:
             print(f"Error parsing JSON: {e}")
+            
+            
+#----------CATALYST PARTNERS LOAD FUNCTIONS
+
+    def load_fundamentals_from_json(self, filepath):
+        """Load fundamentals data from a JSON file."""
+        try:
+            with open(filepath, 'r') as file:
+                data = json.load(file)
+                self.fundamentals = data  # Store the entire list as fundamentals
+                print(f"Successfully loaded {len(data)} fundamentals records from {filepath}")
+        except FileNotFoundError:
+            print(f"Error: File {filepath} not found.")
+        except json.JSONDecodeError as e:
+            print(f"Error parsing fundamentals JSON: {e}")
+    
+    def load_investment_team_from_json(self, filepath):
+        """Load investment team data from a JSON file."""
+        try:
+            with open(filepath, 'r') as file:
+                data = json.load(file)
+                self.investment_team = data  # Store the entire list as investment team
+                print(f"Successfully loaded {len(data)} investment team members from {filepath}")
+        except FileNotFoundError:
+            print(f"Error: File {filepath} not found.")
+        except json.JSONDecodeError as e:
+            print(f"Error parsing investment team JSON: {e}")
 
 
+    def load_seed_terms_from_json(self, filepath):
+        """Load seed terms data from a JSON file."""
+        try:
+            with open(filepath, 'r') as file:
+                data = json.load(file)
+                self.seed_terms = data  # Store the entire list as seed terms
+                print(f"Successfully loaded {len(data)} seed terms from {filepath}")
+        except FileNotFoundError:
+            print(f"Error: File {filepath} not found.")
+        except json.JSONDecodeError as e:
+            print(f"Error parsing seed terms JSON: {e}")
+
+
+    def load_fees_key_terms_from_json(self, filepath):
+        """Load fees and key terms data from a JSON file."""
+        try:
+            with open(filepath, 'r') as file:
+                data = json.load(file)
+                self.fees_key_terms = data  # Store the entire list as fees and key terms
+                print(f"Successfully loaded {len(data)} fees and key terms from {filepath}")
+        except FileNotFoundError:
+            print(f"Error: File {filepath} not found.")
+        except json.JSONDecodeError as e:
+            print(f"Error parsing fees and key terms JSON: {e}")
 
 
         

@@ -15,6 +15,7 @@ Created on Mon Sep 16 08:38:38 2024
 
 import sys
 import os
+import logging
 import xlsxwriter
 from helper_functions import number_to_column_letter, get_cell_identifier
 import calendar
@@ -102,21 +103,24 @@ class WorkbookManager:
 
 
 class Sheet:
-    def __init__(self, workbook_manager, cell_manager, sheet_name='sheet_one'):
+    def __init__(self, workbook_manager, cell_manager, business_entity, sheet_name):
         self.workbook_manager = workbook_manager
         self.cell_manager = cell_manager
-        self.sheet_name=sheet_name
-        self.workbook_manager.cell_info[self.sheet_name]={}
-        
-        self.num_forecasted_years=workbook_manager.num_forecasted_years
-        #Set start columns
-        self.annual_year0_start=8
-        self.annual_hist_start=self.annual_year0_start #Adding in some variables for historical values, although not ready to implement
-        self.gap_between_annual_and_monthly=2 #Number of columns between last annual and first monthly
-        self.monthly_start_col=self.annual_year0_start+self.num_forecasted_years+self.gap_between_annual_and_monthly #Dynamically set the start cols
-        self.expenses_layout_start_col=1 #The column that is the first for the details of the various expenses
-        
-        #Make the sheet
+        self.business_object = business_entity  # Assign business_entity to self.business_object
+        self.sheet_name = sheet_name
+        self.workbook_manager.cell_info[self.sheet_name] = {}
+
+        self.num_forecasted_years = workbook_manager.num_forecasted_years
+        # Set start columns
+        self.annual_year0_start = 8
+        self.annual_hist_start = self.annual_year0_start  # Adding in some variables for historical values
+        self.gap_between_annual_and_monthly = 2  # Number of columns between last annual and first monthly
+        self.monthly_start_col = (
+            self.annual_year0_start + self.num_forecasted_years + self.gap_between_annual_and_monthly
+        )  # Dynamically set the start cols
+        self.expenses_layout_start_col = 1  # The column that is the first for the details of the various expenses
+
+        # Make the sheet
         self.xlsxwriter_sheet = self.workbook_manager.add_sheet(self.sheet_name)
         self.populate_sheet()
         
@@ -126,13 +130,15 @@ class Sheet:
     
 
 class CORESheet(Sheet):
-    def __init__(self, workbook_manager, cell_manager, sheet_name='CORE'):
-        super().__init__(workbook_manager, cell_manager, sheet_name)
+    def __init__(self, workbook_manager, cell_manager, business_entity, sheet_name='CORE'):
+        super().__init__(workbook_manager, cell_manager, business_entity, sheet_name)
         self.xlsxwriter_sheet.set_zoom(70)
         self.xlsxwriter_sheet.print_area('A1:L48')
         self.xlsxwriter_sheet.fit_to_pages(1, 1)
     
     def populate_sheet(self):
+        
+        
         #-------------Main-----------------------#
         
         #Set column widths
@@ -198,10 +204,10 @@ class CORESheet(Sheet):
 
 
 class InputSheet(Sheet):
-    def __init__(self, workbook_manager, cell_manager, sheet_name='Inputs'):
-        super().__init__(workbook_manager, cell_manager, sheet_name)
+    def __init__(self, workbook_manager, cell_manager, business_entity, sheet_name='Inputs'):
+        super().__init__(workbook_manager, cell_manager, business_entity, sheet_name)
         self.xlsxwriter_sheet.set_zoom(115)
-        self.xlsxwriter_sheet.set_tab_color('E5A128')
+        self.xlsxwriter_sheet.set_tab_color('#E5A128')
         self.xlsxwriter_sheet.print_area('A1:B4')
         
         
@@ -226,15 +232,15 @@ class InputSheet(Sheet):
         
 
 class SummarySheet(Sheet):
-    def __init__(self, workbook_manager, cell_manager, sheet_name='Summary'):
-        super().__init__(workbook_manager, cell_manager, sheet_name)
+    def __init__(self, workbook_manager, cell_manager, business_entity, sheet_name='Summary'):
+        super().__init__(workbook_manager, cell_manager, business_entity, sheet_name)
         self.xlsxwriter_sheet.set_zoom(70)
         self.xlsxwriter_sheet.print_area('A1:I47')
     
     def populate_sheet(self):
         #-------------Main-----------------------#
         
-        
+        logging.debug(f"SUMMARY. Here's the business object {self.business_object}")
         #Set column widths
         self.xlsxwriter_sheet.set_column('A:A', 29.8)  
         self.xlsxwriter_sheet.set_column('B:B', 23.3) 
@@ -280,17 +286,17 @@ class SummarySheet(Sheet):
             
         #Populate the data
         self.write_to_sheet(22, 0, "Primary Strategy", format_name="bold")
-        self.write_to_sheet(22, 1, "Buyout", format_name="plain_right")
+        self.write_to_sheet(22, 1, "Unknown", format_name="plain_right")
         self.write_to_sheet(23, 0, "Positions", format_name="bold")
-        self.write_to_sheet(23, 1, "6-8", format_name="plain_right")
+        self.write_to_sheet(23, 1, "Unknown", format_name="plain_right")
         self.write_to_sheet(24, 0, "Entry/EBITDA", format_name="bold")
-        self.write_to_sheet(24, 1, "Up to $40 million", format_name="plain_right")
+        self.write_to_sheet(24, 1, "Unknown", format_name="plain_right")
         self.write_to_sheet(22, 3, "Check Size", format_name="bold")
-        self.write_to_sheet(22, 4, "Up to $75 million", format_name="plain_right")
+        self.write_to_sheet(22, 4, "Unknown", format_name="plain_right")
         self.write_to_sheet(23, 3, "Target Gross/Net IRR", format_name="bold")
-        self.write_to_sheet(23, 4, "23%/17%", format_name="plain_right")
+        self.write_to_sheet(23, 4, "Unknown", format_name="plain_right")
         self.write_to_sheet(24, 3, "Target Gross/Net IRR", format_name="bold")
-        self.write_to_sheet(24, 4, "2.8x/2.2x", format_name="plain_right")
+        self.write_to_sheet(24, 4, "Unknown", format_name="plain_right")
            
             
         # Create proposed seeding/value add section head
@@ -302,133 +308,141 @@ class SummarySheet(Sheet):
         
         
         
-        # Create firm section head
-        self.write_to_sheet(3, 6, 'FIRM', format_name="section_header")
-        #Extend the section head banner
-        # Create the color banner after the title
-        self.write_to_sheet(3, 7, "", format_name="section_header")
-        self.write_to_sheet(3, 8, "", format_name="section_header")
-        #Populate the data
-        self.write_to_sheet(4, 6, "Founded", format_name="bold")
-        self.write_to_sheet(4, 8, "='Input Page'!B3", format_name="plain_right")
-        self.write_to_sheet(5, 6, "Primary Office", format_name="bold")
-        self.write_to_sheet(5, 8, "='Input Page'!B4", format_name="plain_right")
-        self.write_to_sheet(6, 6, "Assets Managed", format_name="bold")
-        self.write_to_sheet(6, 8, "~$125 million", format_name="plain_right")
-        self.write_to_sheet(7, 6, "Employees", format_name="bold")
-        self.write_to_sheet(7, 8, "6", format_name="plain_right")
-        self.write_to_sheet(8, 6, "Diversity Status", format_name="bold")
-        self.write_to_sheet(8, 8, "100% Latino/Female", format_name="plain_right")
-        self.write_to_sheet(9, 6, "Website", format_name="bold")
-        self.write_to_sheet(9, 8, "www.crossrapids.com", format_name="plain_right")
+        # Create firm fundamentals section head
+        row = 3  # Starting row for the section
+        col = 6  # Starting column for the section
         
-        # Create investment team section head
-        self.write_to_sheet(12, 6, 'INVESTMENT TEAM', format_name="section_header")
-        #Extend the section head banner
-        # Create the color banner after the title
-        self.write_to_sheet(12, 7, "", format_name="section_header")
-        self.write_to_sheet(12, 8, "", format_name="section_header")
-        #Populate the data
-        self.write_to_sheet(13, 6, "Total Professionals", format_name="bold_underline")
-        self.write_to_sheet(13, 7, "5", format_name="plain")
-        self.write_to_sheet(15, 6, "Key Personnel", format_name="bold_underline")
-        self.write_to_sheet(15, 7, "Title", format_name="bold_underline")
-        self.write_to_sheet(15, 8, "Joined Firm", format_name="bold_underline_right")
-        self.write_to_sheet(16, 6, "Kyle Cruz", format_name="plain")
-        self.write_to_sheet(16, 7, "Founder, Partner", format_name="plain")
-        self.write_to_sheet(16, 8, "2020", format_name="plain_right")
-        self.write_to_sheet(17, 6, "Mina Spring", format_name="plain")
-        self.write_to_sheet(17, 7, "Founder, Partner", format_name="plain")
-        self.write_to_sheet(17, 8, "2020", format_name="plain_right")
-        self.write_to_sheet(18, 6, "Ben Gaw", format_name="plain")
-        self.write_to_sheet(18, 7, "Founder, Head of Portfolio Ops.", format_name="plain")
-        self.write_to_sheet(18, 8, "2020", format_name="plain_right")
-        self.write_to_sheet(19, 6, "Ricardo Perez", format_name="plain")
-        self.write_to_sheet(19, 7, "Managing Director", format_name="plain")
-        self.write_to_sheet(19, 8, "2021", format_name="plain_right")
-        self.write_to_sheet(20, 6, "Ricardo Perez", format_name="plain")
-        self.write_to_sheet(20, 7, "Managing Director", format_name="plain")
-        self.write_to_sheet(20, 8, "2021", format_name="plain_right")
+        # Write the section header
+        self.write_to_sheet(row, col, "FIRM", format_name="section_header")
+        self.write_to_sheet(row, col+1, "", format_name="section_header")
+        self.write_to_sheet(row, col+2, "", format_name="section_header")
+        row += 2  # Leave a row for spacing
+        
+        # Write table headers
+        fundamentals_json_to_firm_table_dict = {
+        "founded_year": "Founded",
+        "primary_office": "Primary Office",
+        "ownership_structure": "Ownership",
+        "total_employees": "Employees",
+        "diversity_status": "Diversity Status",
+        "website": "Website",
+        }
+
+        fundamentals_data = self.business_object.fundamentals[0]  # Extract the first dictionary from the list
+
+        for key, header in fundamentals_json_to_firm_table_dict.items():
+            # Write header in the first column
+            self.write_to_sheet(row, col, header, format_name="bold")
+            
+            # Write corresponding data from JSON in the second column
+            value = fundamentals_data.get(key, "N/A")
+            self.write_to_sheet(row, col + 2, value, format_name="plain_right")
+            
+            # Increment row for the next entry
+            row += 1
     
         
-        # Create fund fees section head
-        self.write_to_sheet(12, 6, 'FUND FEES & KEY TERMS', format_name="section_header")
-        #Extend the section head banner
-        # Create the color banner after the title
-        self.write_to_sheet(12, 7, "", format_name="section_header")
-        self.write_to_sheet(12, 8, "", format_name="section_header")
-        #Populate the data
-        self.write_to_sheet(24, 6, "Currency", format_name="bold")
-        self.write_to_sheet(24, 8, "USD", format_name="plain_right")
-        self.write_to_sheet(25, 6, "Target Fundraise", format_name="bold")
-        self.write_to_sheet(25, 8, "2%", format_name="plain_right")
-        self.write_to_sheet(26, 6, "Management Fee", format_name="bold")
-        self.write_to_sheet(26, 8, "20%", format_name="plain_right")
-        self.write_to_sheet(27, 6, "Carried Interest", format_name="bold")
-        self.write_to_sheet(27, 8, "8%", format_name="plain_right")
-        self.write_to_sheet(28, 6, "Preferred Return", format_name="bold")
-        self.write_to_sheet(28, 8, "5 years", format_name="plain")
-        self.write_to_sheet(29, 6, "Fund Term", format_name="bold")
-        self.write_to_sheet(29, 8, "10 years", format_name="plain_right")
-        self.write_to_sheet(30, 6, "GP Commitment", format_name="bold")
-        self.write_to_sheet(30, 8, "3-4% up to $9 million", format_name="plain_right")
-        self.write_to_sheet(31, 6, "GP Commitment Funding Source", format_name="bold")
-        self.write_to_sheet(31, 8, "Cash", format_name="plain_right")
         
         
-        # Create seed terms section head
-        self.write_to_sheet(35, 6, 'SEED TERMS', format_name="section_header")
-        #Extend the section head banner
-        # Create the color banner after the title
-        self.write_to_sheet(35, 7, "", format_name="section_header")
-        self.write_to_sheet(35, 8, "", format_name="section_header")
-        #Populate the data
-        self.write_to_sheet(36, 6, "Target Seed Investment", format_name="bold")
-        self.write_to_sheet(36, 8, "$60-$75 million", format_name="plain_right")
-        self.write_to_sheet(37, 6, "Initial Seed Investment", format_name="bold")
-        self.write_to_sheet(37, 8, "$30 million", format_name="plain_right")
-        self.write_to_sheet(38, 6, "Seed Fundraising Timeline", format_name="bold")
-        self.write_to_sheet(38, 8, "6/30/2024", format_name="plain_right")
-        self.write_to_sheet(39, 6, "Revenue Share", format_name="bold")
-        self.write_to_sheet(39, 8, "20%", format_name="plain_right")
-        self.write_to_sheet(40, 6, "Revenue Share Cap", format_name="bold")
-        self.write_to_sheet(40, 8, "1.0x-1.15x", format_name="plain_right")
-        self.write_to_sheet(41, 6, "Revenue Share Tail", format_name="bold")
-        self.write_to_sheet(41, 8, "0%", format_name="plain_right")
         
-        #Fill the off-page table for the charts
-        self.write_to_sheet(2, 13, "Investment Region", format_name="bold")
-        self.write_to_sheet(3, 13, "North America", format_name="all_borders")
-        self.write_to_sheet(4, 13, "Europe", format_name="all_borders")
+        # Create investment team section head
+        self.write_to_sheet(row, col, "INVESTMENT TEAM", format_name="section_header")
+        self.write_to_sheet(row, col+1, "", format_name="section_header")
+        self.write_to_sheet(row, col+2, "", format_name="section_header")
+        row+=1
+        self.write_to_sheet(row, col, "Total Professionals", format_name="bold")
+        self.write_to_sheet(row, col+1, len(self.business_object.investment_team), format_name="plain")
+        row += 2  # Leave a row for spacing
         
-        self.write_to_sheet(6, 13, "Sector", format_name="bold")
-        self.write_to_sheet(7, 13, "Consumer", format_name="all_borders")
-        self.write_to_sheet(8, 13, "Education", format_name="all_borders")
-        self.write_to_sheet(9, 13, "FinTech", format_name="all_borders")
-        self.write_to_sheet(10, 13, "Gov&Defense", format_name="all_borders")
-        self.write_to_sheet(11, 13, "Healthcare", format_name="all_borders")
-        self.write_to_sheet(12, 13, "Industrials", format_name="all_borders")
-        self.write_to_sheet(13, 13, "Media", format_name="all_borders")
-        self.write_to_sheet(14, 13, "Services", format_name="all_borders")
-        self.write_to_sheet(15, 13, "SaaS", format_name="all_borders")
+        # Write table headers
+        headers = ["Name", "Title", "Joined Firm"]
+        for i, header in enumerate(headers):
+            self.write_to_sheet(row, col + i, header, format_name="bold_underline")
+        row += 1
+        
+        # Write investment team data dynamically
+        for member in self.business_object.investment_team:
+            self.write_to_sheet(row, col, member.get("investment_team_member_name", "N/A"), format_name="plain")
+            self.write_to_sheet(row, col + 1, member.get("investment_team_member_title", "N/A"), format_name="plain")
+            self.write_to_sheet(row, col + 2, member.get("investment_team_member_join_date", "N/A"), format_name="plain_right")
+            row += 1
+
+
+
+
+        # Define the mapping dictionary
+        fees_json_to_table_dict = {
+            "currency": "Currency",
+            "target_fundraise": "Target Fundraise",
+            "management_fee": "Management Fee",
+            "carried_interest": "Carried Interest",
+            "preferred_return": "Preferred Return",
+            "investment_period": "Investment Period",
+            "fund_term": "Fund Term",
+            "GP_commitment": "GP Commitment",
+            "GP_commitment_funding_source": "GP Commitment Funding Source"
+        }
+        
+        # Access the fees data from the JSON file
+        fees_data = self.business_object.fees_key_terms[0]  # Extract the first dictionary from the list
+        
+        # Set starting row and column for the section
+        row = 23  # Starting row for the section
+        col = 6  # Starting column for the section
+        
+        # Write the section header
+        self.write_to_sheet(row, col, "FUND FEES & KEY TERMS", format_name="section_header")
+        self.write_to_sheet(row, col + 1, "", format_name="section_header")
+        self.write_to_sheet(row, col + 2, "", format_name="section_header")
+        row += 2  # Leave a row for spacing
+        
+        # Iterate through the dictionary and write each header and corresponding JSON value
+        for key, header in fees_json_to_table_dict.items():
+            # Write header in the first column
+            self.write_to_sheet(row, col, header, format_name="bold")
+            
+            # Write corresponding data from JSON in the adjacent column
+            value = fees_data.get(key, "N/A")
+            self.write_to_sheet(row, col + 2, value, format_name="plain_right")
+            
+            # Increment row for the next entry
+            row += 1
+            
+            
+        # Define the mapping dictionary for seed terms
+        seed_terms_json_to_table_dict = {
+            "expense_name": "Target Seed Investment",
+            "initial_investment": "Initial Seed Investment",
+            "fundraising_date": "Seed Fundraising Timeline",
+            "revenue_share": "Revenue Share",
+            "revenue_share_cap": "Revenue Share Cap",
+            "revenue_share_tail": "Revenue Share Tail"
+        }
+        
+        # Access the seed terms data from the JSON file
+        seed_terms_data = self.business_object.seed_terms[0]  # Extract the first dictionary from the list
+        
+        # Write the section header
+        self.write_to_sheet(row, col, "SEED TERMS", format_name="section_header")
+        self.write_to_sheet(row, col + 1, "", format_name="section_header")
+        self.write_to_sheet(row, col + 2, "", format_name="section_header")
+        row += 2  # Leave a row for spacing
+        
+        # Iterate through the dictionary and write each header and corresponding JSON value
+        for key, header in seed_terms_json_to_table_dict.items():
+            # Write header in the first column
+            self.write_to_sheet(row, col, header, format_name="bold")
+            
+            # Write corresponding data from JSON in the adjacent column
+            value = seed_terms_data.get(key, "N/A")
+            self.write_to_sheet(row, col + 2, value, format_name="plain_right")
+            
+            # Increment row for the next entry
+            row += 1
         
         
-        self.write_to_sheet(3, 14, 1, format_name="all_borders_percent")
-        self.write_to_sheet(4, 14, "", format_name="all_borders_percent")
-        
-        self.write_to_sheet(7, 14, "", format_name="all_borders_percent")
-        self.write_to_sheet(8, 14, "", format_name="all_borders_percent")
-        self.write_to_sheet(9, 14, "", format_name="all_borders_percent")
-        self.write_to_sheet(10, 14, "", format_name="all_borders_percent")
-        self.write_to_sheet(11, 14, "", format_name="all_borders_percent")
-        self.write_to_sheet(12, 14, "50%", format_name="all_borders_percent")
-        self.write_to_sheet(13, 14, "", format_name="all_borders_percent")
-        self.write_to_sheet(14, 14, "50%", format_name="all_borders_percent")
-        self.write_to_sheet(15, 14, "", format_name="all_borders_percent")
-        
-       # Create a pie chart object
+       # Create a pie chart object for the regions chart
         self.regions_chart = self.workbook_manager.workbook.add_chart({'type': 'pie'})
-        
         # Configure the chart series
         self.regions_chart.add_series({
             'name': 'Investment Regions',
@@ -440,12 +454,27 @@ class SummarySheet(Sheet):
         # Insert the chart into the worksheet
         self.xlsxwriter_sheet.insert_chart('A27', self.regions_chart, {'x_scale': .5, 'y_scale': .5})
         
+        
+        
+        # Create a pie chart object for the regions chart
+        self.verticals_chart = self.workbook_manager.workbook.add_chart({'type': 'pie'})
+        # Configure the chart series
+        self.verticals_chart.add_series({
+            'name': 'Sectors',
+            'categories': '=Summary!$N$8:$N$16',  # Set the categories
+            'values': '=Summary!$O$8:$O$16',      # Set the values
+        })
+        # Add a title
+        self.regions_chart.set_title({'name': 'Sectors'})
+        # Insert the chart into the worksheet
+        self.xlsxwriter_sheet.insert_chart('D27', self.verticals_chart, {'x_scale': .5, 'y_scale': .5})
+        
 
 class PerformanceEvaluationSheet(Sheet):
-    def __init__(self, workbook_manager, cell_manager, sheet_name='Performance Evaluation'):
-        super().__init__(workbook_manager, cell_manager, sheet_name)
+    def __init__(self, workbook_manager, cell_manager, business_entity, sheet_name='Performance Evaluation'):
+        super().__init__(workbook_manager, cell_manager, business_entity, sheet_name)
         self.xlsxwriter_sheet.set_zoom(70)
-        self.xlsxwriter_sheet.set_tab_color('0F2749')
+        self.xlsxwriter_sheet.set_tab_color('#0F2749')
     
     def populate_sheet(self):
         #-------------Main-----------------------#
@@ -468,10 +497,10 @@ class PerformanceEvaluationSheet(Sheet):
         
 
 class TRSummarySheet(Sheet):
-    def __init__(self, workbook_manager, cell_manager, sheet_name='TR Summary for Packet'):
-        super().__init__(workbook_manager, cell_manager, sheet_name)
+    def __init__(self, workbook_manager, cell_manager, business_entity, sheet_name='TR Summary for Packet'):
+        super().__init__(workbook_manager, cell_manager, business_entity, sheet_name)
         self.xlsxwriter_sheet.set_zoom(70)
-        self.xlsxwriter_sheet.set_tab_color('176A93')
+        self.xlsxwriter_sheet.set_tab_color('#176A93')
     
     def populate_sheet(self):
         #-------------Main-----------------------#
@@ -493,10 +522,10 @@ class TRSummarySheet(Sheet):
 
 
 class HistoricalEvaluationSheet(Sheet):
-    def __init__(self, workbook_manager, cell_manager, sheet_name='Historical Evaluation'):
-        super().__init__(workbook_manager, cell_manager, sheet_name)
+    def __init__(self, workbook_manager, cell_manager, business_entity, sheet_name='Historical Evaluation'):
+        super().__init__(workbook_manager, cell_manager, business_entity, sheet_name)
         self.xlsxwriter_sheet.set_zoom(70)
-        self.xlsxwriter_sheet.set_tab_color('FF0000')
+        self.xlsxwriter_sheet.set_tab_color('#FF0000')
         self.xlsxwriter_sheet.print_area('A1:O22')
     
     def populate_sheet(self):
@@ -533,8 +562,8 @@ class HistoricalEvaluationSheet(Sheet):
 
 
 class FutureAssessmentSheet(Sheet):
-    def __init__(self, workbook_manager, cell_manager, sheet_name='Future Assessment'):
-        super().__init__(workbook_manager, cell_manager, sheet_name)
+    def __init__(self, workbook_manager, cell_manager, business_entity, sheet_name='Future Assessment'):
+        super().__init__(workbook_manager, cell_manager, business_entity, sheet_name)
         self.xlsxwriter_sheet.set_zoom(55)
         self.xlsxwriter_sheet.print_area('A1:K35')
     
@@ -563,8 +592,8 @@ class FutureAssessmentSheet(Sheet):
 
 
 class MarketAnalysisSheet(Sheet):
-    def __init__(self, workbook_manager, cell_manager, sheet_name='Market Analysis'):
-        super().__init__(workbook_manager, cell_manager, sheet_name)
+    def __init__(self, workbook_manager, cell_manager, business_entity, sheet_name='Market Analysis'):
+        super().__init__(workbook_manager, cell_manager, business_entity, sheet_name)
         self.xlsxwriter_sheet.set_zoom(60)
         self.xlsxwriter_sheet.print_area('A1:G31')
     
@@ -592,8 +621,8 @@ class MarketAnalysisSheet(Sheet):
 
 
 class HumanCapitalSheet(Sheet):
-    def __init__(self, workbook_manager, cell_manager, sheet_name='Human Capital'):
-        super().__init__(workbook_manager, cell_manager, sheet_name)
+    def __init__(self, workbook_manager, cell_manager, business_entity, sheet_name='Human Capital'):
+        super().__init__(workbook_manager, cell_manager, business_entity, sheet_name)
         self.xlsxwriter_sheet.set_zoom(50)
         self.xlsxwriter_sheet.print_area('A1:J39')
     
@@ -621,8 +650,8 @@ class HumanCapitalSheet(Sheet):
 
 
 class ReferencesSheet(Sheet):
-    def __init__(self, workbook_manager, cell_manager, sheet_name='References'):
-        super().__init__(workbook_manager, cell_manager, sheet_name)
+    def __init__(self, workbook_manager, cell_manager, business_entity, sheet_name='References'):
+        super().__init__(workbook_manager, cell_manager, business_entity, sheet_name)
         self.xlsxwriter_sheet.set_zoom(40)
         self.xlsxwriter_sheet.print_area('A1:G25')
     
@@ -652,20 +681,21 @@ class ReferencesSheet(Sheet):
 
 def make_catalyst_summary():    
     #Main 
+    business_entity = BusinessEntity()
     catalyst_workbook=WorkbookManager()
     cell_manager = CellManager()
 
     #Make the sheets
-    CORE_sheet=CORESheet(catalyst_workbook, cell_manager, sheet_name='CORE')
-    input_sheet=InputSheet(catalyst_workbook, cell_manager, sheet_name='Input Page')
-    summary_sheet=SummarySheet(catalyst_workbook, cell_manager, sheet_name='Summary')
-    performance_evaluation_sheet=PerformanceEvaluationSheet(catalyst_workbook, cell_manager, sheet_name='Performance Evaluation')
-    TR_summary_sheet=TRSummarySheet(catalyst_workbook, cell_manager, sheet_name='TR Summary for Packet')
-    historical_evaluation_sheet=HistoricalEvaluationSheet(catalyst_workbook, cell_manager, sheet_name='Historical Evaluation')
-    future_assessment_sheet=FutureAssessmentSheet(catalyst_workbook, cell_manager, sheet_name='Future Assessment')
-    market_analysis_sheet=MarketAnalysisSheet(catalyst_workbook, cell_manager, sheet_name='Market Analysis')
-    human_capital_sheet=HumanCapitalSheet(catalyst_workbook, cell_manager, sheet_name='Human Capital')
-    references_sheet=ReferencesSheet(catalyst_workbook, cell_manager, sheet_name='References')
+    CORE_sheet=CORESheet(catalyst_workbook, cell_manager, business_entity, sheet_name='CORE')
+    input_sheet=InputSheet(catalyst_workbook, cell_manager, business_entity, sheet_name='Input Page')
+    summary_sheet=SummarySheet(catalyst_workbook, cell_manager, business_entity, sheet_name='Summary')
+    performance_evaluation_sheet=PerformanceEvaluationSheet(catalyst_workbook, cell_manager, business_entity, sheet_name='Performance Evaluation')
+    TR_summary_sheet=TRSummarySheet(catalyst_workbook, cell_manager, business_entity, sheet_name='TR Summary for Packet')
+    historical_evaluation_sheet=HistoricalEvaluationSheet(catalyst_workbook, cell_manager, business_entity, sheet_name='Historical Evaluation')
+    future_assessment_sheet=FutureAssessmentSheet(catalyst_workbook, cell_manager, business_entity, sheet_name='Future Assessment')
+    market_analysis_sheet=MarketAnalysisSheet(catalyst_workbook, cell_manager, business_entity, sheet_name='Market Analysis')
+    human_capital_sheet=HumanCapitalSheet(catalyst_workbook, cell_manager, business_entity, sheet_name='Human Capital')
+    references_sheet=ReferencesSheet(catalyst_workbook, cell_manager, business_entity, sheet_name='References')
 
    
     #Close the workbook 

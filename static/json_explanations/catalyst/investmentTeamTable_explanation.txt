@@ -1,0 +1,34 @@
+Investment Team Table Explanation
+
+The Investment Team table details the key members of a private equity firm's investment team, including their roles, experience, and background.
+
+Expected JSON Structure:
+
+The data must be returned as a flat list of team members. Each member is represented as an object with the following fields:
+
+investment_team_member_name (String): Full name of the team member.
+investment_team_member_title (String): Their title or role within the firm.
+investment_team_member_join_date (Integer): Year the team member joined the firm. If unknown, this can be null.
+source_string (String): Title or summary of the information source.
+source_link (String): URL linking to the source document.
+
+Do not nest the data under a key like "members" or "team". The output must be a direct list of objects.
+
+Example JSON:
+
+[
+    {
+        "investment_team_member_name": "Placeholder Name",
+        "investment_team_member_title": "Placeholder Title",
+        "investment_team_member_join_date": 2020,
+        "source_string": "Placeholder Source",
+        "source_link": "https://example.com"
+    },
+    {
+        "investment_team_member_name": "Another Name",
+        "investment_team_member_title": "Another Title",
+        "investment_team_member_join_date": null,
+        "source_string": "Another Source",
+        "source_link": "https://example.com"
+    }
+]

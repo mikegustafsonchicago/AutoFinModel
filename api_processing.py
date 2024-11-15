@@ -23,22 +23,27 @@ logging.getLogger("pdfplumber").setLevel(logging.WARNING)
 
 
 summary_manager = RunningSummaryManager(RUNNING_SUMMARY_FILE)
-prompt_manager = PromptBuilder()
 
-def manage_api_calls(business_description, user_input, update_scope="all", pdf_name=None):
+def manage_api_calls(business_description, project_name, user_input, update_scope="all", pdf_name=None, prompt_manager=None):
+    
     """
     Manages API calls to OpenAI, dynamically selecting pages based on token count.
     """
+    
+    # Ensure prompt_manager is passed and used within this function
+    if prompt_manager is None:
+       raise ValueError("prompt_manager must be initialized and passed to manage_api_calls.")
+       
     #Initialize the output variable
     openAI_output = {"text": "", "json_data": {}}
     
     
     # Load tables and determine update/context scope
-    all_tables = list(TABLE_MAPPING.keys())
+    all_tables = list(TABLE_MAPPING[project_name].keys())
     update_tables = all_tables if update_scope == "all" else [update_scope]
     context_tables = [table for table in all_tables if table not in update_tables]
-    tables_data = load_table_data(update_tables)
-    context_data = load_table_data(context_tables)
+    tables_data = load_table_data(update_tables, project_name)
+    context_data = load_table_data(context_tables, project_name)
     logging.debug(f"The update tables are {update_tables}")
     
     #Get the running summary to feed into the prompt
@@ -97,7 +102,7 @@ def manage_api_calls(business_description, user_input, update_scope="all", pdf_n
         prompt_manager.add_pdf_chunk(chunk_text)
 
         # Make the API call and process the response
-        response, status_code = prepare_payload(chunk_text, chunk_dict['start_page'], chunk_dict['end_page'] )
+        response, status_code = prepare_payload(chunk_text, chunk_dict['start_page'], chunk_dict['end_page'],project_name=project_name, prompt_manager=prompt_manager )
         if status_code != 200:
             return response, status_code
         
@@ -106,17 +111,20 @@ def manage_api_calls(business_description, user_input, update_scope="all", pdf_n
     openAI_output["json_data"].update(response.get("JSONData", {}))
 
     # Update JSON files with the aggregated data
-    update_json_files(openAI_output["json_data"])
+    update_json_files(openAI_output["json_data"], project_name)
     return openAI_output, 200
 
 
 
 
 
-def prepare_payload(pdf_chunk, page_start, page_end):
+def prepare_payload(pdf_chunk, page_start, page_end, project_name=None, prompt_manager=None):
     """
     Processes each chunk of data with OpenAI API
     """
+    # Ensure prompt_manager is passed and used within this function
+    if prompt_manager is None:
+       raise ValueError("Error from prepare_payload: prompt_manager must be initialized and passed to manage_api_calls.")
     system_prompt = prompt_manager.get_system_prompt()
     user_prompt = prompt_manager.get_user_prompt()
 
@@ -131,7 +139,7 @@ def prepare_payload(pdf_chunk, page_start, page_end):
     json_data = processed_response.get("JSONData", {})
     
     #Update the JSON Files
-    update_json_files(json_data)
+    update_json_files(json_data, project_name)
     
     logging.info(f"---------- END PAGES {page_start} THROUGH {page_end} -----------\n\n")
     return processed_response, status_code
@@ -142,7 +150,7 @@ def make_openai_api_call(api_key, system_prompt, user_prompt):
     """
     Makes the actual API call to OpenAI and returns the response.
     """
-    api_key = 'ADD API KEY'
+    api_key = "ADD_API_KEY_HERE"
     
     payload = {
         "model": OPENAI_MODEL,

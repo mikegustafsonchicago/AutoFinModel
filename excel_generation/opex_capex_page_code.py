@@ -8,6 +8,7 @@ Created on Mon Sep 16 08:38:38 2024
 from helper_functions import number_to_column_letter, get_cell_identifier
 import calendar
 from datetime import datetime
+import logging
 
 class OpexCapexPage:
     def __init__(self, workbook_manager, cell_manager, business_object):
@@ -255,12 +256,18 @@ class OpexCapexPage:
         self.write_to_sheet(row, col, "Sources", format_name="bold")
         row+=1
         for item in self.business_object.operating_expenses: 
-            self.write_to_sheet(row, col, item['expense_name'], format_name='small_italic')
-            self.write_to_sheet(row, col+1, item['source_link'], format_name="URL_small", url_display=item['source_string'])
+            try:
+                self.write_to_sheet(row, col, item['expense_name'], format_name='small_italic')
+                self.write_to_sheet(row, col+1, item['source_link'], format_name="URL_small", url_display=item['source_string'])
+            except:
+                logging.debug("OPEX/CAPEX. Missing some table data")
             self.operating_expenses_sheet.set_row(row, 10) #Make the row heighth smaller
             row+=1
-        for item in self.business_object.capex_items: 
-            self.write_to_sheet(row, col, item['expense_name'], format_name='small_italic')
-            self.write_to_sheet(row, col+1, item['source_link'], format_name="URL_small", url_display=item['source_string'])
+        for item in self.business_object.capex_items:
+            try:
+                self.write_to_sheet(row, col, item['expense_name'], format_name='small_italic')
+                self.write_to_sheet(row, col+1, item['source_link'], format_name="URL_small", url_display=item['source_string'])
+            except:
+                logging.debug("OPEX/CAPEX. Missing some table data")
             self.operating_expenses_sheet.set_row(row, 10) #Make the row heighth smaller
             row+=1

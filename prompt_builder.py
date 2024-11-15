@@ -10,14 +10,22 @@ import os
 import json
 from json_manager import load_json_explanation
 from file_manager import write_file
-from config import RUNNING_SUMMARY_DIR
+from config import RUNNING_SUMMARY_DIR, PROMPT_DIR
 from pdf_processing import count_tokens  
+import logging
 
 class PromptBuilder:
-    def __init__(self):
-        with open('static/prompt.txt', 'r') as file:
+    def __init__(self, project_name):
+        if project_name == "financial":
+            prompt_file = os.path.join(PROMPT_DIR, "prompt.txt")
+        elif project_name == "catalyst":
+            prompt_file = os.path.join(PROMPT_DIR, "catalyst_prompt.txt")
+        else:
+            logging.debug(f"Error: project name incorrect. Project name gien was :{project_name}")
+        with open(prompt_file, 'r') as file:
             self.system_prompt = file.read().strip()
         
+        self.project_name = project_name
         self.table_data=''
         self.summary=''
         self.pdf_chunk=''

@@ -1,109 +1,63 @@
-const PROJECT_NAME = "financial";
+const PROJECT_NAME = "catalyst";
 
-const revenueTable = new Tabulator("#revenueTable", {
-    layout: "fitData", // Fit columns to width of table
-	autoResize: true, // Enable auto-resize
-    dataTree: true, // Enable tree structure
-    dataTreeChildField: "ingredients", // Define the field that contains child rows (ingredients in this case)
-    dataTreeStartExpanded: false, // Start with all rows collapsed initially
+// Initialize Tabulator table for Fundamentals data
+const fundamentalsTable = new Tabulator("#fundamentalsTable", {
+    layout: "fitData",  // Fit columns to width of table
     columns: [
-        // Recipe-level columns (Parent level)
-        { title: "Recipe Name", field: "name", editor: "input" },  // Recipe name
-        { title: "Price", field: "price", editor: "number" },      // Recipe price
-        { title: "Price Notes", field: "price_notes", editor: "input" }, // Recipe notes
-
-        // Ingredient-level columns (Child level shown when expanded)
-        { title: "Ingredient ID", field: "ingredient_id", editor: "input", visible: false }, 
-        { title: "Ingredient Name", field: "ingredient_name", editor: "input" }, 
-        { title: "Unit", field: "unit", editor: "input" }, 
-        { title: "Amount", field: "amount", editor: "number" }, 
-        { title: "Price per Unit", field: "price", editor: "number" }, 
-        { title: "Notes", field: "notes", editor: "input" }, 
-
-        // Add a delete button for both recipe and ingredients
+        { title: "Name", field: "firm_name", editor: "input" },
+        { title: "Founded", field: "founded_year", editor: "number" },
+        { title: "Primary Office", field: "primary_office", editor: "number" },
+        { title: "Ownership", field: "ownership_structure", editor: "input" },
+		{ title: "Employees", field: "total_employees", editor: "input" },
+		{ title: "Diversity Status", field: "diversity_status", editor: "input" },
         {
-            title: "",  // Add the delete button
-            formatter: function () {
-                return "<button class='delete-btn'>X</button>";
+            title: "Website",
+            field: "website",  // Website as a clickable link
+            formatter: function(cell, formatterParams) {
+                let websiteText = cell.getValue();
+                let sourceLink = cell.getRow().getData().source_link;
+                if (sourceLink) {
+                    return `<a href="${sourceLink}" target="_blank">${websiteText}</a>`;
+                } else {
+                    return websiteText;
+                }
             },
-            width: 80,
-            hozAlign: "center",
-            cellClick: function (e, cell) {
-                cell.getRow().delete();
-                revenueTable.redraw();
-            }
+            editor: "input"  // Allow editing if needed
+        },
+        {
+            title: "Source", 
+            field: "source_string",  // Use source_string as the base field
+            formatter: function(cell, formatterParams) {
+                // Get the source_string and source_link from the row data
+                let sourceString = cell.getValue();  // source_string
+                let sourceLink = cell.getRow().getData().source_link;  // source_link
+                
+                // If both source_string and source_link exist, return a clickable link
+                if (sourceLink) {
+                    return `<a href="${sourceLink}" target="_blank">${sourceString}</a>`;
+                } else {
+                    return sourceString;  // Return just the source_string if no link is provided
+                }
+            },
+            editor: "input"  // Allow editing if needed
         }
     ]
 });
 
 // Set up rowClick dynamically after the table is built
-revenueTable.on("tableBuilt", function() {
+fundamentalsTable.on("tableBuilt", function() {
     // Expand all rows to make sure all are accessible
-    revenueTable.getData().forEach(row => revenueTable.getRow(row).treeExpand());
+    fundamentalsTable.getData().forEach(row => fundamentalsTable.getRow(row).treeExpand());
 });
 
 
-
-// Initialize Tabulator tree structure for Inventory and COGS data
-const purchasesTable = new Tabulator("#purchasesTable", {
-    layout: "fitData", // Fit columns to width of table
-	autoResize: true, // Enable auto-resize
-    dataTree: true, // Enable tree structure
-    dataTreeChildField: "price_data_raw", // Define the field that contains child rows
-    dataTreeStartExpanded: false, // Start with all rows collapsed
-    columns: [
-        // Parent columns
-        { title: "Ingredient ID", field: "ingredient_id", editor: "input"},
-        { title: "Name", field: "ingredient_name", editor: "input" },
-        
-        // Child Columns
-        { title: "Unit Name", field: "unit_name", editor: "input" }, 
-        { title: "Company", field: "company", editor: "input" },
-        { title: "Unit", field: "unit", editor: "input" },
-        { title: "Price", field: "price", editor: "number" },
-        { title: "Selling Quantity", field: "selling_quantity", editor: "number" },
-        {
-            title: "Source",
-            field: "source",
-            formatter: function (cell, formatterParams) {
-                let sourceString = cell.getValue();
-                return sourceString ? `<a href="https://${sourceString}" target="_blank">${sourceString}</a>` : sourceString;
-            },
-            editor: "input",
-        },
-        {
-            title: "",  // Add the delete button
-            formatter: function () {
-                return "<button class='delete-btn'>X</button>";
-            },
-            width: 80,
-            hozAlign: "center",
-            cellClick: function (e, cell) {
-                cell.getRow().delete();
-                purchasesTable.redraw();
-            },
-        }
-    ]
-});
-
-// Set up rowClick dynamically after the table is built
-purchasesTable.on("tableBuilt", function() {
-    // Expand all rows to make sure all are accessible
-    purchasesTable.getData().forEach(row => purchasesTable.getRow(row).treeExpand());
-});
-
-
-
-
-// Initialize Tabulator table for Employees data
-const employeesTable = new Tabulator("#employeesTable", {
+// Initialize Tabulator table for Investment Team data
+const investmentTeamTable = new Tabulator("#investmentTeamTable", {
     layout: "fitData",  // Fit columns to width of table
     columns: [
-        { title: "Role", field: "role", editor: "input" },
-        { title: "Number", field: "number", editor: "number" },
-        { title: "Wage", field: "wage", editor: "number" },
-        { title: "Wage Frequency", field: "wage_type", editor: "input" },
-		{ title: "Notes/Assumptions", field: "notes", editor: "input" },
+        { title: "Key Personnel", field: "investment_team_member_name", editor: "input" },
+        { title: "Title", field: "investment_team_member_title", editor: "input" },
+        { title: "Joined Firm", field: "investment_team_member_join_date", editor: "number" },
         {
             title: "Source", 
             field: "source_string",  // Use source_string as the base field
@@ -130,22 +84,26 @@ const employeesTable = new Tabulator("#employeesTable", {
             hozAlign: "center",  // Center the button in the cell
             cellClick: function(e, cell) {
                 cell.getRow().delete();  // Delete the row when clicked
-                employeesTable.redraw();  // Force redraw in case of layout issues
+                investmentTeamTable.redraw();  // Force redraw in case of layout issues
             }
         }
     ]
 });
 
 
-// Initialize Tabulator table for CAPEX data
-const capexTable = new Tabulator("#capexTable", {
+// Initialize Tabulator table for Fund Fees & Key Terms data
+const feesKeyTermsTable = new Tabulator("#feesKeyTermsTable", {
     layout: "fitData",  // Fit columns to width of table
     columns: [
-        { title: "Expense Name", field: "expense_name", editor: "input" },
-        { title: "Amount", field: "amount", editor: "number" },
-        { title: "Purchase Year", field: "purchase_year", editor: "number" },
-        { title: "Depreciation Life (years)", field: "depreciation_life", editor: "number" },
-		{ title: "Notes", field: "notes", editor: "input" },
+        { title: "Currency", field: "currency", editor: "input" },
+        { title: "Target Fundraise", field: "target_fundraise", editor: "number" },
+        { title: "Management Fee", field: "management_fee", editor: "number" },
+        { title: "Carried Interest", field: "carried_interest", editor: "number" },
+		{ title: "Preferred Return", field: "preferred_return", editor: "input" },
+		{ title: "Investment Period", field: "investment_period", editor: "input" },
+		{ title: "Fund Term", field: "fund_term", editor: "input" },
+		{ title: "GP Commitment", field: "GP_commitment", editor: "input" },
+		{ title: "GP Commitment Funding Source", field: "GP_commitment_source", editor: "input" },
         {
             title: "Source", 
             field: "source_string",  // Use source_string as the base field
@@ -172,21 +130,26 @@ const capexTable = new Tabulator("#capexTable", {
             hozAlign: "center",  // Center the button in the cell
             cellClick: function(e, cell) {
                 cell.getRow().delete();  // Delete the row when clicked
-                capexTable.redraw();  // Force redraw in case of layout issues
+                feesKeyTermsTable.redraw();  // Force redraw in case of layout issues 
             }
         }
     ]
 });
 
 
-// Initialize Tabulator table for OPEX data
-const opexTable = new Tabulator("#opexTable", {
+
+
+
+// Initialize Tabulator table for Seed Terms data
+const seedTermsTable = new Tabulator("#seedTermsTable", {
     layout: "fitData",  // Fit columns to width of table
     columns: [
-        { title: "Expense Name", field: "expense_name", editor: "input" },
-        { title: "Amount", field: "amount", editor: "number" },
-        { title: "Frequency", field: "frequency", editor: "input" },
-        { title: "Notes", field: "notes", editor: "input" },
+        { title: "Target Seed Investment", field: "expense_name", editor: "input" },
+		{ title: "Initial Seed Investment", field: "expense_name", editor: "input" },
+        { title: "Seed Fundraising Timeline", field: "fundraising_date", editor: "number" },
+        { title: "Revenue Share", field: "revenue_share", editor: "input" },
+        { title: "Revenus Share Cap", field: "revenue_share_cap", editor: "input" },
+		{ title: "Revenus Share Tail", field: "revenue_share_tail", editor: "input" },
         {
             title: "Source", 
             field: "source_string",  // Use source_string as the base field
@@ -213,7 +176,7 @@ const opexTable = new Tabulator("#opexTable", {
             hozAlign: "center",  // Center the button in the cell
             cellClick: function(e, cell) {
                 cell.getRow().delete();  // Delete the row when clicked
-                opexTable.redraw();  // Force redraw in case of layout issues
+                seedTermsTable.redraw();  // Force redraw in case of layout issues
             }
         }
     ]
@@ -240,11 +203,10 @@ function adjustTableHeight(table) {
 refreshTables();
 
 function refreshTables(){
-	loadTableData("revenue", revenueTable);
-	loadTableData("purchases", purchasesTable);
-	loadTableData("OPEX", opexTable);
-	loadTableData("CAPEX", capexTable);
-	loadTableData("employees", employeesTable);
+	loadTableData("fundamentals", fundamentalsTable);
+	loadTableData("seedTerms", seedTermsTable);
+	loadTableData("feesKeyTerms", feesKeyTermsTable);
+	loadTableData("investmentTeam", investmentTeamTable);
 }
 
 // Function to load table data from the backend with conditional logic based on tableIdentifier
@@ -252,51 +214,17 @@ function loadTableData(tableIdentifier, table) {
     fetch(`/api/table_data/${PROJECT_NAME}/${tableIdentifier}`)
         .then(response => response.json())
         .then(data => {
-
-
-            // Apply different logic based on the tableIdentifier
-           if (tableIdentifier === "revenue") {
-                // Adjust to access the "recipes" array within the data
-                if (Array.isArray(data.recipes)) {
-                    table.setData(data.recipes);  // Use "recipes" key here
-                } else {
-                    console.error('Invalid data structure for revenueTable.');
-                }
-
-            } else if (tableIdentifier === "purchases") {
-                // Logic for purchasesTable (e.g., ingredients data)
-                if (Array.isArray(data.purchases_table)) {
-                    table.setData(data.purchases_table);  // Use "ingredients_data" array
-                } else {
-                    console.error('Invalid data structure for purchasesTable.');
-                }
-
-            } else if (tableIdentifier === "CAPEX" || tableIdentifier === "OPEX") {
-                // Logic for CAPEXTable and OPEXTable (e.g., expenses data)
-                if (Array.isArray(data.expenses)) {
-                    table.setData(data.expenses);  // Use "expenses" array
-                } else {
-                    console.error(`Invalid data structure for ${tableIdentifier}.`);
-                }
-			
-
-            } else if (tableIdentifier === "employees") {
-                // Logic for employeesTable (e.g., employees data)
-                if (Array.isArray(data.employees)) {
-                    table.setData(data.employees);  // Use "employees" array
-                } else {
-                    console.error('Invalid data structure for employeesTable.');
-                }
-
+            if (Array.isArray(data)) {
+                table.setData(data);
             } else {
-                // Handle any unknown tableIdentifiers
-                console.error('Error in loadTableData: Unknown table identifier:', tableIdentifier);
+                console.error(`Invalid data structure for ${tableIdentifier}.`);
             }
         })
         .catch(error => {
-            console.error('Error in loadTableData: Error loading table data:', error);
+            console.error('Error loading table data:', error);
         });
 }
+
 
 
 
@@ -307,7 +235,7 @@ function addRow(table) {
     // Determine the table type and define the row structure accordingly
     let newRow = {};
 
-    if (table === capexTable) {
+    if (table === feesKeyTermsTable) {
         // CAPEX table structure
         newRow = {
             expense_name: "",
@@ -318,7 +246,7 @@ function addRow(table) {
             source_string: "",
             source_link: ""
         };
-    } else if (table === opexTable) {
+    } else if (table === seedTermsTable) {
         // OPEX table structure
         newRow = {
             expense_name: "",
@@ -329,7 +257,7 @@ function addRow(table) {
             source_link: ""
         };
 	
-	} else if (table === employeesTable) {
+	} else if (table === investmentTeamTable) {
         // Employees table structure
         newRow = {
             role: "",
@@ -425,20 +353,20 @@ function sendToBackend(payload) {
 
 
 // For individual table buttons
-document.getElementById('capexAIButton').addEventListener('click', function() {
-    preparePayload('capexTable');
+document.getElementById('feesKeyTermsAIButton').addEventListener('click', function() {
+    preparePayload('feesKeyTermsTable');
 });
 
-document.getElementById('opexAIButton').addEventListener('click', function() {
-    preparePayload('opexTable');
+document.getElementById('seedTermsAIButton').addEventListener('click', function() {
+    preparePayload('seedTermsTable');
 });
 
-document.getElementById('revenueAIButton').addEventListener('click', function() {
-    preparePayload('revenueTable');
+document.getElementById('fundamentalsAIButton').addEventListener('click', function() {
+    preparePayload('fundamentalsTable');
 });
 
-document.getElementById('purchasesAIButton').addEventListener('click', function() {
-    preparePayload('purchasesTable');
+document.getElementById('investmentTeamTable').addEventListener('click', function() {
+    preparePayload('investmentTeamTable');
 });
 
 // Call this function after uploading a PDF successfully
@@ -454,9 +382,11 @@ function initializePdfAIButtonListener() {
 }
 
 
-//Actions following click on excel button
+// Actions following click on excel button
 document.getElementById('downloadExcelButton').addEventListener('click', function() {
-    fetch('/download_excel', {
+    const projectName = PROJECT_NAME;  
+
+    fetch(`/download_excel?project_name=${encodeURIComponent(projectName)}`, {  // Append project_name as a query parameter
         method: 'GET',
     })
     .then(response => {
@@ -470,7 +400,7 @@ document.getElementById('downloadExcelButton').addEventListener('click', functio
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = 'financial_model.xlsx';  // The default file name
+        a.download = 'Catalyst_Partners_Summary.xlsx';  // The default file name
         document.body.appendChild(a);
         a.click();  // Programmatically click the anchor to trigger download
         a.remove();
@@ -564,11 +494,13 @@ function handleFiles(event) {
 
 
 // Function to handle clearing all data
-function clearAllData(PROJECT_NAME) {
+function clearAllData() {
+    const payload = { projectName: PROJECT_NAME }; // Send as an object
+
     fetch('/api/clear_data', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-		body: JSON.stringify(PROJECT_NAME)
+        body: JSON.stringify(payload) // Correctly stringify the object
     })
     .then(response => response.json())
     .then(data => {
@@ -579,6 +511,7 @@ function clearAllData(PROJECT_NAME) {
         console.error('Error clearing data:', error);
     });
 }
+
 
 // Attach the clearAllData function to the button
 document.getElementById('clearDataButton').addEventListener('click', clearAllData);
@@ -595,8 +528,8 @@ function uploadToAI(fileName, row) {
     // Prepare the payload for the backend API
     const payload = {
         pdfFileName: fileName,
-		projectName: PROJECT_NAME,
         userPrompt: document.getElementById("chatgptPrompt").value, // Add user prompt to payload
+		projectName: PROJECT_NAME,
         updateScope: 'all' // Explicitly set the update scope to 'all' for full context processing
     };
 

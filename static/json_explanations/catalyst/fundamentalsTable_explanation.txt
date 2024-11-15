@@ -1,0 +1,13 @@
+Description: The Fundamentals table provides essential information about a private equity firm, including its founding year, structure, office location, and key attributes like diversity status and total assets under management.
+
+Structure Explanation:
+
+firm_name (String): The name of the private equity firm, identifying it clearly.
+founded_year (Integer): The year the firm was established.
+primary_office (String): Location of the firm’s main office, typically a city and state or country.
+ownership_structure (String): Indicates whether the firm is privately or publicly owned.
+total_employees (Integer): Number of employees working at the firm.
+diversity_status (String): Diversity designation, if applicable (e.g., "Minority-Owned" or "Diverse Leadership").
+website (String): URL to the firm’s official website, providing more information.
+source_string (String): Description or source title if additional context is needed.
+source_link (String): URL of the source document for validation or further reading.
