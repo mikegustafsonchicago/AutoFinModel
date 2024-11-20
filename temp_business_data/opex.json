@@ -1,0 +1,20 @@
+{
+    "expenses": [
+        {
+            "expense_name": "Staff Training",
+            "amount": 5000,
+            "frequency": "annual",
+            "source_link": "staff-training.com",
+            "source_string": "Staff Training Solutions",
+            "notes": "Annual training sessions for staff to manage and maintain kiosks efficiently."
+        },
+        {
+            "expense_name": "Promotional Campaigns",
+            "amount": 7500,
+            "frequency": "monthly",
+            "source_link": "marketingpartners.com",
+            "source_string": "Marketing Partners",
+            "notes": "Monthly marketing to increase consumer and merchant awareness of Pay-Ease services."
+        }
+    ]
+}

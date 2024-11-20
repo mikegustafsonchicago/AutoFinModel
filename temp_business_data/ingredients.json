@@ -1,0 +1,38 @@
+{
+    "purchases_table": [
+        {
+            "ingredient_id": 101,
+            "ingredient_name": "Transaction Hosting Fee",
+            "unit": "transaction",
+            "price": 0.15,
+            "notes": "A fee collected by store locations for hosting kiosks, essential part of operations.",
+            "price_data_raw": [
+                {
+                    "unit_name": "Standard Transaction",
+                    "price": 0.15,
+                    "selling_quantity": "1",
+                    "unit": "transaction",
+                    "company": "Location Hosts LLC",
+                    "source": "locationhosts.com"
+                }
+            ]
+        },
+        {
+            "ingredient_id": 102,
+            "ingredient_name": "Advanced Data Package",
+            "unit": "package",
+            "price": 0.5,
+            "notes": "Software and analytics services to enhance merchant offerings.",
+            "price_data_raw": [
+                {
+                    "unit_name": "Data Analytics License",
+                    "price": 0.5,
+                    "selling_quantity": "1",
+                    "unit": "package",
+                    "company": "Data Insights Corp.",
+                    "source": "datainsights.com"
+                }
+            ]
+        }
+    ]
+}

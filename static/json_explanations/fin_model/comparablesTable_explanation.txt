@@ -1,0 +1,8 @@
+comparables (List): A list where each item represents a comparable business.
+company_name (String): The name of the comparable company.
+market_cap (Number): The market capitalization of the company, which is the total market value of all outstanding shares.
+enterprise_value (Number): A measure of the company's total value, often used as a more comprehensive alternative to market cap.
+ebitda (Number): EBITDA, or earnings before interest, taxes, depreciation, and amortization, which indicates the company’s profitability.
+ev_to_ebitda (Number): The enterprise value-to-EBITDA ratio, used to evaluate the relative value of the company.
+equity_beta (Number): A measure of the stock's volatility relative to the broader market (systematic risk).
+asset_beta (Number): A measure of the company's asset volatility, accounting for both business and financial risks.

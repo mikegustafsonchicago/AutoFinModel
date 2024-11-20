@@ -1,0 +1,30 @@
+5. Ingredients Table
+Description: The Ingredients table lists individual ingredients or components used to make products, including costs and units. 
+
+Structure Explanation:
+
+purchases_table (List): Each item in this list represents an ingredient or component used in production. Every ingredient includes fields for unique identification, measurement, and cost details.
+
+ingredient_id (Integer): A unique identifier for the ingredient, ensuring each entry can be referenced and updated accurately. 
+
+ingredient_name (String): The name of the ingredient (e.g., "Flour," "Packaging Box"), identifying the main component.
+
+unit (String): The unit of measurement for the ingredient, such as "kg" or "box," to define its purchasing or usage amount.
+
+price (Number): The cost per unit of the ingredient, capturing its price based on the provided unit.
+
+notes (String): Additional information or assumptions about the ingredient, such as special sourcing requirements, quality notes, or any particular handling needs.
+
+price_data_raw (List): This list contains sub-items that provide further granularity to the ingredient cost, useful for cases where ingredients are sourced from multiple vendors or vary in packaging. Each sub-item under price_data_raw is represented as a child node in the tree view, containing the following fields:
+
+unit_name (String): A description of the specific unit type (e.g., "Standard Box," "Bulk Pack") for additional clarity on pricing.
+
+price (Number): The price for the specified unit configuration, matching the unit_name.
+
+selling_quantity (String/Number): Quantity available in this unit for sale (e.g., 10 units per box).
+
+unit (String): The unit of sale (e.g., "box," "pallet"), defining how the ingredient is offered by suppliers.
+
+company (String): The supplier’s name, which can aid in tracking or comparing vendor options.
+
+source (String): The link or contact information for the supplier, facilitating easy access to purchase or reference additional product details.

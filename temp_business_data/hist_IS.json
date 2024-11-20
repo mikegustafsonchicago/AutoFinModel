@@ -1,0 +1,30 @@
+{
+    "historical_financials": [
+        {
+            "year": 2020,
+            "revenue": 1000000,
+            "cost_of_sales": 200000,
+            "operating_expenses": 300000,
+            "ebitda": 500000,
+            "depreciation": 50000,
+            "ebit": 450000,
+            "interest_expense": 20000,
+            "income_taxes": 80000,
+            "net_income": 350000,
+            "notes": "First year of significant market operation in the Chicago region."
+        },
+        {
+            "year": 2021,
+            "revenue": 3000000,
+            "cost_of_sales": 500000,
+            "operating_expenses": 750000,
+            "ebitda": 1750000,
+            "depreciation": 75000,
+            "ebit": 1675000,
+            "interest_expense": 40000,
+            "income_taxes": 200000,
+            "net_income": 1435000,
+            "notes": "Expanded network and merchant partnerships leading to growth in transactions."
+        }
+    ]
+}

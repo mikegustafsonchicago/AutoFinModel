@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catalyst Partners Template Production</title>
+    <link href="https://unpkg.com/tabulator-tables@5.2.7/dist/css/tabulator.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+</head>
+<body>
+	<a href="/" class="nav-link">Home</a>
+    <div class="layout">
+        <!-- AI Prompt Section - Now at top -->
+        <div class="card ai-prompt">
+            <div class="card-header">
+                <h2 class="card-title">Catalyst Partners Product Development </h2>
+            </div>
+            <div class="card-content">
+                <div class="input-group">
+                    <label for="businessDescription">Firm Description:</label>
+                    <textarea id="businessDescription" class="textarea" rows="4"></textarea>
+                </div>
+                
+                <div class="input-group">
+                    <label for="chatgptPrompt">Additional instructions for AI:</label>
+                    <textarea id="chatgptPrompt" class="textarea" rows="4"></textarea>
+                </div>
+                
+                <div class="upload-section">
+                    <div id="uploadZone" class="upload-zone">
+                        <p>Click or drag files to upload</p>
+                        <input type="file" id="pdfUpload" accept=".pdf" multiple hidden>
+                    </div>
+
+                    <table id="uploadedDocsTable" class="table-container">
+                        <thead>
+                            <tr>
+                                <th>File Name</th>
+                                <th>Send to AI</th>
+                                <th>Sent?</th>
+                                <th>Remove</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+				<div id="loading" style="display: none;">Loading...</div>
+                <div class="input-group">
+                    <label>AI Response:</label>
+                    <div id="aiResponse" class="ai-response"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content - Tables and forms -->
+        <main class="container">
+            <h1 class="page-title">Build a Target Overview with AI</h1>
+
+            <!-- Firm Fundamentals Data Section -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Firm Fundamentals</h2>
+                </div>
+                <div class="card-content">
+                    <div id="fundamentalsTable" class="table-container"></div>
+                    <div class="button-group">
+                        <button class="button button-outline" onclick="addRow(fundamentalsTable)">
+                            <span class="icon">+</span>
+                            Add Row
+                        </button>
+                        <button id="fundamentalsAIButton" class="button button-ai">
+                            <span class="icon">✨</span>
+                            Add Fundamentals Data with AI
+                        </button>
+                    </div>
+                </div>
+            </div>
+			
+			<!-- Employees Section -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title"> Investment Professionals </h2>
+                </div>
+                <div class="card-content">
+                    <div id="investmentTeamTable" class="table-container"></div>
+                    <div class="button-group">
+                        <button class="button button-outline" onclick="addRow(investmentTeamTable)">
+                            <span class="icon">+</span>
+                            Add Row
+                        </button>
+                        <button id="investmentTeamAIButton" class="button button-ai">
+                            <span class="icon">✨</span>
+                            Add Investment Team Data with AI
+                        </button>
+                    </div>
+                </div>
+            </div>
+			
+			
+			            <!-- Fees and Key Terms Section -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Fees and Key Terms Data</h2>
+                </div>
+                <div class="card-content">
+                    <div id="feesKeyTermsTable" class="table-container"></div>
+                    <div class="button-group">
+                        <button class="button button-outline" onclick="addRow(feesKeyTermsTable)">
+                            <span class="icon">+</span>
+                            Add Row
+                        </button>
+                        <button id="feesKeyTermsAIButton" class="button button-ai">
+                            <span class="icon">✨</span>
+                            Add Fund Key Terms Data with AI
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+
+
+            <!-- Seed Terms Section -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Seed Terms Data</h2>
+                </div>
+                <div class="card-content">
+                    <div id="seedTermsTable" class="table-container"></div>
+                    <div class="button-group">
+                        <button class="button button-outline" onclick="addRow(seedTermsTable)">
+                            <span class="icon">+</span>
+                            Add Row
+                        </button>
+                        <button id="seedTermsAIButton" class="button button-ai">
+                            <span class="icon">✨</span>
+                            Add Seed Terms Data with AI
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- Download Section -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Generate 2 Page Summary</h2>
+                </div>
+                <div class="card-content">
+                    <div class="button-group">
+                        <button id="downloadExcelButton" class="button button-ai">
+                            Download 2 Page Summary (xlsx)
+                        </button>
+                        <button id="clearDataButton" class="button button-outline">
+                            Clear All Data
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="https://unpkg.com/tabulator-tables@5.2.7/dist/js/tabulator.min.js"></script>
+    <script type="module" src="{{ url_for('static', filename='js/catalyst.js') }}"></script>
+
+</body>
+</html>

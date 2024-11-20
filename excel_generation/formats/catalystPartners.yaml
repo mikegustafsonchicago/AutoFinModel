@@ -1,0 +1,229 @@
+plain:
+  num_format: "@"
+  font_size: 14
+  font_name: "Arial"
+
+plain_right:
+  num_format: "@"
+  font_size: 14
+  font_name: "Arial"
+  align: "right"
+
+size_eight:
+  font_size: 8
+
+size_eighteen_bold:
+  font_size: 18
+  bold: true
+
+number:
+  num_format: "0"
+
+currency:
+  num_format: "$#,##0"
+
+currency_cents:
+  num_format: "$#,##0.00"
+
+text_right_align:
+  align: right
+
+percentage:
+  num_format: "0%"
+
+decimal:
+  num_format: "0.000"
+
+date:
+  num_format: "mm/dd/yyyy"
+
+date_year_right:
+  num_format: "yyyy"
+  font_size: 14
+  font_name: "Arial"
+  align: right
+
+bold:
+  bold: true
+  font_size: 14
+  font_name: "Arial"
+
+underline:
+  underline: true
+  font_size: 14
+  font_name: "Arial"
+
+bold_underline:
+  bold: true
+  underline: true
+  font_size: 14
+  font_name: "Arial"
+
+bold_underline_right:
+  bold: true
+  underline: true
+  font_size: 14
+  font_name: "Arial"
+  align: right
+
+underline_wrap:
+  underline: true
+  text_wrap: true
+
+italic:
+  italic: true
+
+top_border:
+  top: 1
+
+bottom_border:
+  bottom: 1
+
+all_borders:
+  font_size: 14
+  font_name: "Arial"
+  top: 1
+  bottom: 1
+  left: 1
+  right: 1
+
+all_borders_percent:
+  font_size: 14
+  font_name: "Arial"
+  num_format: "0%"
+  top: 1
+  bottom: 1
+  left: 1
+  right: 1
+
+bottom_border_wrap:
+  bottom: 1
+  text_wrap: true
+
+color_banner:
+  bg_color: "484e41"
+
+year_format:
+  num_format: "YYYY"
+
+title:
+  font_size: 48
+  font_name: "Times New Roman"
+  font_color: "0F2749"
+
+title_right:
+  font_size: 48
+  font_name: "Times New Roman"
+  font_color: "#0F2749"
+  align: "right"
+
+section_header:
+  bold: true
+  font_size: 14
+  font_name: "Arial"
+  font_color: "FFFFFF"
+  bg_color: "0F2749"
+
+paragraph_header:
+  bold: true
+  font_size: 14
+  font_name: "Arial"
+  font_color: "0F2749"
+  bottom: 1
+
+perf_section_header:
+  bold: true
+  font_size: 11
+  font_name: "Arial"
+  font_color: "FFFFFF"
+  bg_color: "000000"
+
+perf_section_green:
+  bold: true
+  font_size: 11
+  font_name: "Arial"
+  font_color: "000000"
+  bg_color: "92D050"
+
+sum_line:
+  top: 1
+  num_format: "$#,##0"
+
+sum_line_cents:
+  top: 1
+  num_format: "$#,##0.00"
+
+input:
+  font_color: "0070C0"
+  bg_color: "FFFF66"
+  pattern: 1
+
+date_input_YYYY:
+  font_color: "0070C0"
+  bg_color: "FFFF66"
+  pattern: 1
+  num_format: "YYYY"
+
+percent_input:
+  font_color: "0070C0"
+  bg_color: "FFFF66"
+  pattern: 1
+  num_format: "0%"
+
+currency_input:
+  num_format: "$#,##0"
+  font_color: "0070C0"
+  bg_color: "FFFF66"
+  pattern: 1
+
+currency_input_cents:
+  num_format: "$#,##0.00"
+  font_color: "0070C0"
+  bg_color: "FFFF66"
+  pattern: 1
+
+cross_input:
+  font_color: "006600"
+  bg_color: "e7ffcc"
+  pattern: 1
+  right_color: "#bcd0a7"
+
+currency_cross:
+  num_format: "$#,##0"
+  font_color: "006600"
+  bg_color: "e7ffcc"
+  pattern: 1
+
+currency_cross_cents:
+  num_format: "$#,##0.00"
+  font_color: "006600"
+  bg_color: "e7ffcc"
+  pattern: 1
+
+grey_italic:
+  italic: true
+  font_color: "595959"
+
+grey_italic_right:
+  italic: true
+  font_color: "595959"
+  align: right
+
+grey_percentage_italic:
+  num_format: "0%"
+  italic: true
+  font_color: "595959"
+
+small_italic:
+  font_size: 8
+  italic: true
+
+URL:
+  font_size: 11
+  color: blue
+  underline: 1
+
+URL_small:
+  font_size: 8
+  color: blue
+  underline: 1

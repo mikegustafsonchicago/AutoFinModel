@@ -1,0 +1,49 @@
+{
+    "recipes": [
+        {
+            "name": "Standard Kiosk Transaction",
+            "price": 1.0,
+            "price_notes": "Standard fee charged per bill payment processed through the kiosk.",
+            "ingredients": [
+                {
+                    "ingredient_id": 101,
+                    "ingredient_name": "Transaction Hosting Fee",
+                    "amount": 1,
+                    "unit": "transaction",
+                    "price": 0.15,
+                    "notes": "Cost incurred per transaction for hosting fees to retail locations."
+                }
+            ]
+        },
+        {
+            "name": "Premium Merchant Service",
+            "price": 2.0,
+            "price_notes": "Charges include real-time transaction updates and advanced reporting for merchants.",
+            "ingredients": [
+                {
+                    "ingredient_id": 102,
+                    "ingredient_name": "Advanced Data Package",
+                    "amount": 1,
+                    "unit": "package",
+                    "price": 0.5,
+                    "notes": "Includes additional fees for providing data analytics and reporting tools to merchants."
+                }
+            ]
+        },
+        {
+            "name": "Partnered Kiosk Benefit",
+            "price": 1.5,
+            "price_notes": "Collaborative transaction services with mutual promotion between Pay-Ease and hosts.",
+            "ingredients": [
+                {
+                    "ingredient_id": 103,
+                    "ingredient_name": "Promotional Hosting Cost",
+                    "amount": 1,
+                    "unit": "transaction",
+                    "price": 0.25,
+                    "notes": "Shared cost for advertising and promotional deals with hosting retail partners."
+                }
+            ]
+        }
+    ]
+}

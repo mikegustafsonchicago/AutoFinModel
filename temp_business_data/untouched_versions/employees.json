@@ -1,0 +1,44 @@
+{
+    "employees": [
+        {
+            "role": "Window Washer",
+            "number": 34,
+            "wage": 100,
+            "wage_type": "daily",
+            "monthly_hours": 160,
+            "notes": "Includes high and low rise."
+        },
+        {
+            "role": "Crew Supervisor",
+            "number": 6,
+            "wage": 120,
+            "wage_type": "daily",
+            "monthly_hours": 160,
+            "notes": "Supervises window washers."
+        },
+        {
+            "role": "Operations Manager",
+            "number": 2,
+            "wage": 50000,
+            "wage_type": "salary",
+            "monthly_hours": 160,
+            "notes": ""
+        },
+        {
+            "role": "Office Staff",
+            "number": 8,
+            "wage": 12,
+            "wage_type": "hourly",
+            "monthly_hours": 160,
+            "notes": ""
+        },
+        {
+            "role": "Estimators",
+            "number": 2,
+            "wage": 13,
+            "wage_type": "hourly",
+            "monthly_hours": 160,
+            "notes": ""
+        }
+    ]
+}

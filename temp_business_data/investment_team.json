@@ -1,0 +1,67 @@
+{
+    "members": [
+        {
+            "investment_team_member_name": "Kyle Cruz",
+            "investment_team_member_title": "Managing Partner & Co-Founder",
+            "investment_team_member_join_date": 2020,
+            "source_string": "PitchBook Data",
+            "source_link": "https://www.crossrapids.com/team/"
+        },
+        {
+            "investment_team_member_name": "Mina Spring",
+            "investment_team_member_title": "Partner, Co-Founder, and Board Member",
+            "investment_team_member_join_date": 2020,
+            "source_string": "PitchBook Data",
+            "source_link": "https://www.crossrapids.com/team/"
+        },
+        {
+            "investment_team_member_name": "Benjamin Gaw, Jr.",
+            "investment_team_member_title": "Partner & Co-Founder & Head of Portfolio Operations",
+            "investment_team_member_join_date": 2020,
+            "source_string": "PitchBook Data",
+            "source_link": "https://www.crossrapids.com/team/"
+        },
+        {
+            "investment_team_member_name": "Mark Feirman",
+            "investment_team_member_title": "Chief Financial Officer & Partner",
+            "investment_team_member_join_date": 2020,
+            "source_string": "PitchBook Data",
+            "source_link": "https://www.crossrapids.com/team/"
+        },
+        {
+            "investment_team_member_name": "Ricardo Perez",
+            "investment_team_member_title": "Managing Director",
+            "investment_team_member_join_date": 2020,
+            "source_string": "PitchBook Data",
+            "source_link": "https://www.crossrapids.com/team/"
+        },
+        {
+            "investment_team_member_name": "Andrew Friedman",
+            "investment_team_member_title": "Vice President",
+            "investment_team_member_join_date": 2020,
+            "source_string": "PitchBook Data",
+            "source_link": "https://www.crossrapids.com/team/"
+        },
+        {
+            "investment_team_member_name": "Alexander Porter",
+            "investment_team_member_title": "Associate",
+            "investment_team_member_join_date": 2020,
+            "source_string": "PDF Extract, Page 3",
+            "source_link": "https://www.crossrapids.com/team/"
+        },
+        {
+            "investment_team_member_name": "Donovan Francis",
+            "investment_team_member_title": "Executive Partner",
+            "investment_team_member_join_date": 2020,
+            "source_string": "PDF Extract, Page 4",
+            "source_link": "https://www.crossrapids.com/team/"
+        },
+        {
+            "investment_team_member_name": "Boyd Scricco",
+            "investment_team_member_title": "Executive Partner",
+            "investment_team_member_join_date": 2020,
+            "source_string": "PDF Extract, Page 4",
+            "source_link": "https://www.crossrapids.com/team/"
+        }
+    ]
+}

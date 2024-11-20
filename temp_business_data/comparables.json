@@ -1,0 +1,14 @@
+{
+    "comparables": [
+        {
+            "company_name": "Example Financial Services",
+            "market_cap": 50000000,
+            "enterprise_value": 60000000,
+            "ebitda": 1500000,
+            "ev_to_ebitda": 40,
+            "equity_beta": 1.2,
+            "asset_beta": 0.9,
+            "notes": "A similar company operating in fintech with a focus on transactional technology."
+        }
+    ]
+}

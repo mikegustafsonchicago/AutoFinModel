@@ -1,0 +1,14 @@
+3. Employees Table
+Description: The Employees table records information about the workforce, including roles, wages, work hours, and assumptions or notes related to each role.
+
+Structure Explanation:
+
+employees (List): Each item represents a distinct employee role within the company.
+role (String): Job title or role (e.g., "Cashier").
+number (Integer): Number of employees in this role.
+wage (Number): Hourly or annual wage in dollars, based on wage_type.
+wage_type (String): Indicates if the wage is "hourly" or "salary".
+monthly_hours (Integer): Expected hours worked per month.
+notes (String): Any additional details or assumptions about the role.
+source_string (String): A human-readable description of the source, such as the name of a government agency, publication, or organization (e.g., "Bureau of Labor Statistics").
+source_link (String): A hyperlink to the source's website or document, providing additional details or references for the expense (e.g., "https://www.bls.gov").
