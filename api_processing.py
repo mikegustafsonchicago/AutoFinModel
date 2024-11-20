@@ -14,7 +14,8 @@ from json_manager import update_json_files, fix_incomplete_json, save_json_to_fi
 from running_summary_manager import RunningSummaryManager #Import the running summary manager
 from prompt_builder import PromptBuilder
 from file_manager import load_table_data
-
+from os import getenv
+from dotenv import load_dotenv
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
@@ -151,7 +152,11 @@ def make_openai_api_call(api_key, system_prompt, user_prompt):
     """
     Makes the actual API call to OpenAI and returns the response.
     """
-    api_key = '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'
+    
+    load_dotenv()
+    api_key = getenv('OPENAI_API_KEY')
+    if not api_key:
+        raise ValueError("OPENAI_API_KEY not found in environment variables")
     
     payload = {
         "model": OPENAI_MODEL,

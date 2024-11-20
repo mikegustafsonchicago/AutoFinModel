@@ -1,6 +1,7 @@
 # Ignore reference files folder
 reference_files/
 Catalyst_Partners_Summary.xlsx
+uploads/
 
 # Common files to ignore
 .DS_Store
