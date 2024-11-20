@@ -12,3 +12,17 @@ unit (String): The unit of measurement for the ingredient (e.g., "kg" or "g").
 price (Number): The price per unit of the ingredient, which contributes to COGS.
 notes (String): Additional details or notes about the ingredient.
 Each recipe does not require multiple ingredients; single-ingredient recipes are allowed.
+The JSON file consists of a list of recipes, where each recipe represents a sales item or package contributing to revenue. Each recipe has the following structure:
+
+name (String): The name of the recipe or package.
+price (Number): The total price charged for the package, representing its revenue contribution.
+price_notes (String): Additional notes explaining or justifying the price.
+Each recipe may contain a list of ingredients, which contribute to the cost of goods sold (COGS) for the package. The ingredients structure is as follows:
+
+ingredient_id (Integer): A unique identifier for the ingredient.
+ingredient_name (String): The name of the ingredient.
+amount (Number): The quantity of the ingredient used in the recipe.
+unit (String): The unit of measurement for the ingredient (e.g., "kg" or "g").
+price (Number): The price per unit of the ingredient, which contributes to COGS.
+notes (String): Additional details or notes about the ingredient.
+Each recipe does not require multiple ingredients; single-ingredient recipes are allowed.

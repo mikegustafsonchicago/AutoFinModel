@@ -337,3 +337,342 @@ body {
     padding: 3rem 1.5rem;
     margin: 3rem 0;
 }
+/* Base styles */
+body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background-color: white;
+    background-image: radial-gradient(#e5e7eb 1px, transparent 1px);
+    background-size: 16px 16px;
+}
+
+/* Header styles */
+.header {
+    padding: 0 1rem;
+    height: 3.5rem;
+    display: flex;
+    align-items: center;
+    background-color: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(4px);
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
+}
+
+.company-name {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #333;
+}
+
+.nav {
+    margin-left: auto;
+    display: flex;
+    gap: 1.5rem;
+}
+
+.nav-link {
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-decoration: none;
+    color: #333;
+}
+
+.nav-link:hover {
+    text-decoration: underline;
+    text-underline-offset: 4px;
+}
+
+/* Hero section */
+.hero {
+    width: 100%;
+    padding: 3rem 0 0 0;
+}
+
+@media (min-width: 768px) {
+    .hero {
+        padding: 3rem 0 0 0;
+    }
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1rem;
+}
+
+.hero-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 0.5rem;
+}
+
+.hero-title {
+    font-size: 2.25rem;
+    font-weight: bold;
+    letter-spacing: -0.025em;
+    line-height: 1.2;
+}
+
+@media (min-width: 640px) {
+    .hero-title {
+        font-size: 3rem;
+    }
+}
+
+.gradient-text {
+    background: linear-gradient(to right, #f97316, #fb923c);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+.hero-subtitle {
+    max-width: 700px;
+    color: #6b7280;
+    font-size: 1.125rem;
+    margin-top: -0.25rem;
+}
+
+/* If needed, adjust the button container spacing */
+.hero-content > div {
+    margin-top: 1.5rem;
+}
+
+/* Feature cards */
+.features {
+    padding: 0 1rem;
+    margin-bottom: 3rem;
+}
+
+.features-grid {
+    display: grid;
+    gap: 1.5rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.75rem;
+    background: linear-gradient(to bottom, #ffffff, #f8f9fa);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    padding: 1.5rem;
+}
+
+@media (min-width: 1024px) {
+    .features-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+.feature-card {
+    border-radius: 0.5rem;
+    overflow: hidden;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    background: white;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.feature-image {
+    width: 100%;
+    height: 200px;
+    object-fit: contain;
+    background: white;
+    padding: 1rem;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.feature-content {
+    padding: 1.25rem;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.feature-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #111827;
+    margin: 0;
+}
+
+.feature-description {
+    font-size: 0.875rem;
+    color: #6b7280;
+    margin: 0;
+}
+
+/* Button styles */
+.button {
+    display: inline-block;
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    font-weight: 500;
+    border-radius: 0.375rem;
+    text-decoration: none;
+    transition: background-color 0.2s;
+}
+
+.button-primary {
+    background-color: #18181b;
+    color: white;
+}
+
+.button-primary:hover {
+    background-color: #27272a;
+}
+
+/* Problem Section */
+.problem-section {
+    padding: 0 0 3rem 0;
+}
+
+@media (min-width: 768px) {
+    .problem-section {
+        padding: 0 0 3rem 0;
+    }
+}
+
+.problem-header {
+    text-align: center;
+    margin-bottom: 2.5rem;
+}
+
+.problem-label {
+    font-size: 0.875rem;
+    color: #6b7280;
+    margin-bottom: 0.5rem;
+}
+
+.problem-title {
+    font-size: 1.875rem;
+    font-weight: bold;
+    margin-bottom: 1rem;
+}
+
+.problem-description {
+    font-size: 1.25rem;
+    color: #4b5563;
+    max-width: 42rem;
+    margin: 0 auto;
+}
+
+/* Bubble positioning */
+.bubble-1 { left: 25%; top: 0; }
+.bubble-2 { right: 25%; top: 40px; }
+.bubble-3 { left: 40px; top: 50%; }
+.bubble-4 { right: 40px; top: 50%; }
+.bubble-5 { left: 33%; bottom: 40px; }
+.bubble-6 { right: 33%; bottom: 0; }
+
+/* Solution Grid */
+.solution-grid {
+    display: grid;
+    gap: 3rem;
+    align-items: center;
+    margin: 5rem 0;
+}
+
+@media (min-width: 768px) {
+    .solution-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+.solution-content {
+    padding: 1rem;
+}
+
+.solution-title {
+    font-size: 1.875rem;
+    font-weight: bold;
+    margin-bottom: 1rem;
+}
+
+.solution-description {
+    color: #4b5563;
+    margin-bottom: 1.5rem;
+}
+
+.solution-image {
+    background: white;
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 1.5rem;
+}
+
+.solution-image img {
+    width: 100%;
+    height: auto;
+    border-radius: 0.5rem;
+    object-fit: contain;
+    background: white;
+}
+
+/* Benefits Grid */
+.benefits-grid {
+    display: grid;
+    gap: 2rem;
+    margin-top: 0;
+}
+
+@media (min-width: 768px) {
+    .benefits-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+.benefit-card {
+    text-align: center;
+    padding: 1rem;
+}
+
+.benefit-icon {
+    width: 3rem;
+    height: 3rem;
+    border-radius: 9999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1rem;
+}
+
+.benefit-icon-blue {
+    background-color: #dbeafe;
+    color: #2563eb;
+}
+
+.benefit-icon-green {
+    background-color: #dcfce7;
+    color: #16a34a;
+}
+
+.benefit-icon-purple {
+    background-color: #f3e8ff;
+    color: #9333ea;
+}
+
+.benefit-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.benefit-description {
+    color: #4b5563;
+    margin-bottom: 0;
+}
+
+.hero-container, .features-grid, .problem-container, .benefits-container {
+    border: 1px solid #e5e7eb;
+    border-radius: 0.75rem;
+    background: linear-gradient(to bottom, #ffffff, #f8f9fa);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    padding: 3rem 1.5rem;
+    margin: 3rem 0;
+}

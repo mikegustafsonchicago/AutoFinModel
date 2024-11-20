@@ -151,3 +151,156 @@
     </div>
 </body>
 </html> 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Financial Modeling Platform</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/landing.css') }}">
+</head>
+<body>
+    <div class="flex-wrapper">
+        <header class="header">
+            <a href="#" class="logo">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/>
+                    <path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/>
+                </svg>
+                <span class="company-name">AutoFinModel</span>
+            </a>
+            <nav class="nav">
+                <a href="#features" class="nav-link">Features</a>
+                <a href="#pricing" class="nav-link">Pricing</a>
+                <a href="#support" class="nav-link">Support</a>
+                <a href="/app" class="nav-link">App</a>
+            </nav>
+        </header>
+
+        <main>
+            <section class="hero">
+                <div class="container">
+                    <div class="hero-container">
+                        <div class="hero-content">
+                            <h1 class="hero-title">
+                                Data to 
+                                <span class="gradient-text">Financial Models</span>
+                                <br>
+                                in Minutes
+                            </h1>
+                            <p class="hero-subtitle">
+                                Harness your data, build your model, save time
+                            </p>
+                            <div>
+                                <a href="/app" class="button button-primary">Get Started For Free</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <div class="container features">
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <img src="{{ url_for('static', filename='images/financial-dashboard.jpg') }}" alt="Financial Dashboard" class="feature-image">
+                        <div class="feature-content">
+                            <h3 class="feature-title">Financial Dashboard</h3>
+                            <p class="feature-description">Real-time financial insights</p>
+                        </div>
+                    </div>
+                    <div class="feature-card">
+                        <img src="{{ url_for('static', filename='images/cash-flow.jpg') }}" alt="Cash Flow Projection" class="feature-image">
+                        <div class="feature-content">
+                            <h3 class="feature-title">Cash Flow Projection</h3>
+                            <p class="feature-description">Forecast your financial future</p>
+                        </div>
+                    </div>
+                    <div class="feature-card">
+                        <img src="{{ url_for('static', filename='images/portfolio.jpg') }}" alt="Portfolio Analysis" class="feature-image">
+                        <div class="feature-content">
+                            <h3 class="feature-title">Portfolio Analysis</h3>
+                            <p class="feature-description">Optimize your investments</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Problem Section -->
+            <section class="problem-section">
+                <div class="container">
+                    <div class="problem-container">
+                        <div class="problem-header">
+                            <div class="problem-label">What's the problem?</div>
+                            <h2 class="problem-title">Financial modeling is complex</h2>
+                            <p class="problem-description">
+                                Building and maintaining financial models can be time-consuming, error-prone, and expensive.
+                                When dealing with multiple data sources and complex calculations, there's a lot to consider.
+                            </p>
+                        </div>
+                        
+                        <div class="solution-grid">
+                            <div class="solution-content">
+                                <h2 class="solution-title">Let us handle the complexity</h2>
+                                <p class="solution-description">
+                                    Our platform automates your entire financial modeling process, end-to-end. 
+                                    It connects to your data sources, applies your business logic, validates results, 
+                                    and generates accurate models - all from one simple interface.
+                                </p>
+                            </div>
+                            <div class="solution-image">
+                                <img src="{{ url_for('static', filename='images/financial-dashboard.jpg') }}" alt="Financial Modeling Dashboard">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="benefits-container">
+                        <div class="benefits-grid">
+                            <div class="benefit-card">
+                                <div class="benefit-icon benefit-icon-blue">
+                                    <!-- Clock Icon -->
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <circle cx="12" cy="12" r="10"></circle>
+                                        <polyline points="12 6 12 12 16 14"></polyline>
+                                    </svg>
+                                </div>
+                                <h3 class="benefit-title">Save time</h3>
+                                <p class="benefit-description">
+                                    Stop spending hours manually building and updating financial models. 
+                                    Our automated platform handles the heavy lifting, letting you focus on analysis.
+                                </p>
+                            </div>
+                            <div class="benefit-card">
+                                <div class="benefit-icon benefit-icon-green">
+                                    <!-- Dollar Icon -->
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <line x1="12" y1="1" x2="12" y2="23"></line>
+                                        <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                                    </svg>
+                                </div>
+                                <h3 class="benefit-title">Save money</h3>
+                                <p class="benefit-description">
+                                    Financial modeling consultants and specialized tools are expensive. 
+                                    Our platform provides enterprise-grade modeling at a fraction of the cost.
+                                </p>
+                            </div>
+                            <div class="benefit-card">
+                                <div class="benefit-icon benefit-icon-purple">
+                                    <!-- Shield Icon -->
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                                    </svg>
+                                </div>
+                                <h3 class="benefit-title">Ensure accuracy</h3>
+                                <p class="benefit-description">
+                                    Avoid worrying about formula errors, data inconsistencies, or outdated numbers. 
+                                    Our platform ensures your models are always accurate and up-to-date.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+</body>
+</html> 

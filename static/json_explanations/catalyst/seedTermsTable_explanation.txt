@@ -9,3 +9,14 @@ frequency (String): Frequency with which this expense occurs (e.g., "Monthly", "
 notes (String): Additional notes regarding the expense, if any.
 source_string (String): Description or summary of the information source.
 source_link (String): URL linking to the source document.
+Seed Terms Table Explanation
+Description: The Seed Terms table lists the firm’s terms and expenses associated with early-stage or seed investments, including frequency and related notes.
+
+Structure Explanation:
+
+expense_name (String): Name or type of expense related to seed investment terms.
+amount (Number): Dollar amount allocated to each expense.
+frequency (String): Frequency with which this expense occurs (e.g., "Monthly", "Annually").
+notes (String): Additional notes regarding the expense, if any.
+source_string (String): Description or summary of the information source.
+source_link (String): URL linking to the source document.

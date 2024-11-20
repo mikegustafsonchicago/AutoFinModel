@@ -10,3 +10,15 @@ frequency (String): How often the expense occurs, such as "monthly" or "annually
 notes (String): Additional notes or assumptions about the expense.
 source_string (String): A human-readable description of the source, such as the name of a government agency, publication, or organization (e.g., "Bureau of Labor Statistics").
 source_link (String): A hyperlink to the source's website or document, providing additional details or references for the expense (e.g., "https://www.bls.gov").
+6. OPEX Table
+Description: The OPEX (Operating Expenses) table records regular expenses related to the day-to-day operations of the business.
+
+Structure Explanation:
+
+expenses (List): Each item represents a unique operating expense.
+expense_name (String): Name or description of the operating expense (e.g., "Utilities").
+amount (Number): Cost of the expense in dollars.
+frequency (String): How often the expense occurs, such as "monthly" or "annually".
+notes (String): Additional notes or assumptions about the expense.
+source_string (String): A human-readable description of the source, such as the name of a government agency, publication, or organization (e.g., "Bureau of Labor Statistics").
+source_link (String): A hyperlink to the source's website or document, providing additional details or references for the expense (e.g., "https://www.bls.gov").
