@@ -130,7 +130,7 @@ def prepare_payload(pdf_chunk, page_start, page_end, project_name=None, prompt_m
     system_prompt = prompt_manager.get_system_prompt()
     user_prompt = prompt_manager.get_user_prompt()
 
-    raw_response, status_code = make_openai_api_call(api_key="your_api_key", system_prompt=system_prompt, user_prompt=user_prompt)
+    raw_response, status_code = make_openai_api_call(system_prompt=system_prompt, user_prompt=user_prompt)
       
     
     if status_code != 200:
@@ -148,7 +148,7 @@ def prepare_payload(pdf_chunk, page_start, page_end, project_name=None, prompt_m
 
 
 
-def make_openai_api_call(api_key, system_prompt, user_prompt):
+def make_openai_api_call(system_prompt, user_prompt):
     """
     Makes the actual API call to OpenAI and returns the response.
     """
