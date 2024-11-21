@@ -175,8 +175,8 @@ const feesKeyTermsTable = new Tabulator("#feesKeyTermsTable", {
 const seedTermsTable = new Tabulator("#seedTermsTable", {
     layout: "fitData",  // Fit columns to width of table
     columns: [
-        { title: "Target Seed Investment", field: "expense_name", editor: "input" },
-		{ title: "Initial Seed Investment", field: "expense_name", editor: "input" },
+        { title: "Target Seed Investment", field: "target_seed_investment", editor: "input" },
+		{ title: "Initial Seed Investment", field: "initial_seed_investment", editor: "input" },
         { title: "Seed Fundraising Timeline", field: "fundraising_date", editor: "number" },
         { title: "Revenue Share", field: "revenue_share", editor: "input" },
         { title: "Revenus Share Cap", field: "revenue_share_cap", editor: "input" },
@@ -213,6 +213,69 @@ const seedTermsTable = new Tabulator("#seedTermsTable", {
     ]
 });
 
+// Initialize Tabulator table for Deal History data
+const dealHistoryTable = new Tabulator("#dealHistoryTable", {
+    layout: "fitData",  // Fit columns to width of table
+    columns: [
+        { title: "Date", field: "date", editor: "input" },
+        { title: "Firm", field: "firm", editor: "input" },
+        { title: "Amount", field: "amount", editor: "input" },
+        { title: "Realized", field: "realized", editor: "input" },
+        { title: "Syndicate Partners", field: "syndicate_partners", editor: "input" },
+        {
+            title: "", 
+            formatter: function() {
+                return "<button class='delete-btn'>X</button>";  // Apply the custom class
+            },
+            width: 80,  // Adjust width to make it proportional
+            hozAlign: "center",  // Center the button in the cell
+            cellClick: function(e, cell) {
+                cell.getRow().delete();  // Delete the row when clicked
+                dealHistoryTable.redraw();  // Force redraw in case of layout issues
+            }
+        }
+    ]
+});
+
+// Initialize Tabulator table for Service Providers data
+const serviceProvidersTable = new Tabulator("#serviceProvidersTable", {
+    layout: "fitData",  // Fit columns to width of table
+    columns: [
+        { title: "Service Type", field: "service_type", editor: "input" },
+        { title: "Firm Name", field: "firm_name", editor: "input" },
+        {
+            title: "Source", 
+            field: "source_string",  // Use source_string as the base field
+            formatter: function(cell, formatterParams) {
+                // Get the source_string and source_link from the row data
+                let sourceString = cell.getValue();  // source_string
+                let sourceLink = cell.getRow().getData().source_link;  // source_link
+                
+                // If both source_string and source_link exist, return a clickable link
+                if (sourceLink) {
+                    return `<a href="${sourceLink}" target="_blank">${sourceString}</a>`;
+                } else {
+                    return sourceString;  // Return just the source_string if no link is provided
+                }
+            },
+            editor: "input"  // Allow editing if needed
+        },
+        {
+            title: "", 
+            formatter: function() {
+                return "<button class='delete-btn'>X</button>";  // Apply the custom class
+            },
+            width: 80,  // Adjust width to make it proportional
+            hozAlign: "center",  // Center the button in the cell
+            cellClick: function(e, cell) {
+                cell.getRow().delete();  // Delete the row when clicked
+                serviceProvidersTable.redraw();  // Force redraw in case of layout issues
+            }
+        }
+    ]
+});
+
+
 
 
 // Function to adjust table height based on visible rows
@@ -232,12 +295,13 @@ function adjustTableHeight(table) {
 
 // Load table data from backend
 refreshTables();
-
 function refreshTables(){
 	loadTableData("fundamentals", fundamentalsTable);
 	loadTableData("seedTerms", seedTermsTable);
 	loadTableData("feesKeyTerms", feesKeyTermsTable);
 	loadTableData("investmentTeam", investmentTeamTable);
+	loadTableData("dealHistory", dealHistoryTable);
+	loadTableData("serviceProviders", serviceProvidersTable);
 }
 
 // Function to load table data from the backend with conditional logic based on tableIdentifier
@@ -402,6 +466,14 @@ document.getElementById('fundamentalsAIButton').addEventListener('click', functi
 
 document.getElementById('investmentTeamTable').addEventListener('click', function() {
     preparePayload('investmentTeamTable');
+});
+
+document.getElementById('dealHistoryAIButton').addEventListener('click', function() {
+    preparePayload('dealHistoryTable');
+});
+
+document.getElementById('serviceProvidersAIButton').addEventListener('click', function() {
+    preparePayload('serviceProvidersTable');
 });
 
 // Call this function after uploading a PDF successfully

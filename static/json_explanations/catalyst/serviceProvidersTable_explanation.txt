@@ -1,0 +1,18 @@
+Description: The Service Providers table tracks key service providers and vendors that support the firm's operations, including legal counsel, auditors, fund administrators, and other professional service firms.
+
+Structure Explanation:
+
+service_type (String): The type of service provided (e.g., "Legal Counsel", "Fund Administrator", "Auditor").
+firm_name (String): Name of the service provider firm.
+source_string (String): Description or source title for validation.
+source_link (String): URL linking to source documentation.
+
+Example Structure:
+[{
+    "service_type": "Placeholder Service",
+    "firm_name": "Placeholder Firm", 
+    "source_string": "Placeholder Source",
+    "source_link": "https://example.com"
+}]
+
+Note: The AI should return data in exactly this structure, with all fields populated according to the specifications above.

@@ -30,13 +30,10 @@ class BusinessEntity:
         # Load data from JSON files
         self.sales_recipes = load_json_file("revenue")
         self.ingredients_list = load_json_file("purchases")
-        print(self.ingredients_list)
         self.operating_expenses = load_json_file("opex")
         self.capex_items = load_json_file("capex")
-        print(self.capex_items)
         self.employees = load_json_file("employees")
         self.financials = load_json_file("financials")
-        print(self.financials)
         self.comparables_valuation = load_json_file("comparables")
 
 
@@ -46,9 +43,11 @@ class BusinessEntity:
         
         #CATALYST Loads
         self.fundamentals = load_json_file("fundamentals")
-        self.investment_team = load_json_file("investmentTeam")
+        self.investment_team = load_json_file("investmentTeam") 
         self.seed_terms = load_json_file("seedTerms")
         self.fees_key_terms = load_json_file("feesKeyTerms")
+        self.deal_history = load_json_file("dealHistory")
+        self.service_providers = load_json_file("serviceProviders")
         
     def create_missing_ingredient(self, ingredient_id):
         """Create an Ingredient instance for a missing ingredient and add it to the dictionary."""

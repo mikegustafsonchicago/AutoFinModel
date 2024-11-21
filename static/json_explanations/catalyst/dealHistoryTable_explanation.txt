@@ -1,0 +1,24 @@
+Description: The Deal History table tracks the firm's investment history, including details about portfolio companies, investment amounts, realization status, and co-investment partners.
+
+Structure Explanation:
+
+date (String): The date when the investment was made.
+firm (String): Name of the portfolio company or investment target.
+amount (String): Investment amount deployed by the firm.
+realized (String): Whether the investment has been realized/exited ("Yes"/"No").
+syndicate_partners (String): Names of co-investors or syndicate partners in the deal.
+source_string (String): Description or source title for validation.
+source_link (String): URL linking to source documentation.
+
+Example Structure:
+[{
+    "date": "Placeholder Date",
+    "firm": "Placeholder Firm",
+    "amount": "$0",
+    "realized": "No",
+    "syndicate_partners": "Placeholder Partners",
+    "source_string": "Placeholder Source",
+    "source_link": "https://example.com"
+}]
+
+Note: The AI should return data in exactly this structure, with all fields populated according to the specifications above.

@@ -47,7 +47,7 @@ class PromptBuilder:
         
         # Step 2: Add table structure info and data for update tables
         for table_name, data in update_tables.items():
-            json_explanation = load_json_explanation(table_name)
+            json_explanation = load_json_explanation(table_name, self.project_name)
             self.table_data += f"\n\n--- {table_name} Structure Information ---\n{json_explanation}"
             formatted_table_data = json.dumps(data, indent=2)
             self.table_data += f"\n\n--- Current {table_name} Data ---\n{formatted_table_data}"
@@ -55,7 +55,7 @@ class PromptBuilder:
         # Step 3: Add context tables if provided
         if context_tables:
             for table_name, data in context_tables.items():
-                json_explanation = load_json_explanation(table_name)
+                json_explanation = load_json_explanation(table_name, self.project_name)
                 self.table_data += f"\n\n--- Context for {table_name} ---\n{json_explanation}"
                 formatted_table_data = json.dumps(data, indent=2)
                 self.table_data += f"\n\n--- Context {table_name} Data ---\n{formatted_table_data}"
@@ -187,7 +187,7 @@ class PromptBuilder:
         
         # Step 2: Add table structure info and data for update tables
         for table_name, data in update_tables.items():
-            json_explanation = load_json_explanation(table_name)
+            json_explanation = load_json_explanation(table_name, self.project_name)
             self.table_data += f"\n\n--- {table_name} Structure Information ---\n{json_explanation}"
             formatted_table_data = json.dumps(data, indent=2)
             self.table_data += f"\n\n--- Current {table_name} Data ---\n{formatted_table_data}"
@@ -195,7 +195,7 @@ class PromptBuilder:
         # Step 3: Add context tables if provided
         if context_tables:
             for table_name, data in context_tables.items():
-                json_explanation = load_json_explanation(table_name)
+                json_explanation = load_json_explanation(table_name, self.project_name)
                 self.table_data += f"\n\n--- Context for {table_name} ---\n{json_explanation}"
                 formatted_table_data = json.dumps(data, indent=2)
                 self.table_data += f"\n\n--- Context {table_name} Data ---\n{formatted_table_data}"

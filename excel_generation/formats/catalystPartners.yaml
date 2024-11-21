@@ -12,9 +12,10 @@ plain_right:
 size_eight:
   font_size: 8
 
-size_eighteen_bold:
+bold_page_header:
   font_size: 18
   bold: true
+  bottom: 1
 
 number:
   num_format: "0"
@@ -123,6 +124,35 @@ section_header:
   font_name: "Arial"
   font_color: "FFFFFF"
   bg_color: "0F2749"
+ 
+section_header_wrap:
+  bold: true
+  font_size: 14
+  font_name: "Arial"
+  font_color: "FFFFFF"
+  bg_color: "0F2749"
+  text_wrap: true
+
+section_header_small:
+  bold: true
+  font_size: 10
+  font_name: "Arial"
+  font_color: "FFFFFF"
+  bg_color: "0F2749"
+
+section_header_small_wrap:
+  bold: true
+  font_size: 10
+  font_name: "Arial"
+  font_color: "FFFFFF"
+  bg_color: "0F2749"
+  text_wrap: true
+  align: center
+
+unknown_value:
+  font_color: "000000" # Black text for better readability
+  bg_color: "FFC00D" #  yellow background
+  italic: true
 
 paragraph_header:
   bold: true

@@ -30,13 +30,15 @@ TABLE_MAPPING = {
         "fundamentalsTable": "fundamentals",
         "investmentTeamTable": "investment_team",
         "feesKeyTermsTable": "fees_key_terms",
-        "seedTermsTable": "seed_terms"
+        "seedTermsTable": "seed_terms",
+        "serviceProvidersTable": "service_providers",
+        "dealHistoryTable": "deal_history"
     }
 }
 
 
 
-EXPLANATION_FILES_DIR = os.path.join(os.getcwd(), "static", "json_explanations", "fin_model")
+EXPLANATION_FILES_DIR = os.path.join(os.getcwd(), "static", "json_explanations")
 RUNNING_SUMMARY_DIR = os.path.join(os.getcwd(), "temp_business_data")
 PROMPT_DIR = os.path.join(os.getcwd(), "static", "prompts")
 

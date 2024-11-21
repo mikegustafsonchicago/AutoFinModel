@@ -12,9 +12,8 @@ from datetime import datetime
 
 from config import TABLE_MAPPING, EXPLANATION_FILES_DIR
 
-# Add the static folder to the system path
-sys.path.append(os.path.join(os.path.dirname(__file__), 'excel_generation'))
-from ingredients_code import Ingredient
+
+from excel_generation.ingredients_code import Ingredient
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG,  # Set level to DEBUG for maximum output
@@ -271,26 +270,49 @@ CATALYST_FILES_AND_STRUCTURES = {
             "source_string": "Placeholder Source",
             "source_link": "https://example.com"
         }
+    ],
+    "deal_history.json": [
+        {
+            "date": "Placeholder Date",
+            "firm": "Placeholder Firm",
+            "amount": "$0",
+            "realized": "No",
+            "syndicate_partners": "Placeholder Partners",
+            "source_string": "Placeholder Source",
+            "source_link": "https://example.com"
+        }
+    ],
+    "service_providers.json": [
+        {
+            "service_type": "Placeholder Service",
+            "firm_name": "Placeholder Firm",
+            "source_string": "Placeholder Source", 
+            "source_link": "https://example.com"
+        }
     ]
 }
 
 
 
-# Function to initialize JSON files with placeholders for a new project
 def initialize_json_files(project_name):
-    logging.debug(f"Project name is {project_name}")
     if project_name == "catalyst":
         files_and_structures = CATALYST_FILES_AND_STRUCTURES
     else:
-        files_and_structures = FILES_AND_STRUCTURES  # Default to financial model placeholders
+        files_and_structures = FILES_AND_STRUCTURES
+    
+    # Create JSON_FOLDER if it doesn't exist
+    os.makedirs(JSON_FOLDER, exist_ok=True)
     
     for table_name, default_content in files_and_structures.items():
         file_path = os.path.join(JSON_FOLDER, table_name)
-        if os.path.exists(JSON_FOLDER):
+        # Create parent directories if they don't exist
+        os.makedirs(os.path.dirname(file_path), exist_ok=True)
+        
+        try:
             with open(file_path, 'w') as json_file:
                 json.dump(default_content, json_file, indent=4)
-        else:
-            logging.info(f"Error: File path for {table_name} not found. \n attempted {file_path}")
+        except Exception as e:
+            logging.error(f"Failed to create {file_path}: {e}")
 
 
 
@@ -311,8 +333,9 @@ def load_table_json(table_identifier, project_name="financial"):
             "fundamentals": "fundamentals.json",
             "investmentTeam": "investment_team.json",   # Updated to match "investmentTeam"
             "feesKeyTerms": "fees_key_terms.json",      # Updated to match "feesKeyTerms"
-            "seedTerms": "seed_terms.json"              # Updated to match "seedTerms"
-            
+            "seedTerms": "seed_terms.json",             # Updated to match "seedTerms"
+            "dealHistory": "deal_history.json",         # Added for deal history table
+            "serviceProviders": "service_providers.json" # Added for service providers table
         }
     else:
         # Financial model-specific file paths (default)
@@ -346,23 +369,56 @@ def load_table_json(table_identifier, project_name="financial"):
 
     
     
-def load_json_explanation(table_name):
+def load_json_explanation(table_name, project_name):
     """
     Load the explanation text for the given table name using EXPLANATION_FILES_DIR.
-    The file name is constructed as "<table_name>_explanation.txt".
+    The file name is constructed based on project-specific mappings.
+    
+    :param table_name: The identifier of the table to load explanation for
+    :param project_name: The project name to determine which explanation to load (default is "financial")
+    :return: The explanation text for the specified table
     """
-    # Construct the file path for the explanation file
-    explanation_file = os.path.join(EXPLANATION_FILES_DIR, f"{table_name}_explanation.txt")
+    # Determine explanation file paths based on the project name and table identifier
+    if project_name == "catalyst":
+        explanation_mapping = {
+            "feesKeyTermsTable": "feesKeyTermsTable_explanation.txt",
+            "fundamentalsTable": "fundamentalsTable_explanation.txt", 
+            "investmentTeamTable": "investmentTeamTable_explanation.txt",
+            "seedTermsTable": "seedTermsTable_explanation.txt",
+            "dealHistoryTable": "dealHistoryTable_explanation.txt",
+            "serviceProvidersTable": "serviceProvidersTable_explanation.txt"
+        }
+        project_folder = "catalyst"
+    else:
+        explanation_mapping = {
+            "revenue": "recipes_explanation.txt",
+            "purchases": "ingredients_explanation.txt", 
+            "CAPEX": "capex_explanation.txt",
+            "OPEX": "opex_explanation.txt",
+            "employees": "employees_explanation.txt",
+            "comparables": "comparables_explanation.txt",
+            "financials": "financials_explanation.txt",
+            "historicalIS": "hist_IS_explanation.txt"
+        }
+        project_folder = "fin_model"
+    # Get the explanation file name based on table name
+    explanation_file = explanation_mapping.get(table_name)
+    if not explanation_file:
+        logging.error(f"No explanation mapping found for table: {table_name}")
+        return "No explanation available."
+
+    # Construct the full file path including project subfolder
+    file_path = os.path.join(EXPLANATION_FILES_DIR, project_folder, explanation_file)
     
     try:
-        with open(explanation_file, 'r') as file:
+        with open(file_path, 'r') as file:
             explanation_text = file.read()
             return explanation_text
     except FileNotFoundError:
-        logging.error(f"Explanation file for {table_name} not found at {explanation_file}")
+        logging.error(f"Explanation file not found at path: {file_path}")
         return "No explanation available."
     except Exception as e:
-        logging.error(f"Error reading explanation file for {table_name}: {e}")
+        logging.error(f"Error reading explanation file: {e}")
         return "No explanation available."
 
     
@@ -458,7 +514,9 @@ def load_json_file(file_name):
         "fundamentals": "fundamentals.json",
         "investmentTeam": "investment_team.json",   # Updated to match "investmentTeam"
         "feesKeyTerms": "fees_key_terms.json",      # Updated to match "feesKeyTerms"
-        "seedTerms": "seed_terms.json"              # Updated to match "seedTerms"
+        "seedTerms": "seed_terms.json",             # Updated to match "seedTerms"
+        "dealHistory": "deal_history.json",         # Added for deal history table
+        "serviceProviders": "service_providers.json" # Added for service providers table
     }
     current_directory = os.getcwd()
     save_directory = os.path.join(current_directory, 'temp_business_data')
@@ -476,10 +534,10 @@ def load_json_file(file_name):
         print(f"Error parsing seed terms JSON: {e}")
         return None
     
-    if file_name in ["seedTerms", "feesKeyTerms", "fundamentals", "financials", "comparables"]:
+    if file_name in ["fundamentals", "financials", "comparables", "investmentTeam", "dealHistory", "serviceProviders"]:
         return data
-    elif file_name in ["investmentTeam"]:
-        return data['members']  # Store the entire list as investment team
+    elif file_name in ["seedTerms", "feesKeyTerms"]:
+        return data[0] #List with one dictionary
     elif file_name in ["revenue"]:
         return data['recipes']
     elif file_name in ["opex", "capex"]:

@@ -1,22 +1,26 @@
-Seed Terms Table Explanation
-Description: The Seed Terms table lists the firm’s terms and expenses associated with early-stage or seed investments, including frequency and related notes.
+Description: The Seed Terms table captures key information about a firm's seed investment strategy, including target investment sizes, revenue sharing terms, and fundraising timelines.
 
 Structure Explanation:
 
-expense_name (String): Name or type of expense related to seed investment terms.
-amount (Number): Dollar amount allocated to each expense.
-frequency (String): Frequency with which this expense occurs (e.g., "Monthly", "Annually").
-notes (String): Additional notes regarding the expense, if any.
-source_string (String): Description or summary of the information source.
-source_link (String): URL linking to the source document.
-Seed Terms Table Explanation
-Description: The Seed Terms table lists the firm’s terms and expenses associated with early-stage or seed investments, including frequency and related notes.
+target_seed_investment (String): Target seed investment amount or range that the firm typically deploys.
+initial_seed_investment (String): Initial seed investment amount that the firm provides upfront.
+fundraising_date (String): Expected timeline or date for the seed fundraising round.
+revenue_share (String): Percentage of revenue shared with the firm, if applicable.
+revenue_share_cap (String): Maximum cap on revenue sharing, expressed as a multiple.
+revenue_share_tail (String): Residual revenue share percentage after reaching the cap.
+source_string (String): Description or source title for validation.
+source_link (String): URL linking to source documentation.
 
-Structure Explanation:
+Example Structure:
+[{
+    "target_seed_investment": "Target Seed Investment Placeholder",
+    "initial_seed_investment": "Initial Seed Investment Placeholder", 
+    "fundraising_date": "Placeholder Date",
+    "revenue_share": "0%",
+    "revenue_share_cap": "0.0x",
+    "revenue_share_tail": "0%",
+    "source_string": "Placeholder Source",
+    "source_link": "https://example.com"
+}]
 
-expense_name (String): Name or type of expense related to seed investment terms.
-amount (Number): Dollar amount allocated to each expense.
-frequency (String): Frequency with which this expense occurs (e.g., "Monthly", "Annually").
-notes (String): Additional notes regarding the expense, if any.
-source_string (String): Description or summary of the information source.
-source_link (String): URL linking to the source document.
+Note: The AI should return data in exactly this structure, with all fields populated according to the specifications above.[]

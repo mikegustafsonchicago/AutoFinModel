@@ -1,5 +1,4 @@
-Fees and Key Terms Table Explanation
-Description: The Fees and Key Terms table outlines the fee structure and key terms associated with the firm’s fund or investment program, providing critical information for potential investors.
+Description: The Fees and Key Terms table outlines the fee structure and key terms associated with the firm's fund or investment program, providing critical information for potential investors.
 
 Structure Explanation:
 
@@ -8,25 +7,26 @@ target_fundraise (String): The target amount the firm aims to raise for its fund
 management_fee (String): The percentage charged as a management fee by the firm (e.g., "2%").
 carried_interest (String): The percentage of profits shared with the firm as carried interest (e.g., "20%").
 preferred_return (String): The minimum return rate offered to investors before the firm receives carried interest.
-investment_period (String): Duration of the firm’s investment period, typically in years.
+investment_period (String): Duration of the firm's investment period, typically in years.
 fund_term (String): Total term of the fund, usually including investment and divestment phases.
 GP_commitment (String): The percentage committed by the General Partner in the fund (e.g., "5%").
-GP_commitment_funding_source (String): Source of the General Partner’s commitment (e.g., "Capital reserves").
+GP_commitment_source (String): Source of the General Partner's commitment (e.g., "Capital reserves").
 source_string (String): Summary of the information source.
 source_link (String): URL linking to the source document.
-Fees and Key Terms Table Explanation
-Description: The Fees and Key Terms table outlines the fee structure and key terms associated with the firm’s fund or investment program, providing critical information for potential investors.
 
-Structure Explanation:
+Example Structure:
+[{
+    "currency": "USD",
+    "target_fundraise": "100M",
+    "management_fee": "2%",
+    "carried_interest": "20%",
+    "preferred_return": "8%",
+    "investment_period": "5 years",
+    "fund_term": "10 years",
+    "GP_commitment": "5%",
+    "GP_commitment_source": "Capital reserves",
+    "source_string": "Placeholder Source",
+    "source_link": "https://example.com"
+}]
 
-currency (String): The currency in which the firm operates or raises funds (e.g., "USD").
-target_fundraise (String): The target amount the firm aims to raise for its fund.
-management_fee (String): The percentage charged as a management fee by the firm (e.g., "2%").
-carried_interest (String): The percentage of profits shared with the firm as carried interest (e.g., "20%").
-preferred_return (String): The minimum return rate offered to investors before the firm receives carried interest.
-investment_period (String): Duration of the firm’s investment period, typically in years.
-fund_term (String): Total term of the fund, usually including investment and divestment phases.
-GP_commitment (String): The percentage committed by the General Partner in the fund (e.g., "5%").
-GP_commitment_funding_source (String): Source of the General Partner’s commitment (e.g., "Capital reserves").
-source_string (String): Summary of the information source.
-source_link (String): URL linking to the source document.
+Note: The AI should return data in exactly this structure, with all fields populated according to the specifications above.

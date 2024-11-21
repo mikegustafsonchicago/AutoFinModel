@@ -1,0 +1,186 @@
+### TEXT START ###
+
+The JSON output contains updates for several evaluation tables related to Cross Rapids Capital based on the provided PitchBook report. Key updates include the fundamentals of the firm, elaborating on the investment team structure, fees, seed terms, service providers, and their deal history. Details such as the firm's founding year, management team, investment strategies, and service providers are compiled into structured data. This is essential to generate a comprehensive overview of the firm's operations and strategies. The provided information has been primarily sourced from the PitchBook report dated 08-Nov-2024. If any fields contain "-Not Provided-", it indicates missing information from the source document. A URL was not provided in the source for most entries. 
+
+### TEXT END ###
+
+---JSON START---
+{
+  "fundamentalsTable": [
+    {
+      "firm_name": "Cross Rapids Capital",
+      "founded_year": 2020,
+      "primary_office": "New York, NY, United States",
+      "ownership_structure": "Private Equity",
+      "total_employees": 6,
+      "diversity_status": "-Not Provided-",
+      "website": "www.crossrapids.com",
+      "source_string": "PitchBook Profile for Cross Rapids Capital",
+      "source_link": "-Not Provided-"
+    }
+  ],
+  "investmentTeamTable": [
+    {
+      "investment_team_member_name": "Kyle Cruz",
+      "investment_team_member_title": "Managing Partner & Co-Founder",
+      "investment_team_member_join_date": null,
+      "source_string": "PitchBook Profile for Cross Rapids Capital",
+      "source_link": "-Not Provided-"
+    },
+    {
+      "investment_team_member_name": "Mina Spring",
+      "investment_team_member_title": "Partner, Co-Founder & Board Member",
+      "investment_team_member_join_date": null,
+      "source_string": "PitchBook Profile for Cross Rapids Capital",
+      "source_link": "-Not Provided-"
+    },
+    {
+      "investment_team_member_name": "Mark Feirman",
+      "investment_team_member_title": "Chief Financial Officer & Partner",
+      "investment_team_member_join_date": null,
+      "source_string": "PitchBook Profile for Cross Rapids Capital",
+      "source_link": "-Not Provided-"
+    },
+    {
+      "investment_team_member_name": "Ricardo Perez",
+      "investment_team_member_title": "Managing Director",
+      "investment_team_member_join_date": null,
+      "source_string": "PitchBook Profile for Cross Rapids Capital",
+      "source_link": "-Not Provided-"
+    },
+    {
+      "investment_team_member_name": "Benjamin Gaw",
+      "investment_team_member_title": "Partner & Co-Founder & Jr. Head of Portfolio Operations",
+      "investment_team_member_join_date": null,
+      "source_string": "PitchBook Profile for Cross Rapids Capital",
+      "source_link": "-Not Provided-"
+    },
+    {
+      "investment_team_member_name": "Andrew Friedman",
+      "investment_team_member_title": "Vice President",
+      "investment_team_member_join_date": null,
+      "source_string": "PitchBook Profile for Cross Rapids Capital",
+      "source_link": "-Not Provided-"
+    }
+  ],
+  "feesKeyTermsTable": [
+    {
+      "currency": "USD",
+      "target_fundraise": "125M",
+      "management_fee": "-Not Provided-",
+      "carried_interest": "-Not Provided-",
+      "preferred_return": "-Not Provided-",
+      "investment_period": "-Not Provided-",
+      "fund_term": "-Not Provided-",
+      "GP_commitment": "3%",
+      "GP_commitment_source": "Funded in cash",
+      "source_string": "PitchBook Profile for Cross Rapids Capital",
+      "source_link": "-Not Provided-"
+    }
+  ],
+  "seedTermsTable": [
+    {
+      "target_seed_investment": "-Not Provided-",
+      "initial_seed_investment": "-Not Provided-",
+      "fundraising_date": "-Not Provided-",
+      "revenue_share": "-Not Provided-",
+      "revenue_share_cap": "-Not Provided-",
+      "revenue_share_tail": "-Not Provided-",
+      "source_string": "PitchBook Profile for Cross Rapids Capital",
+      "source_link": "-Not Provided-"
+    }
+  ],
+  "serviceProvidersTable": [
+    {
+      "service_type": "Legal Advisor",
+      "firm_name": "Mayer Brown",
+      "source_string": "PitchBook Profile for Cross Rapids Capital",
+      "source_link": "-Not Provided-"
+    },
+    {
+      "service_type": "Legal Advisor",
+      "firm_name": "Kirkland & Ellis",
+      "source_string": "PitchBook Profile for Cross Rapids Capital",
+      "source_link": "-Not Provided-"
+    },
+    {
+      "service_type": "Fund Administrator",
+      "firm_name": "Apex Group",
+      "source_string": "PitchBook Profile for Cross Rapids Capital",
+      "source_link": "-Not Provided-"
+    },
+    {
+      "service_type": "Custodian",
+      "firm_name": "Citizens Financial Group",
+      "source_string": "PitchBook Profile for Cross Rapids Capital",
+      "source_link": "-Not Provided-"
+    },
+    {
+      "service_type": "Placement Agent",
+      "firm_name": "Raymond James Financial",
+      "source_string": "PitchBook Profile for Cross Rapids Capital",
+      "source_link": "-Not Provided-"
+    }
+  ],
+  "dealHistoryTable": [
+    {
+      "date": "01-Feb-2024",
+      "firm": "G.O. Fresh",
+      "amount": "-Not Provided-",
+      "realized": "Yes",
+      "syndicate_partners": "Maranon Capital, The Baupost Group, Wholesale Produce Supply",
+      "source_string": "PitchBook Profile for Cross Rapids Capital",
+      "source_link": "-Not Provided-"
+    },
+    {
+      "date": "28-Dec-2023",
+      "firm": "PAK Quality Foods",
+      "amount": "-Not Provided-",
+      "realized": "Yes",
+      "syndicate_partners": "Farol Asset Management, Maranon Capital",
+      "source_string": "PitchBook Profile for Cross Rapids Capital",
+      "source_link": "-Not Provided-"
+    },
+    {
+      "date": "23-May-2023",
+      "firm": "Worley (North American Maintenance and Turnaround Business)",
+      "amount": "$125.00M",
+      "realized": "Yes",
+      "syndicate_partners": "The Baupost Group",
+      "source_string": "PitchBook Profile for Cross Rapids Capital",
+      "source_link": "-Not Provided-"
+    },
+    {
+      "date": "30-Dec-2022",
+      "firm": "Bandwagon Brokerage",
+      "amount": "-Not Provided-",
+      "realized": "Yes",
+      "syndicate_partners": "Maranon Capital, The Baupost Group, Wholesale Produce Supply",
+      "source_string": "PitchBook Profile for Cross Rapids Capital",
+      "source_link": "-Not Provided-"
+    },
+    {
+      "date": "29-Oct-2021",
+      "firm": "Wholesale Produce Supply",
+      "amount": "-Not Provided-",
+      "realized": "Yes",
+      "syndicate_partners": "The Baupost Group",
+      "source_string": "PitchBook Profile for Cross Rapids Capital",
+      "source_link": "-Not Provided-"
+    },
+    {
+      "date": "01-Jan-2023",
+      "firm": "CAM Industrial Solutions",
+      "amount": "-Not Provided-",
+      "realized": "Yes",
+      "syndicate_partners": "The Baupost Group",
+      "source_string": "PitchBook Profile for Cross Rapids Capital",
+      "source_link": "-Not Provided-"
+    }
+  ]
+}
+---JSON END---
+
+### SUMMARY START ###
+This project involves compiling detailed evaluation tables for Cross Rapids Capital, a private equity firm. Based on a PitchBook report, data includes the firm's name, location, founding year, investment team, fee structure, operational terms, service providers, and deal history. Key aspects are their New York location, $125 million target fundraising, management structure with partners like Kyle Cruz and Mina Spring, and specific deal details with companies like G.O. Fresh. While cross-referencing and thorough documentation were utilized, some fields required a placeholder "-Not Provided-" due to missing detailed data in the source material. Importantly, no specific URL links were provided in the source materials. Essential insights from the report are organized into JSON to maintain clarity and accessibility. 
+### SUMMARY END ###

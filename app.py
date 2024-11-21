@@ -9,7 +9,7 @@ from datetime import datetime, timedelta
 from config import UPLOAD_FOLDER
 
 from prompt_builder import PromptBuilder
-from catalyst_partners_page import make_catalyst_summary
+from excel_generation.catalyst_partners_page import make_catalyst_summary
 
 
 
