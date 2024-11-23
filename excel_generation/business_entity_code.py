@@ -5,12 +5,13 @@ Created on Fri Sep 20 10:02:46 2024
 @author: mikeg
 """
 import sys
+from datetime import datetime
 from ingredients_code import Ingredient
 import json
 import os
 from pathlib import Path
 sys.path.append(str(Path(__file__).parent.parent))
-from json_manager import load_json_file
+from json_manager import JsonManager
 
 class BusinessEntity:
     def __init__(self):
@@ -27,27 +28,34 @@ class BusinessEntity:
         os.path.join(base_dir, 'sample_jsons') + "/"
         self.path = os.path.join(base_dir, 'temp_business_data') + "/"
        
+        # Initialize JsonManager
+        self.json_manager = JsonManager()
+        
         # Load data from JSON files
-        self.sales_recipes = load_json_file("revenue")
-        self.ingredients_list = load_json_file("purchases")
-        self.operating_expenses = load_json_file("opex")
-        self.capex_items = load_json_file("capex")
-        self.employees = load_json_file("employees")
-        self.financials = load_json_file("financials")
-        self.comparables_valuation = load_json_file("comparables")
-
-
+        self.sales_recipes = self.json_manager.load_json_data("revenue")
+        self.cost_of_sales_items = self.json_manager.load_json_data("cost_of_sales") 
+        self.operating_expenses = self.json_manager.load_json_data("operating_expenses")
+        self.capex_items = self.json_manager.load_json_data("capital_expenditures")
+        self.employees = self.json_manager.load_json_data("employees")
+        self.hist_IS = self.json_manager.load_json_data("historical_financials")
+        self.comparables_valuation = self.json_manager.load_json_data("comparable_companies")
         self.placeholder_value = "9.99"
-        self.start_year=1998
+        # Get earliest year from historical financials, default to current year if no data
+        
+        if self.hist_IS:
+            years = [entry["year"] for entry in self.hist_IS]
+            self.start_year = min(years) if years else datetime.now().year
+        else:
+            self.start_year = datetime.now().year
         
         
         #CATALYST Loads
-        self.fundamentals = load_json_file("fundamentals")
-        self.investment_team = load_json_file("investmentTeam") 
-        self.seed_terms = load_json_file("seedTerms")
-        self.fees_key_terms = load_json_file("feesKeyTerms")
-        self.deal_history = load_json_file("dealHistory")
-        self.service_providers = load_json_file("serviceProviders")
+        self.fundamentals = self.json_manager.load_json_data("fundamentals", project_name="catalyst")
+        self.investment_team = self.json_manager.load_json_data("investment_team", project_name="catalyst")
+        self.seed_terms = self.json_manager.load_json_data("seed_terms", project_name="catalyst") 
+        self.fees_key_terms = self.json_manager.load_json_data("fees_key_terms", project_name="catalyst")
+        self.deal_history = self.json_manager.load_json_data("deal_history", project_name="catalyst")
+        self.service_providers = self.json_manager.load_json_data("service_providers", project_name="catalyst")
         
     def create_missing_ingredient(self, ingredient_id):
         """Create an Ingredient instance for a missing ingredient and add it to the dictionary."""
@@ -77,9 +85,3 @@ class BusinessEntity:
         unique_id = self.unique_ingredient_id_counter
         self.unique_ingredient_id_counter += 1
         return unique_id
-    
-    
-    
-       
-
-        

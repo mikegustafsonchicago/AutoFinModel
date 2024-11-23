@@ -219,7 +219,7 @@ class RollOutPage:
         self.cell_manager = cell_manager
         self.business_object = business_object
         self.num_forecasted_years=self.workbook_manager.num_forecasted_years
-        self.num_hist_years = len(self.business_object.financials)
+        self.num_hist_years = len(self.business_object.hist_IS) if self.business_object.hist_IS else 0
        
         #Set start columns
         self.annual_hist_start=3

@@ -3,7 +3,7 @@ import logging
 import os
 import api_processing
 from excel_generation.auto_financial_modeling import generate_excel_model
-from json_manager import load_table_json
+from json_manager import JsonManager
 from file_manager import initialize_session_files
 from datetime import datetime, timedelta
 from config import UPLOAD_FOLDER
@@ -29,7 +29,9 @@ current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')  # Format the curren
 logging.debug(f"\n\n\n------Website Refresh at {current_time}---------\n-----------------------------------------------------\n")
 
 # Initialize prompt_manager as a global variable, but defer assignment
+global prompt_manager, json_manager  # Add json_manager to global declaration
 prompt_manager = None
+json_manager = JsonManager()
 
 
 
@@ -41,7 +43,7 @@ def landing():
 @app.route('/app')
 def application():
     project_name = "financial"
-    initialize_session_files(project_name)
+    initialize_session_files(project_name, json_manager)
     return render_template('index.html', title="Application")
 
 @app.route('/catalyst')
@@ -59,6 +61,19 @@ def set_data():
     
     return 'Session data has been set for this user.'
 
+
+@app.route('/api/schema/<table_name>')
+def get_table_schema(table_name):
+    try:
+        if table_name in json_manager.FILES_AND_STRUCTURES:
+            schema = json_manager.FILES_AND_STRUCTURES[table_name].get('structure')
+            if schema:
+                return jsonify(schema)
+        return jsonify({"error": f"No schema defined for {table_name}"}), 404
+    except Exception as e:
+        return jsonify({"error": f"Error retrieving schema for {table_name}: {str(e)}"}), 500
+    
+    
 
 @app.route('/api/openai', methods=['POST'])
 def call_openai():
@@ -82,7 +97,8 @@ def call_openai():
         user_input=user_prompt,
         update_scope=update_scope,
         pdf_name=pdf_file_name,
-        prompt_manager=prompt_manager
+        prompt_manager=prompt_manager,
+        json_manager=json_manager
     )
     logging.info("\n\n***************END OPENAI API CALL*************************\n\n\n")
     # Send back only the text. JSON gets read from the data files.
@@ -94,29 +110,59 @@ def call_openai():
 # Route to serve table data (CAPEX, OPEX, etc.)
 @app.route('/api/table_data/<project_name>/<table_identifier>', methods=['GET'])
 def get_table_data(project_name, table_identifier):
-    table_data = load_table_json(table_identifier, project_name)
-    return jsonify(table_data)
+    # Get the appropriate file structures based on project
+    files_and_structures = json_manager.CATALYST_FILES_AND_STRUCTURES if project_name == "catalyst" else json_manager.FILES_AND_STRUCTURES
+    
+    # Get the root key from the file structure
+    root_key = files_and_structures[table_identifier]["root_key"] if table_identifier in files_and_structures else None
+    
+    # Load the table data
+    table_data = json_manager.load_json_data(table_identifier, project_name)
+    
+    # Return both the data and root key
+    return jsonify({
+        "data": table_data,
+        "root_key": root_key
+    })
    
 
 @app.route('/download_excel', methods=['GET'])
 def download_excel():
-    project_name = request.args.get('project_name')
-    logging.debug(request)
-    if not project_name:
-        return jsonify({"error": "Project name is required to generate the Excel file"}), 400
-    elif project_name == "financial":
-        download_name = "financial_model.xlsx"
-    elif project_name == "catalyst":
-        download_name = 'Catalyst_Partners_Summary.xlsx'
-
-    # Generate Excel file based on the project_name
-    if project_name == "financial":
-        file_path = generate_excel_model()  # Pass project_name to your Excel generation function
-    elif project_name == "catalyst":
-        file_path = make_catalyst_summary()
-
-    # Serve the file to the frontend
-    return send_file(file_path, as_attachment=True, download_name=download_name)
+    try:
+        project_name = request.args.get('project_name')
+        logging.debug(f"Attempting to generate Excel file for project: {project_name}")
+        
+        if not project_name:
+            logging.error("No project name provided in request")
+            return jsonify({"error": "Project name is required to generate the Excel file"}), 400
+            
+        # Validate project name is one of the expected values
+        if project_name not in ["financial", "catalyst"]:
+            logging.error(f"Invalid project name received: {project_name}")
+            return jsonify({"error": "Invalid project name"}), 400
+            
+        # Generate Excel file
+        logging.info(f"Generating Excel file for {project_name} project")
+        file_path = generate_excel_model() if project_name == "financial" else make_catalyst_summary()
+        
+        # Verify file exists before attempting to send
+        if not os.path.exists(file_path):
+            logging.error(f"Generated Excel file not found at path: {file_path}")
+            return jsonify({"error": "Failed to generate Excel file"}), 500
+            
+        logging.info(f"Successfully generated Excel file at: {file_path}")
+        
+        # Get filename from path
+        filename = os.path.basename(file_path)
+        
+        # Set Content-Disposition header with filename
+        response = send_file(file_path, as_attachment=True)
+        response.headers["Content-Disposition"] = f"attachment; filename={filename}"
+        return response 
+        
+    except Exception as e:
+        logging.error(f"Error generating Excel file: {str(e)}", exc_info=True)
+        return jsonify({"error": f"Failed to generate Excel file: {str(e)}"}), 500
 
 
 # Route to clear and re-initialize the JSON files
@@ -132,7 +178,7 @@ def clear_all_data():
 
     # Log the project name and clear data
     logging.debug(f"Project name is {project_name}")
-    initialize_session_files(project_name)
+    initialize_session_files(project_name, json_manager)
 
     return jsonify({"message": "All data cleared successfully!"}), 200
 
@@ -159,7 +205,7 @@ def get_prompt_manager(project_name):
     global prompt_manager
     if prompt_manager is None or prompt_manager.project_name != project_name:
         logging.debug(f"Initializing prompt_manager for project_name: {project_name}")
-        prompt_manager = PromptBuilder(project_name)
+        prompt_manager = PromptBuilder(project_name, json_manager)
     return prompt_manager
 
 if __name__ == '__main__':

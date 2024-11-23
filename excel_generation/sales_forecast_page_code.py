@@ -32,7 +32,7 @@ class SalesForecastPage:
     def create_annual_sum_from_months_line(self, row, recipe, recipie_feature):
         #Annual forecast
         col=self.annual_start_col
-        self.sales_forecast_sheet.write(row, col-1, recipe['name'])
+        self.sales_forecast_sheet.write(row, col-1, recipe['revenue_source_name'])
         for col in range(2, 2+self.num_forecasted_years):
             formula_string = (f"=sumif($O6:$ZZ6, {number_to_column_letter(col)}6, "
                               f"$O{row + 1}:$ZZ{row + 1})"
@@ -174,7 +174,7 @@ class SalesForecastPage:
     def create_annual_sum_from_months_line(self, row, recipe, recipie_feature):
         #Annual forecast
         col=self.annual_start_col
-        self.sales_forecast_sheet.write(row, col-1, recipe['name'])
+        self.sales_forecast_sheet.write(row, col-1, recipe['revenue_source_name'])
         for col in range(2, 2+self.num_forecasted_years):
             formula_string = (f"=sumif($O6:$ZZ6, {number_to_column_letter(col)}6, "
                               f"$O{row + 1}:$ZZ{row + 1})"
@@ -187,8 +187,8 @@ class SalesForecastPage:
         col=self.monthly_start_col
         for year in range(1, self.num_forecasted_years+1):
             for month in range(1,13):
-                price_reference = self.cell_manager.get_cell_reference("Recipes", recipe['name'], recipie_feature, format_type='cell_ref', absolute_row=True)
-                fraction_reference = self.cell_manager.get_cell_reference("Recipes", recipe['name'], "customer_fraction", format_type='cell_ref', absolute_row=True, absolute_col=True)
+                price_reference = self.cell_manager.get_cell_reference("Revenue COGS Build", "Revenue", "Build", format_type='cell_ref', absolute_row=True)
+                fraction_reference = self.cell_manager.get_cell_reference("Revenue COGS Build", "Revenue", "Build", format_type='cell_ref', absolute_row=True, absolute_col=True)
                 customer_flow_reference=self.cell_manager.get_cell_reference("Customer Flow", 'monthly_visits',  format_type='cell_ref', absolute_row=True, absolute_col=True)
                 formula_string = f"='Customer Flow'!{customer_flow_reference}*'recipes'!{price_reference}*'recipes'!{fraction_reference}"
                 self.workbook_manager.validate_and_write(self.sales_forecast_sheet, row, col, formula_string, format_name="currency_cross") #Write the data

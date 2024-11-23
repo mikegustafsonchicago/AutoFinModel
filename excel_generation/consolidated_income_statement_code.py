@@ -23,7 +23,7 @@ class ConsolidatedIncomeStatement:
         self.cell_manager = cell_manager
         self.business_object = business_object
         self.num_forecasted_years=self.workbook_manager.num_forecasted_years
-        self.num_hist_years = len(self.business_object.financials)
+        self.num_hist_years = len(self.business_object.hist_IS) if self.business_object.hist_IS else 0
        
         #Set start columns
         self.annual_hist_start=4
@@ -66,11 +66,11 @@ class ConsolidatedIncomeStatement:
         #Historical headers
         self.write_to_sheet(row-1, self.annual_hist_start, 'Historical', format_name='bold')
         col = self.annual_hist_start
-        logging.debug(f"Financials are \n\t{self.business_object.financials}")
-        for year_data in self.business_object.financials.keys():
-            ref_year = datetime(int(year_data) ,1 , 1)
-            self.write_to_sheet(row, col, ref_year, format_name='year_format')
-            col+=1
+        if self.business_object.hist_IS and "historical_financials" in self.business_object.hist_IS:
+            for year_data in self.business_object.hist_IS["historical_financials"]:
+                ref_year = datetime(year_data["year"], 1, 1)
+                self.write_to_sheet(row, col, ref_year, format_name='year_format')
+                col+=1
 
     
     def populate_annual_hist_data(self, row, line_name, format_name="plain"):
@@ -255,7 +255,7 @@ class ConsolidatedIncomeStatement:
                 self.create_annual_sum_from_months_line(row)
                 ref_row = self.cell_manager.get_cell_reference("Unit Employees", "salaries", format_type='row')
                 ref_col = self.cell_manager.get_cell_reference("Unit Employees", "salaries", format_type='col')
-                self.create_monthly_referenced_line(row, ref_row, ref_col, "Employees")
+                self.create_monthly_referenced_line(row, ref_row, ref_col, "Unit Employees")
                 self.employee_row=row
                 
             elif line == "EBITDA":

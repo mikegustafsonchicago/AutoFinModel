@@ -10,561 +10,959 @@ import json
 import logging
 from datetime import datetime
 
-from config import TABLE_MAPPING, EXPLANATION_FILES_DIR
-
-
+from config import EXPLANATION_FILES_DIR
 from excel_generation.ingredients_code import Ingredient
 
-# Configure logging
-logging.basicConfig(level=logging.DEBUG,  # Set level to DEBUG for maximum output
-                    format='%(asctime)s - %(levelname)s - %(message)s',
-                    handlers=[logging.StreamHandler()])  # Ensure output goes to the console
+class JsonManager:
+    def __init__(self):
+        # Configure logging
+        logging.basicConfig(level=logging.DEBUG,
+                          format='%(asctime)s - %(levelname)s - %(message)s - %(funcName)s',
+                          handlers=[logging.StreamHandler()])
 
-# Folder where the JSON files will be stored
-JSON_FOLDER = os.path.join(os.getcwd(), 'temp_business_data')
-
-# JSON file names and corresponding placeholder structures
-FILES_AND_STRUCTURES = {
-    "CAPEX.json": {
-        "expenses": [
-            {
-                "expense_name": "Placeholder",
-                "amount": 0,
-                "purchase_year": 2024,
-                "depreciation_life": 5,
-                "source_link": "",
-                "source_string": "Placeholder",
-                "notes": "This is a placeholder item"
-            }
-        ]
-    },
-    "comparables.json": {
-        "Enterprise Value": {
-            "value": 0,
-            "notes": "Placeholder enterprise value."
-        },
-        "Market Cap": {
-            "value": 0,
-            "notes": "Placeholder market cap."
-        },
-        "EBITDA": {
-            "value": 0,
-            "notes": "Placeholder EBITDA."
-        },
-        "Equity Beta": {
-            "value": 0,
-            "notes": "Placeholder equity beta."
-        },
-        "Asset Beta": {
-            "value": 0,
-            "notes": "Placeholder asset beta."
-        },
-        "EV/EBITDA": {
-            "value": 0,
-            "notes": "Placeholder EV/EBITDA."
-        }
-    },
-    "employees.json": {
-        "employees": [
-            {
-                "role": "Placeholder Role",
-                "number": 0,
-                "wage": 0,
-                "wage_type": "salary",
-                "monthly_hours": 0,
-                "notes": "This is a placeholder item",
-                "source_link": "",
-                "source_string": "Placeholder"
-            }
-        ]
-    },
-    "financials.json": {
-        "1995": {
-            "Revenue": None,
-            "Direct Costs": None,
-            "SG&A": None,
-            "Employee Salaries": None,
-            "EBITDA": None,
-            "Depreciation": None,
-            "EBIT": None,
-            "Interest": None,
-            "Taxes": None,
-            "Net Income": None
-        }
-    },
-    "ingredients.json": {
-        "purchases_table": [
-            {
-                "ingredient_id": 1,
-                "ingredient_name": "Ingredient A",
-                "price_data_raw": [
-                    {
-                        "unit_name": "Standard Box",
-                        "price": 5.0,
-                        "selling_quantity": "10",
-                        "unit": "box",
-                        "company": "Example Inc.",
-                        "source": "example.com"
-                    },
-                    {
-                        "unit_name": "Bulk Pack",
-                        "price": 4.5,
-                        "selling_quantity": "20",
-                        "unit": "box",
-                        "company": "Bulk Supplies Co.",
-                        "source": "bulksupplies.com"
+        # Folder where JSON files are stored
+        self.JSON_FOLDER = os.path.join(os.getcwd(), 'temp_business_data')
+        
+        # Define comprehensive schema for all data structures
+        self.FILES_AND_STRUCTURES = {
+            "comparable_companies": {
+                "filename": "comparables.json",
+                "root_key": "comparables",
+                "description": "Stores comparable company metrics and multiples",
+                "version": "1.0",
+                "default_content": {
+                    "comparables": [
+                        {
+                            "company_name": "Sample Company",
+                            "enterprise_value": 100.0,
+                            "market_cap": 80.0,
+                            "ebitda": 10.0,
+                            "equity_beta": 1.0,
+                            "asset_beta": 0.8,
+                            "ev_ebitda_multiple": 10.0,
+                            "source": "Sample Source",
+                            "source_date": "2024-01-01"
+                        }
+                    ]
+                },
+                "structure": {
+                    "comparables": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "required": [
+                                "company_name",
+                                "enterprise_value",
+                                "market_cap", 
+                                "ebitda",
+                                "equity_beta",
+                                "asset_beta",
+                                "ev_ebitda_multiple",
+                                "source",
+                                "source_date"
+                            ],
+                            "properties": {
+                                "company_name": {
+                                    "type": "string",
+                                    "description": "Name of the comparable company",
+                                    "min_length": 1,
+                                    "max_length": 100,
+                                    "order": 1
+                                },
+                                "enterprise_value": {
+                                    "type": "number",
+                                    "description": "Enterprise value in millions",
+                                    "minimum": 0,
+                                    "order": 2
+                                },
+                                "market_cap": {
+                                    "type": "number",
+                                    "description": "Market capitalization in millions",
+                                    "minimum": 0,
+                                    "order": 3
+                                },
+                                "ebitda": {
+                                    "type": "number",
+                                    "description": "EBITDA in millions",
+                                    "order": 4
+                                },
+                                "equity_beta": {
+                                    "type": "number",
+                                    "description": "Equity beta",
+                                    "order": 5
+                                },
+                                "asset_beta": {
+                                    "type": "number", 
+                                    "description": "Asset/unlevered beta",
+                                    "order": 6
+                                },
+                                "ev_ebitda_multiple": {
+                                    "type": "number",
+                                    "description": "EV/EBITDA multiple",
+                                    "order": 7
+                                },
+                                "source": {
+                                    "type": "string",
+                                    "description": "Source of the comparable data",
+                                    "order": 8
+                                },
+                                "source_date": {
+                                    "type": "string",
+                                    "description": "Date the comparable data was sourced",
+                                    "format": "date",
+                                    "order": 9
+                                }
+                            }
+                        }
                     }
-                ]
+                }
             },
-            {
-                "ingredient_id": 2,
-                "ingredient_name": "Ingredient B",
-                "price_data_raw": [
-                    {
-                        "unit_name": "Single Pack",
-                        "price": 3.0,
-                        "selling_quantity": "1",
-                        "unit": "package",
-                        "company": "Packaged Goods Ltd.",
-                        "source": "packagedgoods.com"
-                    },
-                    {
-                        "unit_name": "Family Pack",
-                        "price": 10.0,
-                        "selling_quantity": "5",
-                        "unit": "package",
-                        "company": "Family Value Inc.",
-                        "source": "familyvalue.com"
+            "employees": {
+                "filename": "employees.json", 
+                "root_key": "employees",
+                "description": "Stores employee information and wages",
+                "version": "1.0",
+                "default_content": {
+                    "employees": [
+                        {
+                            "role": "Sample Role",
+                            "number": 1,
+                            "wage": 15.0,
+                            "wage_type": "hourly",
+                            "monthly_hours": 160,
+                            "notes": "Sample employee role",
+                            "source_link": "https://example.com",
+                            "source_string": "Sample Source"
+                        }
+                    ]
+                },
+                "structure": {
+                    "employees": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "required": [
+                                "role",
+                                "number",
+                                "wage",
+                                "wage_type",
+                                "monthly_hours", 
+                                "notes",
+                                "source_link",
+                                "source_string"
+                            ],
+                            "properties": {
+                                "role": {
+                                    "type": "string",
+                                    "description": "Job title or role of employee",
+                                    "min_length": 1,
+                                    "max_length": 100,
+                                    "order": 1
+                                },
+                                "number": {
+                                    "type": "number",
+                                    "description": "Number of employees in this role",
+                                    "minimum": 0,
+                                    "order": 2
+                                },
+                                "wage": {
+                                    "type": "number",
+                                    "description": "Wage amount (hourly or salary)",
+                                    "minimum": 0,
+                                    "order": 3
+                                },
+                                "wage_type": {
+                                    "type": "string",
+                                    "description": "Type of wage - hourly or salary",
+                                    "enum": ["hourly", "salary"],
+                                    "order": 4
+                                },
+                                "monthly_hours": {
+                                    "type": "number",
+                                    "description": "Expected monthly hours if hourly wage",
+                                    "minimum": 0,
+                                    "order": 5
+                                },
+                                "notes": {
+                                    "type": "string",
+                                    "description": "Additional notes about the role",
+                                    "order": 6
+                                },
+                                "source_link": {
+                                    "type": "string",
+                                    "description": "URL to wage/role source",
+                                    "format": "uri",
+                                    "order": 7
+                                },
+                                "source_string": {
+                                    "type": "string",
+                                    "description": "Source of wage/role information",
+                                    "order": 8
+                                }
+                            }
+                        }
                     }
-                ]
+                }
+            },
+            "operating_expenses": {
+                "filename": "OPEX.json",
+                "root_key": "expenses",
+                "description": "Stores operating expense information",
+                "version": "1.0",
+                "default_content": {
+                    "expenses": [
+                        {
+                            "expense_name": "Sample Operating Expense",
+                            "amount": 1000.0,
+                            "frequency": "Monthly",
+                            "source_string": "Sample Source",
+                            "source_link": "https://example.com",
+                            "notes": "Sample operating expense"
+                        }
+                    ]
+                },
+                "structure": {
+                    "expenses": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "required": [
+                                "expense_name",
+                                "amount",
+                                "frequency",
+                                "source_string",
+                                "source_link",
+                                "notes"
+                            ],
+                            "properties": {
+                                "expense_name": {
+                                    "type": "string",
+                                    "description": "Name of the operating expense",
+                                    "min_length": 1,
+                                    "max_length": 100,
+                                    "order": 1
+                                },
+                                "amount": {
+                                    "type": "number",
+                                    "description": "Cost amount per occurrence",
+                                    "minimum": 0,
+                                    "order": 2
+                                },
+                                "frequency": {
+                                    "type": "string",
+                                    "description": "How often the expense occurs",
+                                    "order": 3
+                                },
+                                "source_string": {
+                                    "type": "string",
+                                    "description": "Source of the cost information",
+                                    "order": 4
+                                },
+                                "source_link": {
+                                    "type": "string",
+                                    "description": "URL to cost source",
+                                    "format": "uri",
+                                    "order": 5
+                                },
+                                "notes": {
+                                    "type": "string",
+                                    "description": "Additional notes about the expense",
+                                    "order": 6
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "historical_financials": {
+                "filename": "hist_IS.json",
+                "root_key": "historical_financials",
+                "description": "Stores historical income statement data",
+                "version": "1.0",
+                "default_content": {
+                    "historical_financials": [
+                        {
+                            "year": 2023,
+                            "revenue": 1000000.0,
+                            "cost_of_sales": 600000.0,
+                            "operating_expenses": 200000.0,
+                            "ebitda": 200000.0,
+                            "depreciation": 50000.0,
+                            "ebit": 150000.0,
+                            "interest_expense": 10000.0,
+                            "income_taxes": 35000.0,
+                            "net_income": 105000.0
+                        }
+                    ]
+                },
+                "structure": {
+                    "historical_financials": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "required": [
+                                "year",
+                                "revenue",
+                                "cost_of_sales",
+                                "operating_expenses",
+                                "ebitda",
+                                "depreciation",
+                                "ebit",
+                                "interest_expense",
+                                "income_taxes",
+                                "net_income"
+                            ],
+                            "properties": {
+                                "year": {
+                                    "type": "number",
+                                    "description": "Fiscal year",
+                                    "order": 1
+                                },
+                                "revenue": {
+                                    "type": "number",
+                                    "description": "Total revenue",
+                                    "minimum": 0,
+                                    "order": 2
+                                },
+                                "cost_of_sales": {
+                                    "type": "number",
+                                    "description": "Direct costs of goods/services sold",
+                                    "minimum": 0,
+                                    "order": 3
+                                },
+                                "operating_expenses": {
+                                    "type": "number",
+                                    "description": "Operating expenses excluding depreciation",
+                                    "minimum": 0,
+                                    "order": 4
+                                },
+                                "ebitda": {
+                                    "type": "number",
+                                    "description": "Earnings before interest, taxes, depreciation & amortization",
+                                    "order": 5
+                                },
+                                "depreciation": {
+                                    "type": "number",
+                                    "description": "Depreciation & amortization expense",
+                                    "minimum": 0,
+                                    "order": 6
+                                },
+                                "ebit": {
+                                    "type": "number",
+                                    "description": "Earnings before interest & taxes",
+                                    "order": 7
+                                },
+                                "interest_expense": {
+                                    "type": "number",
+                                    "description": "Interest expense",
+                                    "minimum": 0,
+                                    "order": 8
+                                },
+                                "income_taxes": {
+                                    "type": "number",
+                                    "description": "Income tax expense",
+                                    "minimum": 0,
+                                    "order": 9
+                                },
+                                "net_income": {
+                                    "type": "number",
+                                    "description": "Net income",
+                                    "order": 10
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "capital_expenditures": {
+                "filename": "capex.json",
+                "root_key": "expenses",
+                "description": "Stores capital expenditure (CAPEX) information",
+                "version": "1.0",
+                "default_content": {
+                    "expenses": [
+                        {
+                            "expense_name": "Sample Capital Expenditure",
+                            "amount": 50000.0,
+                            "frequency": "One-time",
+                            "source_link": "https://example.com",
+                            "source_string": "Sample Source",
+                            "notes": "Sample capital expenditure"
+                        }
+                    ]
+                },
+                "structure": {
+                    "expenses": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "required": [
+                                "expense_name",
+                                "amount",
+                                "frequency",
+                                "source_link",
+                                "source_string",
+                                "notes"
+                            ],
+                            "properties": {
+                                "expense_name": {
+                                    "type": "string",
+                                    "description": "Name of the capital expenditure item",
+                                    "min_length": 1,
+                                    "max_length": 100,
+                                    "order": 1
+                                },
+                                "amount": {
+                                    "type": "number",
+                                    "description": "Cost of the capital expenditure",
+                                    "minimum": 0,
+                                    "order": 2
+                                },
+                                "frequency": {
+                                    "type": "string",
+                                    "description": "Frequency or timing of the expenditure",
+                                    "order": 3
+                                },
+                                "source_link": {
+                                    "type": "string",
+                                    "description": "URL to source of cost information",
+                                    "format": "uri",
+                                    "order": 4
+                                },
+                                "source_string": {
+                                    "type": "string",
+                                    "description": "Description of the cost information source",
+                                    "order": 5
+                                },
+                                "notes": {
+                                    "type": "string",
+                                    "description": "Additional notes about the capital expenditure",
+                                    "order": 6
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "cost_of_sales": {
+                "filename": "cost_of_sales.json",
+                "root_key": "cost_items",
+                "description": "Stores cost of goods sold (COGS) and direct cost information",
+                "version": "1.0",
+                "default_content": {
+                    "cost_items": [
+                        {
+                            "cost_item_name": "Sample Direct Cost",
+                            "cost_per_unit": 10.0,
+                            "cost_source": "Sample Source",
+                            "cost_source_link": "https://example.com",
+                            "frequency": 100,
+                            "frequency_notes": "Units per month",
+                            "frequency_source": "Sample Source",
+                            "frequency_source_link": "https://example.com"
+                        }
+                    ]
+                },
+                "structure": {
+                    "cost_items": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "required": [
+                                "cost_item_name",
+                                "cost_per_unit",
+                                "cost_source",
+                                "cost_source_link",
+                                "frequency",
+                                "frequency_notes",
+                                "frequency_source",
+                                "frequency_source_link"
+                            ],
+                            "properties": {
+                                "cost_item_name": {
+                                    "type": "string",
+                                    "description": "Name of the cost item or direct cost",
+                                    "min_length": 1,
+                                    "max_length": 100,
+                                    "order": 1
+                                },
+                                "cost_per_unit": {
+                                    "type": "number",
+                                    "description": "Cost per unit/service",
+                                    "minimum": 0,
+                                    "order": 2
+                                },
+                                "cost_source": {
+                                    "type": "string",
+                                    "description": "Source of the cost information",
+                                    "order": 3
+                                },
+                                "cost_source_link": {
+                                    "type": "string",
+                                    "description": "URL to cost source",
+                                    "format": "uri",
+                                    "order": 4
+                                },
+                                "frequency": {
+                                    "type": "number",
+                                    "description": "Frequency of cost occurrence",
+                                    "minimum": 0,
+                                    "order": 5
+                                },
+                                "frequency_notes": {
+                                    "type": "string",
+                                    "description": "Additional notes about frequency",
+                                    "order": 6
+                                },
+                                "frequency_source": {
+                                    "type": "string",
+                                    "description": "Source of frequency information",
+                                    "order": 7
+                                },
+                                "frequency_source_link": {
+                                    "type": "string",
+                                    "description": "URL to frequency source",
+                                    "format": "uri",
+                                    "order": 8
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "revenue": {
+                "filename": "revenue_build.json",
+                "root_key": "revenue_sources",
+                "description": "Stores revenue sources and pricing information",
+                "version": "1.0",
+                "structure": {
+                    "revenue_sources": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "required": [
+                                "revenue_source_name",
+                                "revenue_source_price",
+                                "price_source",
+                                "price_source_link",
+                                "frequency",
+                                "frequency_notes",
+                                "frequency_source",
+                                "frequency_source_link"
+                            ],
+                            "properties": {
+                                "revenue_source_name": {
+                                    "type": "string",
+                                    "description": "Name of the revenue stream",
+                                    "min_length": 1,
+                                    "max_length": 100,
+                                    "order": 1
+                                },
+                                "revenue_source_price": {
+                                    "type": "number",
+                                    "description": "Price per unit/service",
+                                    "minimum": 0,
+                                    "order": 2
+                                },
+                                "price_source": {
+                                    "type": "string",
+                                    "description": "Source of the pricing information",
+                                    "order": 3
+                                },
+                                "price_source_link": {
+                                    "type": "string",
+                                    "description": "URL to pricing source",
+                                    "format": "uri",
+                                    "order": 4
+                                },
+                                "frequency": {
+                                    "type": "number",
+                                    "description": "Frequency of sales/service",
+                                    "minimum": 0,
+                                    "order": 5
+                                },
+                                "frequency_notes": {
+                                    "type": "string",
+                                    "description": "Additional context about frequency",
+                                    "order": 6
+                                },
+                                "frequency_source": {
+                                    "type": "string",
+                                    "description": "Source of frequency data",
+                                    "order": 7
+                                },
+                                "frequency_source_link": {
+                                    "type": "string",
+                                    "description": "URL to frequency source",
+                                    "format": "uri",
+                                    "order": 8
+                                }
+                            }
+                        }
+                    }
+                },
+                "default_content": {
+                    "revenue_sources": [
+                        {
+                            "revenue_source_name": "Sample Revenue Stream",
+                            "revenue_source_price": 25.00,
+                            "price_source": "Industry Average",
+                            "price_source_link": "https://example.com/pricing",
+                            "frequency": 100,
+                            "frequency_notes": "Transactions per day",
+                            "frequency_source": "Market Research",
+                            "frequency_source_link": "https://example.com/research"
+                        }
+                    ]
+                }
             }
-        ]
-    },
-    "OPEX.json": {
-        "expenses": [
-            {
-                "expense_name": "Placeholder",
-                "amount": 0,
-                "frequency": "",
-                "source_link": "",
-                "source_string": "Placeholder",
-                "notes": "This is a placeholder item"
+        }
+
+        # Define structures for Catalyst project
+        self.CATALYST_FILES_AND_STRUCTURES = {
+            "fundamentals": {
+                "filename": "fundamentals.json",
+                "root_key": "fundamentals",
+                "description": "Stores basic firm information",
+                "version": "1.0",
+                "default_content": {
+                    "fundamentals": [
+                        {
+                            "firm_name": "Placeholder Firm",
+                            "founded_year": 2020,
+                            "primary_office": "Placeholder City",
+                            "ownership_structure": "Placeholder Structure", 
+                            "total_employees": 0,
+                            "diversity_status": "Placeholder Status",
+                            "website": "www.placeholder.com",
+                            "source_string": "Placeholder Source",
+                            "source_link": "https://example.com"
+                        }
+                    ]
+                }
+            },
+            "investment_team": {
+                "filename": "investment_team.json",
+                "root_key": "team_members",
+                "description": "Stores investment team information",
+                "version": "1.0",
+                "default_content": {
+                    "team_members": [
+                        {
+                            "investment_team_member_name": "Placeholder Name",
+                            "investment_team_member_title": "Placeholder Title",
+                            "investment_team_member_join_date": 2020,
+                            "source_string": "Placeholder Source",
+                            "source_link": "https://example.com"
+                        }
+                    ]
+                }
+            },
+            "fees_key_terms": {
+                "filename": "fees_key_terms.json",
+                "root_key": "terms",
+                "description": "Stores fund terms and fee structures",
+                "version": "1.0",
+                "default_content": {
+                    "terms": [
+                        {
+                            "currency": "USD",
+                            "target_fundraise": "$0 million",
+                            "management_fee": "0%",
+                            "carried_interest": "0%",
+                            "preferred_return": "0%",
+                            "investment_period": "0 years",
+                            "fund_term": "0 years",
+                            "GP_commitment": "0%",
+                            "GP_commitment_funding_source": "Placeholder Source",
+                            "source_string": "Placeholder Source",
+                            "source_link": "https://example.com"
+                        }
+                    ]
+                }
+            },
+            "seed_terms": {
+                "filename": "seed_terms.json",
+                "root_key": "investments",
+                "description": "Stores seed investment terms",
+                "version": "1.0",
+                "default_content": {
+                    "investments": [
+                        {
+                            "expense_name": "Target Seed Investment Placeholder",
+                            "initial_investment": "Initial Seed Investment Placeholder",
+                            "fundraising_date": "Placeholder Date",
+                            "revenue_share": "0%",
+                            "revenue_share_cap": "0.0x",
+                            "revenue_share_tail": "0%",
+                            "source_string": "Placeholder Source",
+                            "source_link": "https://example.com"
+                        }
+                    ]
+                }
+            },
+            "deal_history": {
+                "filename": "deal_history.json",
+                "root_key": "deals",
+                "description": "Stores historical deal information",
+                "version": "1.0",
+                "default_content": {
+                    "deals": [
+                        {
+                            "date": "Placeholder Date",
+                            "firm": "Placeholder Firm",
+                            "amount": "$0",
+                            "realized": "No",
+                            "syndicate_partners": "Placeholder Partners",
+                            "source_string": "Placeholder Source",
+                            "source_link": "https://example.com"
+                        }
+                    ]
+                }
+            },
+            "service_providers": {
+                "filename": "service_providers.json",
+                "root_key": "providers",
+                "description": "Stores service provider information",
+                "version": "1.0",
+                "default_content": {
+                    "providers": [
+                        {
+                            "service_type": "Placeholder Service",
+                            "firm_name": "Placeholder Firm",
+                            "source_string": "Placeholder Source",
+                            "source_link": "https://example.com"
+                        }
+                    ]
+                }
             }
-        ]
-    },
-    "recipes.json":   { 'recipes':
-        [
-           {
-              "name": "Recipe 1",
-              "price": 50,
-              "price_notes": "Sample price note",
-              "ingredients": [
-                 {
-                    "amount": 2,
-                    "ingredient_id": 1,
-                    "ingredient_name": "Ingredient A",
-                    "notes": "Sample ingredient note",
-                    "price": 10,
-                    "unit": "kg"
-                 },
-                 {
-                    "amount": 1,
-                    "ingredient_id": 2,
-                    "ingredient_name": "Ingredient B",
-                    "notes": "Sample ingredient note",
-                    "price": 8,
-                    "unit": "g"
-                 }
-              ]
-           },
-           {
-              "name": "Recipe 2",
-              "price": 30,
-              "price_notes": "Another price note",
-              "ingredients": [
-                 {
-                    "amount": 1,
-                    "ingredient_id": 2,
-                    "ingredient_name": "Ingredient B",
-                    "notes": "Sample ingredient note",
-                    "price": 8,
-                    "unit": "g"
-                 }
-              ]
-           }
-        ]
-    },
-    "hist_IS.json": {
-        "historical_financials": [
-            {
-                "year": 2024,
-                "revenue": 0,
-                "cost_of_sales": 0,
-                "operating_expenses": 0,
-                "ebitda": 0,
-                "depreciation": 0,
-                "ebit": 0,
-                "interest_expense": 0,
-                "income_taxes": 0,
-                "net_income": 0
-            }
-        ]
-    }
-}
-    
-# Define placeholder structures for the Catalyst project
-# Define placeholder structures for the Catalyst project
-CATALYST_FILES_AND_STRUCTURES = {
-    "fundamentals.json": [
-        {
-        "firm_name": "Placeholder Firm",
-        "founded_year": 2020,
-        "primary_office": "Placeholder City",
-        "ownership_structure": "Placeholder Structure",
-        "total_employees": 0,
-        "diversity_status": "Placeholder Status",
-        "website": "www.placeholder.com",
-        "source_string": "Placeholder Source",
-        "source_link": "https://example.com"
         }
-    ],
-    "investment_team.json":[
-        {
-            "investment_team_member_name": "Placeholder Name",
-            "investment_team_member_title": "Placeholder Title",
-            "investment_team_member_join_date": 2020,
-            "source_string": "Placeholder Source",
-            "source_link": "https://example.com"
-        },
-        {
-            "investment_team_member_name": "Another Name",
-            "investment_team_member_title": "Another Title",
-            "investment_team_member_join_date": 2023,
-            "source_string": "Another Source",
-            "source_link": "https://example.com"
-        }
-    ],
-    "fees_key_terms.json": [
-        {
-        "currency": "USD",
-        "target_fundraise": "$0 million",
-        "management_fee": "0%",
-        "carried_interest": "0%",
-        "preferred_return": "0%",
-        "investment_period": "0 years",
-        "fund_term": "0 years",
-        "GP_commitment": "0%",
-        "GP_commitment_funding_source": "Placeholder Source",
-        "source_string": "Placeholder Source",
-        "source_link": "https://example.com"
-    }
-    ],
-    "seed_terms.json": [
-        {
-            "expense_name": "Target Seed Investment Placeholder",  # Placeholder for Target Seed Investment
-            "initial_investment": "Initial Seed Investment Placeholder",  # Placeholder for Initial Seed Investment
-            "fundraising_date": "Placeholder Date",  # Placeholder for Seed Fundraising Timeline
-            "revenue_share": "0%",  # Placeholder for Revenue Share
-            "revenue_share_cap": "0.0x",  # Placeholder for Revenue Share Cap
-            "revenue_share_tail": "0%",  # Placeholder for Revenue Share Tail
-            "source_string": "Placeholder Source",
-            "source_link": "https://example.com"
-        }
-    ],
-    "deal_history.json": [
-        {
-            "date": "Placeholder Date",
-            "firm": "Placeholder Firm",
-            "amount": "$0",
-            "realized": "No",
-            "syndicate_partners": "Placeholder Partners",
-            "source_string": "Placeholder Source",
-            "source_link": "https://example.com"
-        }
-    ],
-    "service_providers.json": [
-        {
-            "service_type": "Placeholder Service",
-            "firm_name": "Placeholder Firm",
-            "source_string": "Placeholder Source", 
-            "source_link": "https://example.com"
-        }
-    ]
-}
 
 
 
-def initialize_json_files(project_name):
-    if project_name == "catalyst":
-        files_and_structures = CATALYST_FILES_AND_STRUCTURES
-    else:
-        files_and_structures = FILES_AND_STRUCTURES
-    
-    # Create JSON_FOLDER if it doesn't exist
-    os.makedirs(JSON_FOLDER, exist_ok=True)
-    
-    for table_name, default_content in files_and_structures.items():
-        file_path = os.path.join(JSON_FOLDER, table_name)
-        # Create parent directories if they don't exist
-        os.makedirs(os.path.dirname(file_path), exist_ok=True)
-        
+    def initialize_json_files(self, project_name):
+        """Initialize all JSON files with default structures"""
+        # Create temp directory if it doesn't exist
+        if not os.path.exists(self.JSON_FOLDER):
+            try:
+                os.makedirs(self.JSON_FOLDER)
+                logging.info(f"Created directory: {self.JSON_FOLDER}")
+            except Exception as e:
+                logging.error(f"Failed to create directory {self.JSON_FOLDER}: {e}")
+                return False
+                
+        # Delete any existing files
         try:
-            with open(file_path, 'w') as json_file:
-                json.dump(default_content, json_file, indent=4)
+            for filename in os.listdir(self.JSON_FOLDER):
+                file_path = os.path.join(self.JSON_FOLDER, filename)
+                if os.path.isfile(file_path):
+                    os.remove(file_path)
+                    logging.info(f"Deleted existing file: {filename}")
         except Exception as e:
-            logging.error(f"Failed to create {file_path}: {e}")
-
-
-
-# Function to load JSON data for a given table
-def load_table_json(table_identifier, project_name="financial"):
-    """
-    Load JSON data for a given table based on the project name.
-    :param table_identifier: The identifier of the table to load data for.
-    :param project_name: The project name to determine which JSON structure to load (default is "financial").
-    :return: The loaded JSON data.
-    """
-    json_folder = os.path.join(os.getcwd(), 'temp_business_data')  # Path to JSON files
-
-    # Determine file paths based on the project name and table identifier
-    if project_name == "catalyst":
-        # Catalyst-specific file paths with corrected identifiers
-        file_mapping = {
-            "fundamentals": "fundamentals.json",
-            "investmentTeam": "investment_team.json",   # Updated to match "investmentTeam"
-            "feesKeyTerms": "fees_key_terms.json",      # Updated to match "feesKeyTerms"
-            "seedTerms": "seed_terms.json",             # Updated to match "seedTerms"
-            "dealHistory": "deal_history.json",         # Added for deal history table
-            "serviceProviders": "service_providers.json" # Added for service providers table
-        }
-    else:
-        # Financial model-specific file paths (default)
-        file_mapping = {
-            "revenue": "recipes.json",
-            "purchases": "ingredients.json",
-            "CAPEX": "capex.json",
-            "OPEX": "opex.json",
-            "employees": "employees.json",
-            "comparables": "comparables.json",
-            "financials": "financials.json",
-            "historicalIS": "hist_IS.json"              # Updated to match "historical income statement"
-        }
-
-    # Get the file name based on table identifier
-    file_name = file_mapping.get(table_identifier)
-    if not file_name:
-        logging.error(f"No JSON file mapped for table identifier: {table_identifier}")
-        return None
-
-    # Construct the file path
-    file_path = os.path.join(json_folder, file_name)
-
-    # Load the JSON data from the file
-    try:
-        with open(file_path, 'r') as json_file:
-            return json.load(json_file)
-    except FileNotFoundError:
-        logging.error(f"JSON file not found at path: {file_path}")
-        return None
-
-    
-    
-def load_json_explanation(table_name, project_name):
-    """
-    Load the explanation text for the given table name using EXPLANATION_FILES_DIR.
-    The file name is constructed based on project-specific mappings.
-    
-    :param table_name: The identifier of the table to load explanation for
-    :param project_name: The project name to determine which explanation to load (default is "financial")
-    :return: The explanation text for the specified table
-    """
-    # Determine explanation file paths based on the project name and table identifier
-    if project_name == "catalyst":
-        explanation_mapping = {
-            "feesKeyTermsTable": "feesKeyTermsTable_explanation.txt",
-            "fundamentalsTable": "fundamentalsTable_explanation.txt", 
-            "investmentTeamTable": "investmentTeamTable_explanation.txt",
-            "seedTermsTable": "seedTermsTable_explanation.txt",
-            "dealHistoryTable": "dealHistoryTable_explanation.txt",
-            "serviceProvidersTable": "serviceProvidersTable_explanation.txt"
-        }
-        project_folder = "catalyst"
-    else:
-        explanation_mapping = {
-            "revenue": "recipes_explanation.txt",
-            "purchases": "ingredients_explanation.txt", 
-            "CAPEX": "capex_explanation.txt",
-            "OPEX": "opex_explanation.txt",
-            "employees": "employees_explanation.txt",
-            "comparables": "comparables_explanation.txt",
-            "financials": "financials_explanation.txt",
-            "historicalIS": "hist_IS_explanation.txt"
-        }
-        project_folder = "fin_model"
-    # Get the explanation file name based on table name
-    explanation_file = explanation_mapping.get(table_name)
-    if not explanation_file:
-        logging.error(f"No explanation mapping found for table: {table_name}")
-        return "No explanation available."
-
-    # Construct the full file path including project subfolder
-    file_path = os.path.join(EXPLANATION_FILES_DIR, project_folder, explanation_file)
-    
-    try:
-        with open(file_path, 'r') as file:
-            explanation_text = file.read()
-            return explanation_text
-    except FileNotFoundError:
-        logging.error(f"Explanation file not found at path: {file_path}")
-        return "No explanation available."
-    except Exception as e:
-        logging.error(f"Error reading explanation file: {e}")
-        return "No explanation available."
-
-    
-def update_json_files(json_data, project_name):
-    logging.debug(f"JSON Data headers are {json_data.keys()}")
-    """
-    Updates JSON files with new data for each table, restricted to the active project.
-    :param json_data: A dictionary where keys are table names and values are data to update.
-    :param project_name: The active project name (e.g., "financial" or "catalyst").
-    """
-    # Get the correct mapping based on the project name
-    if project_name not in TABLE_MAPPING:
-        logging.error(f"Invalid project name: {project_name}")
-        return
-    
-    file_mapping = TABLE_MAPPING[project_name]
-    
-    for table_name, new_data in json_data.items():
-        file_name = file_mapping.get(table_name)
-        if not file_name:
-            logging.warning(f"No mapping found for table: {table_name} in project {project_name}")
-            continue
-
-        # Ensure the file has a .json extension
-        if not file_name.endswith(".json"):
-            file_name += ".json"
-
-        file_path = os.path.join(JSON_FOLDER, file_name)
-
-        # Replace existing data entirely with new data
-        try:
-            with open(file_path, "w") as json_file:
-                json.dump(new_data, json_file, indent=4)  # Write new_data directly
-            logging.info(f"Successfully updated {file_name} for project {project_name}")
-        except Exception as e:
-            logging.error(f"Failed to update {file_name} for project {project_name}: {e}")
-
-
-
-
-# Function to fix incomplete JSON by adding missing closing brackets
-def fix_incomplete_json(json_string):
-    open_curly = json_string.count('{')
-    close_curly = json_string.count('}')
-    open_square = json_string.count('[')
-    close_square = json_string.count(']')
-
-    # Add missing curly braces if necessary
-    if open_curly > close_curly:
-        json_string += '}' * (open_curly - close_curly)
-    # Add missing square brackets if necessary
-    if open_square > close_square:
-        json_string += ']' * (open_square - close_square)
-
-    return json_string
-
-
-
-# Function to save the parsed JSON data to a file
-def save_json_to_file(json_data):
-    # Create a folder to store JSON files if it doesn't exist
-    save_directory = os.path.join(os.getcwd(), 'temp_business_data')
-    os.makedirs(save_directory, exist_ok=True)
-
-    # Create a timestamped file name
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    file_name = f"openai_response_{timestamp}.json"
-    file_path = os.path.join(save_directory, file_name)
-
-    # Save the JSON data to the file
-    with open(file_path, 'w') as json_file:
-        json.dump(json_data, json_file, indent=4)
-
-    logging.info(f"Saved JSON response to {file_path}")
-    
-
-def load_json_file(file_name):
-    '''
-    This function supports the excel gen
-    It looks like an almost identical function is written to populate the site
-    TODO: Merge the functions
-    '''
-    
-    file_mapping = {
-        "revenue": "recipes.json",
-        "purchases": "ingredients.json", 
-        "capex": "capex.json",
-        "opex": "opex.json",
-        "employees": "employees.json",
-        "comparables": "comparables.json",
-        "financials": "financials.json",
-        "historicalIS": "hist_IS.json",              # Updated to match "historical income statement"
-        "fundamentals": "fundamentals.json",
-        "investmentTeam": "investment_team.json",   # Updated to match "investmentTeam"
-        "feesKeyTerms": "fees_key_terms.json",      # Updated to match "feesKeyTerms"
-        "seedTerms": "seed_terms.json",             # Updated to match "seedTerms"
-        "dealHistory": "deal_history.json",         # Added for deal history table
-        "serviceProviders": "service_providers.json" # Added for service providers table
-    }
-    current_directory = os.getcwd()
-    save_directory = os.path.join(current_directory, 'temp_business_data')
-    file_path = os.path.join(save_directory, file_mapping[file_name])
-    
-    data = None
-    try:
-        with open(file_path, 'r') as file:
-            data = json.load(file)
-            print(f"Successfully loaded {len(data)} {file_name} item.")
-    except FileNotFoundError:
-        print(f"Error: File {file_path} not found.")
-        return None
-    except json.JSONDecodeError as e:
-        print(f"Error parsing seed terms JSON: {e}")
-        return None
-    
-    if file_name in ["fundamentals", "financials", "comparables", "investmentTeam", "dealHistory", "serviceProviders"]:
-        return data
-    elif file_name in ["seedTerms", "feesKeyTerms"]:
-        return data[0] #List with one dictionary
-    elif file_name in ["revenue"]:
-        return data['recipes']
-    elif file_name in ["opex", "capex"]:
-        return data['expenses']
-    elif file_name in ["employees"]:
-        return data['employees']
-    elif file_name == "purchases":
-        """Load ingredients from JSON file and instantiate Ingredient objects."""
-        ingredients_list = []
-        for ingredient_item in data['purchases_table']:
-            # Create Ingredient instance
-            ingredient = Ingredient(
-                name=ingredient_item['ingredient_name'],
-                ingredient_id=ingredient_item['ingredient_id'],
-                price_data_raw=ingredient_item['price_data_raw']
-            )
+            logging.error(f"Error cleaning directory {self.JSON_FOLDER}: {e}")
+            return False
             
-            # Assign the ingredient_id and add to ingredients_dict
-            if ingredient.unique_id:
-                ingredients_list.append(ingredient)
+        # Create new files with default content for both project types
+        success = True
+        
+        # Initialize financial files
+        for table_name, file_info in self.FILES_AND_STRUCTURES.items():
+            file_path = os.path.join(self.JSON_FOLDER, file_info["filename"])
+            try:
+                if "default_content" in file_info:
+                    initial_data = file_info["default_content"][file_info["root_key"]]
+                else:
+                    initial_data = {file_info["root_key"]: []} if "root_key" in file_info else []
+                
+                with open(file_path, 'w') as json_file:
+                    json.dump(initial_data, json_file, indent=4)
+                logging.info(f"Created financial file with default content: {file_info['filename']}")
+            except Exception as e:
+                logging.error(f"Failed to create {file_path}: {e}")
+                success = False
+
+        # Initialize catalyst files  
+        for table_name, file_info in self.CATALYST_FILES_AND_STRUCTURES.items():
+            file_path = os.path.join(self.JSON_FOLDER, file_info["filename"])
+            try:
+                if "default_content" in file_info:
+                    initial_data = file_info["default_content"][file_info["root_key"]]
+                else:
+                    initial_data = {file_info["root_key"]: []} if "root_key" in file_info else []
+                
+                with open(file_path, 'w') as json_file:
+                    json.dump(initial_data, json_file, indent=4)
+                logging.info(f"Created catalyst file with default content: {file_info['filename']}")
+            except Exception as e:
+                logging.error(f"Failed to create {file_path}: {e}")
+                success = False
+        
+        return success
+
+    def load_json_data(self, identifier, project_name="financial"):
+        """
+        Load and process JSON data from files based on identifier.
+        
+        Args:
+            identifier (str): Table/file identifier to load
+            project_name (str): Project type - "financial" or "catalyst"
+            
+        Returns:
+            dict/list: Processed JSON data based on identifier type
+            None: If any error occurs during loading/processing
+        """
+        # Select appropriate file structures based on project
+        files_and_structures = self.CATALYST_FILES_AND_STRUCTURES if project_name == "catalyst" else self.FILES_AND_STRUCTURES
+        # Get filename and validate schema
+        file_info = None
+        if identifier in files_and_structures:
+            # Direct match found
+            file_info = files_and_structures[identifier]
+        else:
+            # Search for partial match in table names
+            for table_name, info in files_and_structures.items():
+                if identifier in table_name.lower():
+                    file_info = info
+                    break
+        
+        if not file_info:
+            logging.error(f"load_json_data: No matching schema found for identifier: {identifier}")
+            return None
+            
+        # Load JSON file
+        file_path = os.path.join(self.JSON_FOLDER, files_and_structures[identifier]["filename"])
+        try:
+            with open(file_path, 'r') as file:
+                data = json.load(file)
+                logging.info(f"load_json_data: Successfully loaded data for {identifier}")
+        except FileNotFoundError:
+            logging.error(f"load_json_data: File not found at path: {file_path}")
+            return None
+        except json.JSONDecodeError as e:
+            logging.error(f"load_json_data: JSON parsing error for {file_path}: {e}")
+            return None
+        except Exception as e:
+            logging.error(f"load_json_data: Unexpected error loading {file_path}: {e}")
+            return None
+
+        # Get the root key from file_info
+        root_key = file_info.get("root_key")
+        if not root_key:
+            logging.error(f"load_json_data: No root_key defined for {identifier}")
+            return None
+
+        # Return the data under the root key
+        try:
+            if root_key == "purchases_table":
+                # Special handling for purchases table to create Ingredient objects
+                ingredients_list = []
+                for ingredient_item in data.get(root_key, []):
+                    try:
+                        ingredient = Ingredient(
+                            name=ingredient_item['ingredient_name'],
+                            ingredient_id=ingredient_item['ingredient_id'],
+                            price_data_raw=ingredient_item['price_data_raw']
+                        )
+                        if ingredient.unique_id:
+                            ingredients_list.append(ingredient)
+                        else:
+                            logging.warning(f"load_json_data: Ingredient {ingredient.name} missing ID")
+                    except KeyError as e:
+                        logging.error(f"load_json_data: Missing required field in ingredient data: {e}")
+                        continue
+                return ingredients_list
             else:
-                print(f"Warning: Ingredient {ingredient.name} is missing an ID.")
-        return ingredients_list
-        print("Successfully loaded ingredients from JSON.")
-    else:
-        logging.warning(f"Error: Filename requested not able to load. Filename is {file_name}")
-        return None
+                # For all other tables, return the data under the root key
+                return data
+                
+        except Exception as e:
+            logging.error(f"load_json_data: Error processing data for {identifier}: {e}")
+            return None
+
+
+
+    def load_json_explanation(self, table_name, project_name):
+        """Load explanation text for a given table"""
+        # Check if table exists in FILES_AND_STRUCTURES
+        if table_name not in self.FILES_AND_STRUCTURES:
+            logging.error(f"load_json_explanation: Invalid table name: {table_name}")
+            return "No explanation available."
+
+        # Get filename from FILES_AND_STRUCTURES
+        file_info = self.FILES_AND_STRUCTURES[table_name]
+        base_filename = file_info["filename"].replace(".json", "")
+        explanation_file = f"{base_filename}_explanation.txt"
         
+        # Determine project folder
+        project_folder = "catalyst" if project_name == "catalyst" else "fin_model"
         
+        file_path = os.path.join(EXPLANATION_FILES_DIR, project_folder, explanation_file)
         
+        try:
+            with open(file_path, 'r') as file:
+                return file.read()
+        except FileNotFoundError:
+            logging.error(f"load_json_explanation: Explanation file not found at path: {file_path}")
+            return "No explanation available."
+        except Exception as e:
+            logging.error(f"load_json_explanation: Error reading explanation file: {e}")
+            return "No explanation available."
+
+    def update_json_files(self, json_data, project_name):
+        """Update JSON files with new data"""
+        logging.debug(f"update_json_files: JSON Data headers are {json_data.keys()}")
+        
+        # Get the appropriate file structure mapping based on project
+        file_structure = self.CATALYST_FILES_AND_STRUCTURES if project_name == "catalyst" else self.FILES_AND_STRUCTURES
+        
+        if not file_structure:
+            logging.error(f"update_json_files: No file structure found for project: {project_name}")
+            return
+            
+        for table_name, new_data in json_data.items():
+            # Get file info from structure
+            file_info = file_structure.get(table_name)
+            if not file_info:
+                logging.warning(f"update_json_files: No file info found for table: {table_name} in project {project_name}")
+                continue
+                
+            file_name = file_info.get("filename")
+            if not file_name:
+                logging.warning(f"update_json_files: No filename found for table: {table_name}")
+                continue
+
+            file_path = os.path.join(self.JSON_FOLDER, file_name)
+
+            try:
+                with open(file_path, "w") as json_file:
+                    json.dump(new_data, json_file, indent=4)
+                logging.info(f"update_json_files: Successfully updated {file_name} for project {project_name}")
+            except Exception as e:
+                logging.error(f"update_json_files: Failed to update {file_name} for project {project_name}: {e}")
+
+    def fix_incomplete_json(self, json_string):
+        """Fix incomplete JSON by adding missing brackets"""
+        open_curly = json_string.count('{')
+        close_curly = json_string.count('}')
+        open_square = json_string.count('[')
+        close_square = json_string.count(']')
+
+        if open_curly > close_curly:
+            json_string += '}' * (open_curly - close_curly)
+        if open_square > close_square:
+            json_string += ']' * (open_square - close_square)
+
+        return json_string
+
+    def save_json_to_file(self, json_data):
+        """Save JSON data to a timestamped file"""
+        os.makedirs(self.JSON_FOLDER, exist_ok=True)
+
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        file_name = f"openai_response_{timestamp}.json"
+        file_path = os.path.join(self.JSON_FOLDER, file_name)
+
+        with open(file_path, 'w') as json_file:
+            json.dump(json_data, json_file, indent=4)
+
+        logging.info(f"save_json_to_file: Saved JSON response to {file_path}")

@@ -24,6 +24,7 @@ from helper_functions import FormatManager
 from cellManager import CellManager
 from business_entity_code import BusinessEntity
 from recipes_page_code import RecipesPage
+from revenue_cogs_build_code import RevenueCogsBuildPage
 from data_page_code import DataPage
 from title_page_code import TitlePage
 from customer_flow_page_code import CustomerFlowPage
@@ -39,15 +40,18 @@ from roll_out_code import RollOutPage
 
 
 
-
-
-
 #----Create a workbook manager----#
 class WorkbookManager:
     def __init__(self):
-        self.name='Financial_Model.xlsx'
-        # Create a new Excel file and add a worksheet
-        self.workbook = xlsxwriter.Workbook(self.name)
+        # Create outputs directory if it doesn't exist
+        os.makedirs("outputs", exist_ok=True)
+        
+        # Set file name and path components
+        self.name = "Financial_Model.xlsx"
+        self.path = "outputs"
+        self.full_name = os.path.join(self.path, self.name)
+        print(f"File path is {self.full_name}")
+        self.workbook = xlsxwriter.Workbook(self.full_name)
         self.num_forecasted_years=10
         self.cell_info={}
         self.sheets = {}  # Dictionary to store worksheet references
@@ -97,9 +101,6 @@ class WorkbookManager:
             # Write plain data
             sheet.write(row, col, formula_string, cell_format)
 
-                
-        
-
 
 
 def generate_excel_model():
@@ -114,7 +115,7 @@ def generate_excel_model():
     #Make the pages
     #title_page=TitlePage(workbook_manager1, cell_manager, business_entity)
     data_page=DataPage(workbook_manager1, cell_manager, business_entity)
-    recipes_page=RecipesPage(workbook_manager1, cell_manager, business_entity)
+    revenue_cogs_build_page=RevenueCogsBuildPage(workbook_manager1, cell_manager, business_entity)
     customer_flow_page=CustomerFlowPage(workbook_manager1, cell_manager, business_entity)
     employee_page = EmployeePage(workbook_manager1, cell_manager, business_entity)
     opex_capex_page = OpexCapexPage(workbook_manager1, cell_manager, business_entity)
@@ -130,10 +131,7 @@ def generate_excel_model():
     #Close the workbook 
     workbook_manager1.close_workbook()
     
-    # Return the path to the generated Excel file so the site knows where to look for it
-    file_path = os.path.join(os.getcwd(), 'Financial_Model.xlsx')
-    print(f"File path is {file_path}")
-    return file_path
-
+    # Return the file path from the workbook manager
+    return workbook_manager1.full_name
 if __name__ == "__main__":
     generate_excel_model()

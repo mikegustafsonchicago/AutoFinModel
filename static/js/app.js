@@ -1,50 +1,71 @@
-import { clearAllData } from './shared-modules.js';
-import { uploadPDF } from './shared-modules.js';
-import { dollarFormatter } from './shared-modules.js';
-
-
+import { clearAllData, uploadPDF, dollarFormatter } from './shared-modules.js';
 const PROJECT_NAME = "financial";
 
-const revenueTable = new Tabulator("#revenueTable", {
-    layout: "fitData", // Fit columns to width of table
-	autoResize: true, // Enable auto-resize
-    dataTree: true, // Enable tree structure
-    dataTreeChildField: "ingredients", // Define the field that contains child rows (ingredients in this case)
-    dataTreeStartExpanded: false, // Start with all rows collapsed initially
+
+
+let revenueTable;
+
+// Initialize Tabulator for revenue data
+revenueTable = new Tabulator("#revenueTable", {
+    layout: "fitData",
+    autoResize: true,
     columns: [
-        // Recipe-level columns (Parent level)
-        { title: "Recipe Name", field: "name", editor: "input" },  // Recipe name
-        { title: "Price", field: "price", editor: "number", formatter: dollarFormatter },      // Recipe price
-        { title: "Price Notes", field: "price_notes", editor: "input" }, // Recipe notes
-
-        // Ingredient-level columns (Child level shown when expanded)
-        { title: "Ingredient ID", field: "ingredient_id", editor: "input", visible: false }, 
-        { title: "Ingredient Name", field: "ingredient_name", editor: "input" }, 
-        { title: "Unit", field: "unit", editor: "input" }, 
-        { title: "Amount", field: "amount", editor: "number" }, 
-        { title: "Price per Unit", field: "price", editor: "number", formatter: dollarFormatter }, 
-        { title: "Notes", field: "notes", editor: "input" }, 
-
-        // Add a delete button for both recipe and ingredients
         {
-            title: "",  // Add the delete button
-            formatter: function () {
+            title: "Revenue Source",
+            field: "revenue_source_name",
+            editor: "input"
+        },
+        {
+            title: "Price",
+            field: "revenue_source_price", 
+            editor: "number",
+            formatter: dollarFormatter
+        },
+        {
+            title: "Price Source",
+            field: "price_source",
+            formatter: function(cell) {
+                const source = cell.getValue();
+                const row = cell.getRow().getData();
+                const url = row.price_source_link;
+                return url ? `<a href="${url}" target="_blank">${source}</a>` : source;
+            },
+            editor: "input"
+        },
+        {
+            title: "Frequency",
+            field: "frequency",
+            editor: "number"
+        },
+        {
+            title: "Frequency Notes",
+            field: "frequency_notes",
+            editor: "input"
+        },
+        {
+            title: "Frequency Source",
+            field: "frequency_source",
+            formatter: function(cell) {
+                const source = cell.getValue();
+                const row = cell.getRow().getData();
+                const url = row.frequency_source_link;
+                return url ? `<a href="${url}" target="_blank">${source}</a>` : source;
+            },
+            editor: "input"
+        },
+        {
+            title: "",
+            formatter: function() {
                 return "<button class='delete-btn'>X</button>";
             },
             width: 80,
             hozAlign: "center",
-            cellClick: function (e, cell) {
+            cellClick: function(e, cell) {
                 cell.getRow().delete();
                 revenueTable.redraw();
             }
         }
     ]
-});
-
-// Set up rowClick dynamically after the table is built
-revenueTable.on("tableBuilt", function() {
-    // Expand all rows to make sure all are accessible
-    revenueTable.getData().forEach(row => revenueTable.getRow(row).treeExpand());
 });
 
 
@@ -278,79 +299,47 @@ document.getElementById('historicalISAIButton').addEventListener('click', functi
 refreshTables();
 
 function refreshTables(){
-	loadTableData("revenue", revenueTable);
-	loadTableData("purchases", purchasesTable);
-	loadTableData("OPEX", opexTable);
-	loadTableData("CAPEX", capexTable);
-	loadTableData("employees", employeesTable);
-	loadTableData("historicalIS", historicalISTable); // Add this line
+    loadTableData("revenue", revenueTable);
+    loadTableData("cost_of_sales", purchasesTable);
+    loadTableData("operating_expenses", opexTable);
+    loadTableData("capital_expenditures", capexTable);
+    loadTableData("employees", employeesTable);
+    loadTableData("historical_financials", historicalISTable);
 }
 
 // Function to load table data from the backend with conditional logic based on tableIdentifier
 function loadTableData(tableIdentifier, table) {
     fetch(`/api/table_data/${PROJECT_NAME}/${tableIdentifier}`)
         .then(response => response.json())
-        .then(data => {
-            if (!data) {
-                console.error(`No data returned for tableIdentifier: ${tableIdentifier}`);
+        .then(responseData => {
+            if (!responseData || !responseData.data) {
+                console.error(`loadTableData: No data returned for tableIdentifier: ${tableIdentifier}`);
                 return;
             }
 
-            switch (tableIdentifier) {
-                case "revenue":
-                    if (Array.isArray(data.recipes)) {
-                        table.setData(data.recipes); // Use the "recipes" key for revenue
-                    } else {
-                        console.error('Invalid data structure for revenueTable.');
-                    }
-                    break;
+            const data = responseData.data;
+            const rootKey = responseData.root_key;
 
-                case "purchases":
-                    if (Array.isArray(data.purchases_table)) {
-                        table.setData(data.purchases_table); // Use "purchases_table" for purchases
-                    } else {
-                        console.error('Invalid data structure for purchasesTable.');
-                    }
-                    break;
-
-                case "CAPEX":
-                case "OPEX":
-                    if (Array.isArray(data.expenses)) {
-                        table.setData(data.expenses); // Use "expenses" array for CAPEX/OPEX
-                    } else {
-                        console.error(`Invalid data structure for ${tableIdentifier}.`);
-                    }
-                    break;
-
-                case "employees":
-                    if (Array.isArray(data.employees)) {
-                        table.setData(data.employees); // Use "employees" array for employeesTable
-                    } else {
-                        console.error('Invalid data structure for employeesTable.');
-                    }
-                    break;
-
-                case "historicalIS":
-                    if (Array.isArray(data.historical_financials)) {
-                        table.setData(data.historical_financials); // Use "historical_financials" array for historicalIS
-                    } else {
-                        console.error('Invalid data structure for historicalISTable.');
-                    }
-                    break;
-
-                default:
-                    console.error('Error in loadTableData: Unknown table identifier:', tableIdentifier);
-                    break;
+            // If data is not an array, wrap it in array
+            if (data && !Array.isArray(data)) {
+                table.setData([data]);
+            }
+            // If data has root key property and it's an array, use that
+            else if (rootKey && Array.isArray(data[rootKey])) {
+                table.setData(data[rootKey]);
+            }
+            // If data itself is an array, use directly
+            else if (Array.isArray(data)) {
+                table.setData(data);
+            }
+            else {
+                console.error(`loadTableData: Invalid data structure for ${tableIdentifier}.`);
             }
         })
         .catch(error => {
-            console.error('Error in loadTableData: Error loading table data:', error);
+            console.error('loadTableData: Error loading table data:', error);
         });
 }
-
-
-
-
 
 
 // Versatile function to add a new row to any table based on its column structure
@@ -363,11 +352,10 @@ function addRow(table) {
         newRow = {
             expense_name: "",
             amount: 0,
-            purchase_year: new Date().getFullYear(),
-            depreciation_life: 0,
-            notes: "",
+            frequency: "",
+            source_link: "",
             source_string: "",
-            source_link: ""
+            notes: ""
         };
     } else if (table === opexTable) {
         // OPEX table structure
@@ -375,57 +363,64 @@ function addRow(table) {
             expense_name: "",
             amount: 0,
             frequency: "",
-            notes: "",
             source_string: "",
-            source_link: ""
+            source_link: "",
+            notes: ""
         };
-	
-	} else if (table === employeesTable) {
+    } else if (table === employeesTable) {
         // Employees table structure
         newRow = {
             role: "",
             number: 0,
-			wage: 0,
-            wage_type: "salary",
+            wage: 0,
+            wage_type: "hourly",
+            monthly_hours: 0,
             notes: "",
-            source_string: "",
-            source_link: ""
+            source_link: "",
+            source_string: ""
         };
     } else if (table === purchasesTable) {
-        // Purchases table structure with nested data
+        // Cost of sales table structure
         newRow = {
-            ingredient_id: 0,  // Parent row data
-            name: "New Ingredient",
-            price_data_raw: [  // Child rows data for the tree structure
-                {
-                    company: "",
-                    price: 0,
-                    selling_quantity: 0,
-                    source: "",
-                    unit: "",
-                    unit_name: ""
-                }
-            ]
+            cost_item_name: "",
+            cost_per_unit: 0,
+            cost_source: "",
+            cost_source_link: "",
+            frequency: 0,
+            frequency_notes: "",
+            frequency_source: "",
+            frequency_source_link: ""
         };
-	} else if (table === historicalFinancialsTable) {
-		// Historical Financials table structure
-		newRow = {
-			year: new Date().getFullYear(),
-			revenue: 0,
-			cost_of_sales: 0,
-			operating_expenses: 0,
-			ebitda: 0,
-			depreciation: 0,
-			ebit: 0,
-			interest_expense: 0,
-			income_taxes: 0,
-			net_income: 0
-		};
+    } else if (table === revenueTable) {
+        // Revenue table structure
+        newRow = {
+            revenue_source_name: "",
+            revenue_source_price: 0,
+            price_source: "",
+            price_source_link: "",
+            frequency: 0,
+            frequency_notes: "",
+            frequency_source: "",
+            frequency_source_link: ""
+        };
+    } else if (table === historicalISTable) {
+        // Historical Income Statement table structure
+        newRow = {
+            year: new Date().getFullYear(),
+            revenue: 0,
+            cost_of_sales: 0,
+            operating_expenses: 0,
+            ebitda: 0,
+            depreciation: 0,
+            ebit: 0,
+            interest_expense: 0,
+            income_taxes: 0,
+            net_income: 0
+        };
     } else {
-        console.error("Unknown table type. Unable to add row.");
+        console.error("addRow: Unknown table type. Unable to add row.");
         return;
     }
-
 
     // Add the new row to the specified table
     table.addRow(newRow)
@@ -483,7 +478,7 @@ function sendToBackend(payload) {
     .catch(error => {
         loadingIcon.style.display = "none";
         aiResponseDiv.innerHTML = `<p>Error occurred: ${error.message}</p>`;
-        console.error('Error:', error);
+        console.error('sendToBackend: Error:', error);
     });
 }
 
@@ -517,72 +512,41 @@ function initializePdfAIButtonListener() {
             preparePayload('all');
         });
     } else {
-        console.error("pdfAIButton not found.");
+        console.error("initializePdfAIButtonListener: pdfAIButton not found.");
     }
 }
 
 
 //Actions following click on excel button
 document.getElementById('downloadExcelButton').addEventListener('click', function() {
-    fetch('/download_excel', {
+    fetch(`/download_excel?project_name=${PROJECT_NAME}`, {
         method: 'GET',
     })
     .then(response => {
-        if (response.ok) {
-            return response.blob();  // Convert response to blob for file download
-        } else {
-            console.error('Error downloading Excel file:', response.statusText);
+        if (!response.ok) {
+            throw new Error('Error downloading Excel file: ' + response.statusText);
         }
+        // Get filename from Content-Disposition header
+        const filename = response.headers.get('Content-Disposition')
+            ?.split(';')
+            ?.find(n => n.includes('filename='))
+            ?.replace('filename=', '')
+            ?.trim() || 'model.xlsx';
+            
+        return Promise.all([response.blob(), Promise.resolve(filename)]);
     })
-    .then(blob => {
+    .then(([blob, filename]) => {
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = 'financial_model.xlsx';  // The default file name
+        a.download = filename;
         document.body.appendChild(a);
         a.click();  // Programmatically click the anchor to trigger download
         a.remove();
+        window.URL.revokeObjectURL(url); // Clean up the URL object
     })
-    .catch(error => console.error('Error:', error));
+    .catch(error => console.error('downloadExcelButton click handler: Error:', error));
 });
-
-
-
-document.addEventListener('DOMContentLoaded', function() {
-    const uploadZone = document.getElementById('uploadZone');
-    const pdfInput = document.getElementById('pdfUpload');
-
-    if (uploadZone && pdfInput) {
-        // Trigger file input on click
-        uploadZone.addEventListener('click', () => pdfInput.click());
-
-        // Handle drag-and-drop files
-        uploadZone.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            uploadZone.classList.add('dragover');
-        });
-        uploadZone.addEventListener('dragleave', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            uploadZone.classList.remove('dragover');
-        });
-        uploadZone.addEventListener('drop', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            uploadZone.classList.remove('dragover');
-            const files = e.dataTransfer.files;
-            handleFiles({ target: { files: files } });
-        });
-		// Handle files selected via the dialog
-        pdfInput.addEventListener('change', (e) => {
-            handleFiles(e); // Pass the event directly to handleFiles
-        });
-    } else {
-        console.error("Upload elements not found.");
-    }
-});
-
 
 
 // Handle files and update the uploaded documents table
@@ -633,6 +597,64 @@ function handleFiles(event) {
         }
     });
 }
+
+// Move this outside of DOMContentLoaded to make it a standalone function
+function initializeUploadZone() {
+    const uploadZone = document.getElementById('uploadZone');
+    const pdfInput = document.getElementById('pdfUpload');
+
+    if (!uploadZone || !pdfInput) {
+        console.error("Upload elements not found");
+        return;
+    }
+
+    // Prevent default drag behaviors
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        uploadZone.addEventListener(eventName, preventDefaults, false);
+        document.body.addEventListener(eventName, preventDefaults, false);
+    });
+
+    // Highlight drop zone when dragging over it
+    ['dragenter', 'dragover'].forEach(eventName => {
+        uploadZone.addEventListener(eventName, () => {
+            uploadZone.classList.add('dragover');
+        });
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+        uploadZone.addEventListener(eventName, () => {
+            uploadZone.classList.remove('dragover');
+        });
+    });
+
+    // Handle dropped files
+    uploadZone.addEventListener('drop', (e) => {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        handleFiles({ target: { files: files } });
+    });
+
+    // Handle click to upload
+    uploadZone.addEventListener('click', () => {
+        pdfInput.click();
+    });
+
+    // Handle file input change
+    pdfInput.addEventListener('change', handleFiles);
+}
+
+function preventDefaults(e) {
+    e.preventDefault();
+    e.stopPropagation();
+}
+
+// Call initialization when DOM is loaded
+document.addEventListener('DOMContentLoaded', () => {
+    console.log('DOM Content Loaded');
+    initializeUploadZone();
+    initializeAddRowButtons();
+});
+
 
 
 
@@ -687,9 +709,27 @@ function uploadToAI(fileName, row) {
     .catch(error => {
         // Hide the loading spinner in case of error
         loadingIcon.style.display = "none";
-        console.error(`Error uploading ${fileName} to AI:`, error);
+        console.error('uploadToAI: Error uploading ${fileName} to AI:', error);
     });
 }
 
-
-
+// Function to initialize "Add Row" buttons for all tables
+function initializeAddRowButtons() {
+    // Find all buttons with class 'button-outline' and attach click handlers
+    document.querySelectorAll('.button-outline').forEach(button => {
+        button.addEventListener('click', (e) => {
+            console.log('Add Row button clicked');
+            // Find the table container ID by traversing up to card div and finding table-container
+            const tableId = e.target.closest('.card').querySelector('.table-container').id;
+            
+            // Get the Tabulator table instance associated with this container
+            // findTable returns array of matching tables, we want the first one
+            const table = Tabulator.findTable(`#${tableId}`)[0];
+            
+            // If we found a valid table, add a new empty row to it
+            if (table) {
+                addRow(table); // addRow() is defined elsewhere and handles table-specific row structures
+            }
+        });
+    });
+}
