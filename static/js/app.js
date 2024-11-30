@@ -33,8 +33,8 @@ revenueTable = new Tabulator("#revenueTable", {
             editor: "input"
         },
         {
-            title: "Frequency",
-            field: "frequency",
+            title: "# Transactions/Month",
+            field: "monthly_transactions",
             editor: "number"
         },
         {
@@ -70,32 +70,36 @@ revenueTable = new Tabulator("#revenueTable", {
 
 
 
-// Initialize Tabulator tree structure for Inventory and COGS data
+// Initialize Tabulator table for Inventory and COGS data
 const purchasesTable = new Tabulator("#purchasesTable", {
     layout: "fitData", // Fit columns to width of table
-	autoResize: true, // Enable auto-resize
-    dataTree: true, // Enable tree structure
-    dataTreeChildField: "price_data_raw", // Define the field that contains child rows
-    dataTreeStartExpanded: false, // Start with all rows collapsed
+    autoResize: true, // Enable auto-resize
     columns: [
-        // Parent columns
-        { title: "Ingredient ID", field: "ingredient_id", editor: "input"},
-        { title: "Name", field: "ingredient_name", editor: "input" },
-        
-        // Child Columns
-        { title: "Unit Name", field: "unit_name", editor: "input" }, 
-        { title: "Company", field: "company", editor: "input" },
-        { title: "Unit", field: "unit", editor: "input" },
-        { title: "Price", field: "price", editor: "number", formatter: dollarFormatter },
-        { title: "Selling Quantity", field: "selling_quantity", editor: "number" },
+        { title: "Cost Item Name", field: "cost_item_name", editor: "input" },
+        { title: "Cost Per Unit", field: "cost_per_unit", editor: "number", formatter: dollarFormatter },
         {
-            title: "Source",
-            field: "source",
-            formatter: function (cell, formatterParams) {
-                let sourceString = cell.getValue();
-                return sourceString ? `<a href="https://${sourceString}" target="_blank">${sourceString}</a>` : sourceString;
+            title: "Cost Source",
+            field: "cost_source",
+            formatter: function(cell) {
+                const source = cell.getValue();
+                const row = cell.getRow().getData();
+                const url = row.cost_source_link;
+                return url ? `<a href="${url}" target="_blank">${source}</a>` : source;
             },
-            editor: "input",
+            editor: "input"
+        },
+        { title: "Monthly Transactions", field: "monthly_transactions", editor: "number" },
+        { title: "Frequency Notes", field: "frequency_notes", editor: "input" },
+        {
+            title: "Frequency Source",
+            field: "frequency_source",
+            formatter: function(cell) {
+                const source = cell.getValue();
+                const row = cell.getRow().getData();
+                const url = row.frequency_source_link;
+                return url ? `<a href="${url}" target="_blank">${source}</a>` : source;
+            },
+            editor: "input"
         },
         {
             title: "",  // Add the delete button
@@ -110,12 +114,6 @@ const purchasesTable = new Tabulator("#purchasesTable", {
             },
         }
     ]
-});
-
-// Set up rowClick dynamically after the table is built
-purchasesTable.on("tableBuilt", function() {
-    // Expand all rows to make sure all are accessible
-    purchasesTable.getData().forEach(row => purchasesTable.getRow(row).treeExpand());
 });
 
 
@@ -269,7 +267,7 @@ const historicalISTable = new Tabulator("#historicalISTable", {
             hozAlign: "center",
             cellClick: function (e, cell) {
                 cell.getRow().delete();
-                historicalFinancialsTable.redraw();
+                historicalISTable.redraw();
             }
         }
     ]
@@ -319,25 +317,52 @@ function loadTableData(tableIdentifier, table) {
 
             const data = responseData.data;
             const rootKey = responseData.root_key;
+            
+            console.log(`Table: ${tableIdentifier}`);
+            console.log('Data received:', data);
+            console.log('Root key:', rootKey);
 
-            // If data is not an array, wrap it in array
-            if (data && !Array.isArray(data)) {
-                table.setData([data]);
+            let tableData;
+            
+            // If data has the root key, use that array
+            if (rootKey && data[rootKey]) {
+                tableData = data[rootKey];
             }
-            // If data has root key property and it's an array, use that
-            else if (rootKey && Array.isArray(data[rootKey])) {
-                table.setData(data[rootKey]);
-            }
-            // If data itself is an array, use directly
+            // If data is already an array, use it directly
             else if (Array.isArray(data)) {
-                table.setData(data);
+                tableData = data;
             }
+            // If data is an object but not an array, wrap it
+            else if (data && typeof data === 'object') {
+                tableData = [data];
+            }
+            // Fallback to empty array
             else {
-                console.error(`loadTableData: Invalid data structure for ${tableIdentifier}.`);
+                tableData = [];
             }
+
+            // Filter out any empty or null rows
+            tableData = tableData.filter(row => {
+                // Check if the row has any non-empty values
+                return Object.values(row).some(value => 
+                    value !== null && value !== undefined && value !== ''
+                );
+            });
+
+            console.log(`Processed data for ${tableIdentifier}:`, tableData);
+            
+            // Set the data to the table
+            table.setData(tableData)
+                .then(() => {
+                    adjustTableHeight(table);
+                    console.log(`Table ${tableIdentifier} updated successfully`);
+                })
+                .catch(error => {
+                    console.error(`Error setting data for ${tableIdentifier}:`, error);
+                });
         })
         .catch(error => {
-            console.error('loadTableData: Error loading table data:', error);
+            console.error(`loadTableData: Error loading ${tableIdentifier} data:`, error);
         });
 }
 
@@ -547,6 +572,38 @@ document.getElementById('downloadExcelButton').addEventListener('click', functio
     })
     .catch(error => console.error('downloadExcelButton click handler: Error:', error));
 });
+
+//Actions following click on powerpoint button
+document.getElementById('downloadPPTButton').addEventListener('click', function() {
+    fetch(`/download_ppt?project_name=${PROJECT_NAME}`, {
+        method: 'GET',
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Error downloading PowerPoint file: ' + response.statusText);
+        }
+        // Get filename from Content-Disposition header
+        const filename = response.headers.get('Content-Disposition')
+            ?.split(';')
+            ?.find(n => n.includes('filename='))
+            ?.replace('filename=', '')
+            ?.trim() || 'presentation.pptx';
+            
+        return Promise.all([response.blob(), Promise.resolve(filename)]);
+    })
+    .then(([blob, filename]) => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();  // Programmatically click the anchor to trigger download
+        a.remove();
+        window.URL.revokeObjectURL(url); // Clean up the URL object
+    })
+    .catch(error => console.error('downloadPPTButton click handler: Error:', error));
+});
+
 
 
 // Handle files and update the uploaded documents table

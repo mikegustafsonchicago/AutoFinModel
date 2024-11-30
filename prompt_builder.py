@@ -35,6 +35,16 @@ class PromptBuilder:
         self.user_prompt='' #The user prompt is text plus payload contents
         self.json_manager = json_manager
     
+    def reset_prompts(self):
+        """Reset all prompt components to prevent accumulation"""
+        self.table_data = ''
+        self.summary = ''
+        self.pdf_chunk = ''
+        self.chunk_num_text = ''
+        self.business_description = ''
+        self.user_input = ''
+        self.user_prompt = ''
+    
     def update_user_input(self,user_input):
         self.user_input = user_input
 
@@ -86,6 +96,7 @@ class PromptBuilder:
         return self.system_prompt
     
     def update_system_prompt_info(self, update_tables=None, context_tables=None, summary=None, business_description=None, pdf_chunk=None, chunk_num=None):
+        self.reset_prompts() 
         if update_tables:
             self.add_table_data(update_tables, context_tables)
         if summary:

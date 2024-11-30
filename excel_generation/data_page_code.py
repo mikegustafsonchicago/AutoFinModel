@@ -5,38 +5,29 @@ Created on Fri Aug 30 13:21:07 2024
 @author: mikeg
 """
 from helper_functions import number_to_column_letter, get_cell_identifier
+from workbook_sheet_manager_code import SheetManager
 
-class DataPage:
+class DataPage(SheetManager):
     def __init__(self, workbook_manager, cell_manager, business_object):
+        super().__init__(workbook_manager, business_object, "Data")
         
-        self.workbook_manager = workbook_manager
-        self.cell_manager = cell_manager
-        self.business_object = business_object
-        self.sheet_name='Data'
-        self.workbook=workbook_manager.workbook
-        self.num_forecasted_years=workbook_manager.num_forecasted_years
-        
-        self.workbook_manager.cell_info[self.sheet_name]={}
-        
-        #Create the sheet
-        self.data_sheet = self.workbook_manager.add_sheet(self.sheet_name)
         self.populate_sheet()
         
-    def write_to_sheet(self, row, col, formula_string, format_name="plain", print_formula=False, is_formula=False):
-        self.workbook_manager.validate_and_write(self.data_sheet, row, col, formula_string, format_name, print_formula)
-    
     def populate_sheet(self):
         #Set column widths
-        self.data_sheet.set_column('A:A', 5)  # Set width of column A to 10 units
-        self.data_sheet.set_column('B:B', 30)  # Set width of column A to 10 units
-        self.data_sheet.set_column('F:F', 30)  # Set width of column A to 10 units
-        self.data_sheet.set_column('G:G', 30)  # Set width of column A to 10 units
+        self.xlsxwriter_sheet.set_column('A:A', 5)   # Margin column
+        self.xlsxwriter_sheet.set_column('B:B', 25)  # Cost Item Name
+        self.xlsxwriter_sheet.set_column('C:C', 15)  # Cost per Unit 
+        self.xlsxwriter_sheet.set_column('D:D', 12)  # Frequency
+        self.xlsxwriter_sheet.set_column('E:E', 20)  # Frequency Notes
+        self.xlsxwriter_sheet.set_column('F:F', 35)  # Cost Source (URL)
+        self.xlsxwriter_sheet.set_column('G:G', 35)  # Frequency Source (URL)
         
         #Write the page title
         self.write_to_sheet( 1, 1, 'Raw Data Page', format_name='title')
         
         # Create the color banner row
-        self.data_sheet.set_row(2, 5)
+        self.xlsxwriter_sheet.set_row(2, 5)
         for col in range(1,10):
             self.write_to_sheet( 2, col, "", format_name="color_banner")
         
@@ -47,8 +38,8 @@ class DataPage:
         
         for direct_cost in self.business_object.cost_of_sales_items:
             # Write the headers
-            headers = ["Cost Item Name", "Cost per Unit", "Cost Source", "Cost Source Link",
-                      "Frequency", "Frequency Notes", "Frequency Source", "Frequency Source Link"]
+            headers = ["Cost Item Name", "Cost per Unit", "Frequency", "Frequency Notes", 
+                      "Cost Source", "Frequency Source"]
             for i, header in enumerate(headers):
                 self.write_to_sheet(row, i+col_offset, header, format_name="underline")
             row += 1
@@ -56,15 +47,15 @@ class DataPage:
             # Write cost item data
             self.write_to_sheet(row, col_offset, direct_cost['cost_item_name'])
             self.write_to_sheet(row, col_offset+1, direct_cost['cost_per_unit'], format_name="currency_cents")
-            self.write_to_sheet(row, col_offset+2, direct_cost['cost_source'])
-            self.write_to_sheet(row, col_offset+3, direct_cost['cost_source_link'])
-            self.write_to_sheet(row, col_offset+4, direct_cost['frequency'], format_name="number")
-            self.write_to_sheet(row, col_offset+5, direct_cost['frequency_notes'])
-            self.write_to_sheet(row, col_offset+6, direct_cost['frequency_source'])
-            self.write_to_sheet(row, col_offset+7, direct_cost['frequency_source_link'])
+            self.write_to_sheet(row, col_offset+2, direct_cost['frequency'], format_name="number")
+            self.write_to_sheet(row, col_offset+3, direct_cost['frequency_notes'])
+            # Add cost source as link
+            self.write_to_sheet(row, col_offset+4, f'=HYPERLINK("{direct_cost["cost_source_link"]}", "{direct_cost["cost_source"]}")', is_formula=True)
+            # Add frequency source as link  
+            self.write_to_sheet(row, col_offset+5, f'=HYPERLINK("{direct_cost["frequency_source_link"]}", "{direct_cost["frequency_source"]}")', is_formula=True)
             
             # Save reference to cost per unit cell for this cost item
-            self.cell_manager.add_cell_reference(self.sheet_name, direct_cost['cost_item_name'], 
+            self.cell_manager.add_cell_reference(self.sheet_name, direct_cost['cost_item_name'],
                                                row=row, col=col_offset+1)
             
             row += 2

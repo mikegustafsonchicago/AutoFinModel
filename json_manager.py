@@ -456,7 +456,7 @@ class JsonManager:
                             "cost_per_unit": 10.0,
                             "cost_source": "Sample Source",
                             "cost_source_link": "https://example.com",
-                            "frequency": 100,
+                            "monthly_transactions": 100,
                             "frequency_notes": "Units per month",
                             "frequency_source": "Sample Source",
                             "frequency_source_link": "https://example.com"
@@ -473,7 +473,7 @@ class JsonManager:
                                 "cost_per_unit",
                                 "cost_source",
                                 "cost_source_link",
-                                "frequency",
+                                "monthly_transactions",
                                 "frequency_notes",
                                 "frequency_source",
                                 "frequency_source_link"
@@ -503,9 +503,9 @@ class JsonManager:
                                     "format": "uri",
                                     "order": 4
                                 },
-                                "frequency": {
+                                "monthly_transactions": {
                                     "type": "number",
-                                    "description": "Frequency of cost occurrence",
+                                    "description": "Number of transactions per month",
                                     "minimum": 0,
                                     "order": 5
                                 },
@@ -545,7 +545,7 @@ class JsonManager:
                                 "revenue_source_price",
                                 "price_source",
                                 "price_source_link",
-                                "frequency",
+                                "monthly_transactions",
                                 "frequency_notes",
                                 "frequency_source",
                                 "frequency_source_link"
@@ -575,9 +575,9 @@ class JsonManager:
                                     "format": "uri",
                                     "order": 4
                                 },
-                                "frequency": {
+                                "monthly_transactions": {
                                     "type": "number",
-                                    "description": "Frequency of sales/service",
+                                    "description": "Number of transactions per month",
                                     "minimum": 0,
                                     "order": 5
                                 },
@@ -605,10 +605,10 @@ class JsonManager:
                     "revenue_sources": [
                         {
                             "revenue_source_name": "Sample Revenue Stream",
-                            "revenue_source_price": 25.00,
+                            "price": 25.00,
                             "price_source": "Industry Average",
                             "price_source_link": "https://example.com/pricing",
-                            "frequency": 100,
+                            "monthly_transactions": 100,
                             "frequency_notes": "Transactions per day",
                             "frequency_source": "Market Research",
                             "frequency_source_link": "https://example.com/research"
@@ -741,7 +741,6 @@ class JsonManager:
 
 
     def initialize_json_files(self, project_name):
-        """Initialize all JSON files with default structures"""
         # Create temp directory if it doesn't exist
         if not os.path.exists(self.JSON_FOLDER):
             try:
@@ -847,36 +846,16 @@ class JsonManager:
 
         # Get the root key from file_info
         root_key = file_info.get("root_key")
-        if not root_key:
-            logging.error(f"load_json_data: No root_key defined for {identifier}")
-            return None
 
         # Return the data under the root key
         try:
-            if root_key == "purchases_table":
-                # Special handling for purchases table to create Ingredient objects
-                ingredients_list = []
-                for ingredient_item in data.get(root_key, []):
-                    try:
-                        ingredient = Ingredient(
-                            name=ingredient_item['ingredient_name'],
-                            ingredient_id=ingredient_item['ingredient_id'],
-                            price_data_raw=ingredient_item['price_data_raw']
-                        )
-                        if ingredient.unique_id:
-                            ingredients_list.append(ingredient)
-                        else:
-                            logging.warning(f"load_json_data: Ingredient {ingredient.name} missing ID")
-                    except KeyError as e:
-                        logging.error(f"load_json_data: Missing required field in ingredient data: {e}")
-                        continue
-                return ingredients_list
-            else:
-                # For all other tables, return the data under the root key
-                return data
+            # For all tables, return the data under the root key if it exists
+            if root_key:
+                return data.get(root_key, [])
+            return data
                 
         except Exception as e:
-            logging.error(f"load_json_data: Error processing data for {identifier}: {e}")
+            logging.error(f"load_json_data: Error processing data for {identifier}: {e}. Data is {data}")
             return None
 
 
@@ -910,8 +889,6 @@ class JsonManager:
 
     def update_json_files(self, json_data, project_name):
         """Update JSON files with new data"""
-        logging.debug(f"update_json_files: JSON Data headers are {json_data.keys()}")
-        
         # Get the appropriate file structure mapping based on project
         file_structure = self.CATALYST_FILES_AND_STRUCTURES if project_name == "catalyst" else self.FILES_AND_STRUCTURES
         

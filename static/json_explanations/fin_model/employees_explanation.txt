@@ -1,0 +1,16 @@
+Structure Explanation:
+
+The employees table stores employee information and wages. The data must be structured exactly as follows to match the system configuration:
+
+Root Key: "employees" (This exact root key must be used)
+Structure:
+- employees (Array): Contains employee role entries with the following required fields:
+  - role (String): Job title or role, 1-100 characters
+  - number (Number): Number of employees in this role (minimum 0)
+  - wage (Number): Wage amount in dollars (minimum 0)
+  - wage_type (String): Must be either "hourly" or "salary" 
+  - monthly_hours (Number): Expected work hours per month (minimum 0)
+  - notes (String): Additional notes about the role
+  - source_link (String): URL to wage/role source information
+  - source_string (String): Description of wage/role source
+

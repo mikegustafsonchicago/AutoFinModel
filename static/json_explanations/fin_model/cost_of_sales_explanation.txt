@@ -1,0 +1,18 @@
+Cost of Sales Table
+Description: The Cost of Sales table contains direct costs and cost of goods sold (COGS) information.
+
+Structure Explanation:
+
+Root Key: cost_items
+Structure:
+- cost_items (List): Contains cost entries with the following fields:
+  - cost_item_name (String): Name of the cost item or direct cost (1-100 chars)
+  - cost_per_unit (Number): Cost per unit/service (>= 0)
+  - cost_source (String): Description of cost information source
+  - cost_source_link (String): URL to cost source documentation
+  - monthly_transactions (Number): Number of transactions per month (>= 0)
+  - frequency_notes (String): Additional context about transaction frequency
+  - frequency_source (String): Description of frequency data source
+  - frequency_source_link (String): URL to frequency source documentation
+
+The root key and all other elements of the example file sent must be used exactly as shown to maintain compatibility with the system's FILES_AND_STRUCTURES configuration.

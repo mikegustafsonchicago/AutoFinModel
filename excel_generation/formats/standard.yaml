@@ -18,6 +18,9 @@ date:
   num_format: "mm/dd/yyyy"
 bold:
   bold: true
+bold_right:
+  bold: true
+  align: right
 underline:
   underline: true
 underline_wrap:

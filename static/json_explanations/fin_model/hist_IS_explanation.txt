@@ -1,0 +1,20 @@
+Historical Income Statement Table
+Description: The Historical Income Statement table contains historical financial performance data organized by year. It follows a standard income statement format, breaking down revenue, costs, and various profit metrics.
+
+Structure Explanation:
+
+Root Key: historical_financials
+Structure:
+- historical_financials (List): Each item represents a full year's income statement data with the following fields:
+  - year (Number): The fiscal year for the income statement data
+  - revenue (Number): Total revenue/sales for the year
+  - cost_of_sales (Number): Direct costs of goods/services sold
+  - operating_expenses (Number): Operating expenses excluding depreciation
+  - ebitda (Number): Earnings before interest, taxes, depreciation & amortization
+  - depreciation (Number): Depreciation & amortization expense
+  - ebit (Number): Earnings before interest and taxes
+  - interest_expense (Number): Interest expense for the year
+  - income_taxes (Number): Income tax expense
+  - net_income (Number): Final net income/profit after all expenses
+
+The root key and all other elements of the example file sent must be used exactly as shown to maintain compatibility with the system's FILES_AND_STRUCTURES configuration.

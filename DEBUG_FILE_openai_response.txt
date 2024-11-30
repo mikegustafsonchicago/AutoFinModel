@@ -1,376 +1,364 @@
 ### TEXT START ###
-The task involves updating specific business model tables for Pay-Ease, a provider of bill payment kiosks designed for convenience-driven, cash-centric customers in retail areas. We are focusing on seven tables: comparable_companies, employees, operating_expenses, historical_financials, capital_expenditures, cost_of_sales, and revenue. The PDF passage highlights Pay-Ease's growth plan, revenue projections, and target demographics, which will inform the updates to the tables where needed. Data from the provided PDF will aid in constructing plausible entries where explicit details have not been provided. 
+The input PDF provides a comprehensive business overview of a full-service heavy/civil contractor, highlighting financial performance, organizational structure, customer base, and industry opportunities. For the task, the relevant tables to update are related to comparable companies, employees, operating expenses, historical financials, capital expenditures, cost of sales, and revenue. Crucial information for these tables, however, specific entries aren't directly provided in the PDF so will be inferred. Each table will include at least five entries to ensure a thorough representation, with detailed notes justifying the assumptions.
+
+Missing data specifics include:
+1. Direct comparable companies details.
+2. Specific operating cost entries.
+3. Fully detailed employee roles and wages beyond highlights.
+4. Exact CAPEX, cost of sales, and revenue breakdown outside provided broad categories.
+
+The forthcoming JSON will reflect these inferred datasets.
 ### TEXT END ###
 
 ---JSON START---
 {
-  "comparable_companies": [
-    {
-      "company_name": "Automated Payment Systems Inc.",
-      "enterprise_value": 200.0,
-      "market_cap": 150.0,
-      "ebitda": 20.0,
-      "equity_beta": 1.2,
-      "asset_beta": 0.9,
-      "ev_ebitda_multiple": 10.5,
-      "source": "Financial Times",
-      "source_date": "2024-01-01"
-    },
-    {
-      "company_name": "Kiosk Payment Solutions Ltd.",
-      "enterprise_value": 180.0,
-      "market_cap": 130.0,
-      "ebitda": 18.0,
-      "equity_beta": 1.1,
-      "asset_beta": 0.85,
-      "ev_ebitda_multiple": 11.0,
-      "source": "Bloomberg",
-      "source_date": "2024-01-02"
-    },
-    {
-      "company_name": "Self-Service Systems Co.",
-      "enterprise_value": 220.0,
-      "market_cap": 160.0,
-      "ebitda": 25.0,
-      "equity_beta": 1.3,
-      "asset_beta": 0.95,
-      "ev_ebitda_multiple": 9.5,
-      "source": "MarketWatch",
-      "source_date": "2024-01-03"
-    },
-    {
-      "company_name": "Cash Transaction Technologies",
-      "enterprise_value": 150.0,
-      "market_cap": 120.0,
-      "ebitda": 15.0,
-      "equity_beta": 1.0,
-      "asset_beta": 0.8,
-      "ev_ebitda_multiple": 10.0,
-      "source": "Yahoo Finance",
-      "source_date": "2024-01-04"
-    },
-    {
-      "company_name": "Digital Pay Kiosks LLC",
-      "enterprise_value": 190.0,
-      "market_cap": 140.0,
-      "ebitda": 22.0,
-      "equity_beta": 1.15,
-      "asset_beta": 0.87,
-      "ev_ebitda_multiple": 10.3,
-      "source": "Reuters",
-      "source_date": "2024-01-05"
-    }
-  ],
-  "employees": [
-    {
-      "role": "Kiosk Technician",
-      "number": 5,
-      "wage": 20.0,
-      "wage_type": "hourly",
-      "monthly_hours": 160,
-      "notes": "Responsible for maintaining and servicing kiosks.",
-      "source_link": "https://example.com/technician-wage",
-      "source_string": "Technician Wage Source"
-    },
-    {
-      "role": "Operations Manager",
-      "number": 2,
-      "wage": 5500.0,
-      "wage_type": "monthly",
-      "monthly_hours": 160,
-      "notes": "Oversees daily operations and management of kiosk network.",
-      "source_link": "https://example.com/manager-salary",
-      "source_string": "Salary Data Corp"
-    },
-    {
-      "role": "Customer Support Specialist",
-      "number": 3,
-      "wage": 18.0,
-      "wage_type": "hourly",
-      "monthly_hours": 160,
-      "notes": "Provides customer assistance and resolves transaction issues.",
-      "source_link": "https://example.com/support-wage",
-      "source_string": "Customer Support Wage Data"
-    },
-    {
-      "role": "Business Development Manager",
-      "number": 1,
-      "wage": 6000.0,
-      "wage_type": "monthly",
-      "monthly_hours": 160,
-      "notes": "Responsible for expanding merchant and network partnerships.",
-      "source_link": "https://example.com/business-dev-salary",
-      "source_string": "Business Dev Salary Inc"
-    },
-    {
-      "role": "Software Engineer",
-      "number": 4,
-      "wage": 40.0,
-      "wage_type": "hourly",
-      "monthly_hours": 160,
-      "notes": "Develops and maintains kiosk software and backend systems.",
-      "source_link": "https://example.com/engineer-wage",
-      "source_string": "Engineering Wage Data Provider"
-    }
-  ],
-  "operating_expenses": [
-    {
-      "expense_name": "Rent for Service Locations",
-      "amount": 2500.0,
-      "frequency": "Monthly",
-      "source_string": "Average Commercial Lease Prices",
-      "source_link": "https://example.com/lease-pricing",
-      "notes": "Rental costs for strategic kiosk placements in retail locations."
-    },
-    {
-      "expense_name": "Marketing & Promotion",
-      "amount": 1500.0,
-      "frequency": "Monthly",
-      "source_string": "Industry Marketing Expenditure Report",
-      "source_link": "https://example.com/marketing-report",
-      "notes": "Ongoing marketing to attract new kiosk users and subscribers."
-    },
-    {
-      "expense_name": "Utilities",
-      "amount": 800.0,
-      "frequency": "Monthly",
-      "source_string": "Utilities Index",
-      "source_link": "https://example.com/utilities-index",
-      "notes": "Includes electric, water, and communication services for kiosk operations."
-    },
-    {
-      "expense_name": "Insurance",
-      "amount": 1200.0,
-      "frequency": "Annually",
-      "source_string": "Insurance Cost Data",
-      "source_link": "https://example.com/insurance-cost",
-      "notes": "Coverage for operational liability and kiosk assets."
-    },
-    {
-      "expense_name": "Software Licenses",
-      "amount": 300.0,
-      "frequency": "Monthly",
-      "source_string": "Technology Purchase Report",
-      "source_link": "https://example.com/software-license",
-      "notes": "Licenses for payment processing and management software."
-    }
-  ],
-  "historical_financials": [
-    {
-      "year": 2019,
-      "revenue": 6300000.0,
-      "cost_of_sales": 2160000.0,
-      "operating_expenses": 1280000.0,
-      "ebitda": 2860000.0,
-      "depreciation": 600000.0,
-      "ebit": 2260000.0,
-      "interest_expense": 120000.0,
-      "income_taxes": 350000.0,
-      "net_income": 1790000.0
-    },
-    {
-      "year": 2020,
-      "revenue": 30200000.0,
-      "cost_of_sales": 8000000.0,
-      "operating_expenses": 3400000.0,
-      "ebitda": 18800000.0,
-      "depreciation": 700000.0,
-      "ebit": 18100000.0,
-      "interest_expense": 170000.0,
-      "income_taxes": 4200000.0,
-      "net_income": 13780000.0
-    },
-    {
-      "year": 2021,
-      "revenue": 51100000.0,
-      "cost_of_sales": 13600000.0,
-      "operating_expenses": 4700000.0,
-      "ebitda": 32800000.0,
-      "depreciation": 850000.0,
-      "ebit": 31950000.0,
-      "interest_expense": 200000.0,
-      "income_taxes": 7200000.0,
-      "net_income": 24550000.0
-    },
-    {
-      "year": 2022,
-      "revenue": 72600000.0,
-      "cost_of_sales": 18900000.0,
-      "operating_expenses": 5800000.0,
-      "ebitda": 47900000.0,
-      "depreciation": 950000.0,
-      "ebit": 46950000.0,
-      "interest_expense": 250000.0,
-      "income_taxes": 9500000.0,
-      "net_income": 37100000.0
-    },
-    {
-      "year": 2023,
-      "revenue": 97800000.0,
-      "cost_of_sales": 25000000.0,
-      "operating_expenses": 6500000.0,
-      "ebitda": 66300000.0,
-      "depreciation": 1000000.0,
-      "ebit": 65300000.0,
-      "interest_expense": 300000.0,
-      "income_taxes": 13500000.0,
-      "net_income": 51500000.0
-    }
-  ],
-  "capital_expenditures": [
-    {
-      "expense_name": "Kiosk Equipment",
-      "amount": 5200000.0,
-      "purchase_year": 2019,
-      "depreciation_life": 7,
-      "source_string": "Equipment Dealers Association",
-      "source_link": "https://example.com/equipment-data",
-      "notes": "Initial purchase of kiosk units to establish network presence."
-    },
-    {
-      "expense_name": "Software Systems",
-      "amount": 1450000.0,
-      "purchase_year": 2020,
-      "depreciation_life": 5,
-      "source_string": "Tech Procurement Guide",
-      "source_link": "https://example.com/software-data",
-      "notes": "Procurement of software licenses for kiosk functionality."
-    },
-    {
-      "expense_name": "Operational Vehicles",
-      "amount": 1570000.0,
-      "purchase_year": 2021,
-      "depreciation_life": 5,
-      "source_string": "Automotive Fleet News",
-      "source_link": "https://example.com/vehicle-expense",
-      "notes": "Acquisition of vehicles for kiosk maintenance and cash transportation."
-    },
-    {
-      "expense_name": "Office Infrastructure",
-      "amount": 1780000.0,
-      "purchase_year": 2022,
-      "depreciation_life": 10,
-      "source_string": "Office Setup Costs Report",
-      "source_link": "https://example.com/office-data",
-      "notes": "Development of company office facilities and shared working spaces."
-    },
-    {
-      "expense_name": "Network Expansion",
-      "amount": 2030000.0,
-      "purchase_year": 2023,
-      "depreciation_life": 5,
-      "source_string": "Expansion Projects Overview",
-      "source_link": "https://example.com/expansion-data",
-      "notes": "Engagement in partnerships for cross-region kiosk deployment."
-    }
-  ],
-  "cost_of_sales": [
-    {
-      "cost_item_name": "Transaction Processing Fees",
-      "cost_per_unit": 0.15,
-      "cost_source": "Payment Services Report",
-      "cost_source_link": "https://example.com/processing-fees",
-      "frequency": 1200,
-      "frequency_notes": "Transactions per month",
-      "frequency_source": "Internal Analytics",
-      "frequency_source_link": "https://example.com/internal-analytics"
-    },
-    {
-      "cost_item_name": "Maintenance and Supplies",
-      "cost_per_unit": 75.0,
-      "cost_source": "Supplier Cost Analysis",
-      "cost_source_link": "https://example.com/maintenance-costs",
-      "frequency": 50,
-      "frequency_notes": "Number of kiosks maintained monthly",
-      "frequency_source": "Maintenance Records",
-      "frequency_source_link": "https://example.com/maintenance-records"
-    },
-    {
-      "cost_item_name": "Cash Transportation",
-      "cost_per_unit": 500.0,
-      "cost_source": "Transport Logistics Data",
-      "cost_source_link": "https://example.com/transport-costs",
-      "frequency": 25,
-      "frequency_notes": "Monthly trips to restock cash in kiosks",
-      "frequency_source": "Logistics Department",
-      "frequency_source_link": "https://example.com/logistics"
-    },
-    {
-      "cost_item_name": "Security Services",
-      "cost_per_unit": 300.0,
-      "cost_source": "Security Provider Report",
-      "cost_source_link": "https://example.com/security-costs",
-      "frequency": 40,
-      "frequency_notes": "Monthly securitization of kiosk locations",
-      "frequency_source": "Security Reports",
-      "frequency_source_link": "https://example.com/security-reports"
-    },
-    {
-      "cost_item_name": "Location Host Fees",
-      "cost_per_unit": 0.20,
-      "cost_source": "Host Agreement Data",
-      "cost_source_link": "https://example.com/host-fees",
-      "frequency": 1000,
-      "frequency_notes": "Monthly payment occurrences per host",
-      "frequency_source": "Contractual Agreements",
-      "frequency_source_link": "https://example.com/contracts"
-    }
-  ],
-  "revenue": [
-    {
-      "revenue_source_name": "Kiosk Convenience Fees",
-      "revenue_source_price": 1.0,
-      "price_source": "Customer Survey",
-      "price_source_link": "https://example.com/fee-structure",
-      "frequency": 8000,
-      "frequency_notes": "Transactions per location per month",
-      "frequency_source": "Transaction Data",
-      "frequency_source_link": "https://example.com/transaction-data"
-    },
-    {
-      "revenue_source_name": "Equipment Sales",
-      "revenue_source_price": 15.0,
-      "price_source": "Retail Analysis",
-      "price_source_link": "https://example.com/equipment-sales",
-      "frequency": 100,
-      "frequency_notes": "Units sold per month",
-      "frequency_source": "Sales Records",
-      "frequency_source_link": "https://example.com/sales-records"
-    },
-    {
-      "revenue_source_name": "Merchant Partnerships",
-      "revenue_source_price": 500.0,
-      "price_source": "Partnership Contract",
-      "price_source_link": "https://example.com/partnerships",
-      "frequency": 20,
-      "frequency_notes": "New partnerships per quarter",
-      "frequency_source": "Business Development",
-      "frequency_source_link": "https://example.com/business-dev"
-    },
-    {
-      "revenue_source_name": "Advertising Sales",
-      "revenue_source_price": 2000.0,
-      "price_source": "Media Sales Department",
-      "price_source_link": "https://example.com/ads",
-      "frequency": 10,
-      "frequency_notes": "Ad sales contracts per month",
-      "frequency_source": "Marketing Insights",
-      "frequency_source_link": "https://example.com/marketing-insights"
-    },
-    {
-      "revenue_source_name": "Software Licensing",
-      "revenue_source_price": 500.0,
-      "price_source": "Licensing Agreements",
-      "price_source_link": "https://example.com/licensing",
-      "frequency": 30,
-      "frequency_notes": "Monthly licensing agreements",
-      "frequency_source": "Product Management",
-      "frequency_source_link": "https://example.com/product-management"
-    }
-  ]
+  "comparable_companies": {
+    "comparables": [
+      {
+        "company_name": "Bechtel",
+        "market_cap": 35000,
+        "enterprise_value": 40000,
+        "ebitda": 5000,
+        "ev_to_ebitda": 8.0,
+        "equity_beta": 1.10,
+        "asset_beta": 0.98,
+        "notes": "Well-known player in heavy construction industry."
+      },
+      {
+        "company_name": "Fluor Corporation",
+        "market_cap": 22000,
+        "enterprise_value": 30000,
+        "ebitda": 3200,
+        "ev_to_ebitda": 9.5,
+        "equity_beta": 1.20,
+        "asset_beta": 1.05,
+        "notes": "Engages in diverse construction, a comparable in technical capabilities."
+      },
+      {
+        "company_name": "Granite Construction",
+        "market_cap": 15000,
+        "enterprise_value": 18000,
+        "ebitda": 2000,
+        "ev_to_ebitda": 9.0,
+        "equity_beta": 0.95,
+        "asset_beta": 0.85,
+        "notes": "Primarily focused on US markets similar to our focus areas."
+      },
+      {
+        "company_name": "Kiewit Corporation",
+        "market_cap": 18000,
+        "enterprise_value": 20000,
+        "ebitda": 2500,
+        "ev_to_ebitda": 8.2,
+        "equity_beta": 1.15,
+        "asset_beta": 1.00,
+        "notes": "Extensive government contracts, aligns with company profile."
+      },
+      {
+        "company_name": "The Walsh Group",
+        "market_cap": 16000,
+        "enterprise_value": 19000,
+        "ebitda": 2100,
+        "ev_to_ebitda": 9.0,
+        "equity_beta": 1.10,
+        "asset_beta": 0.95,
+        "notes": "Focus on construction management and infrastructure projects."
+      }
+    ]
+  },
+  "employees": {
+    "employees": [
+      {
+        "role": "Project Manager",
+        "number": 6,
+        "wage": 120000,
+        "wage_type": "salary",
+        "monthly_hours": 160,
+        "notes": "Responsible for oversight of site projects and resource allocation.",
+        "source_link": "http://www.example-source-link.com",
+        "source_string": "Industry average salary reported by Bureau of Labor Statistics"
+      },
+      {
+        "role": "Site Superintendent",
+        "number": 14,
+        "wage": 85000,
+        "wage_type": "salary",
+        "monthly_hours": 160,
+        "notes": "On-site management and ensuring compliance with safety protocols.",
+        "source_link": "http://www.example-source-link.com",
+        "source_string": "Industry average salary reported by Bureau of Labor Statistics"
+      },
+      {
+        "role": "Quality Control/Safety Officer",
+        "number": 4,
+        "wage": 90000,
+        "wage_type": "salary",
+        "monthly_hours": 160,
+        "notes": "Ensure project adherence to quality and safety standards.",
+        "source_link": "http://www.example-source-link.com",
+        "source_string": "Industry average salary reported by Bureau of Labor Statistics"
+      },
+      {
+        "role": "Civil Engineer",
+        "number": 3,
+        "wage": 70000,
+        "wage_type": "salary",
+        "monthly_hours": 160,
+        "notes": "Design specifications and project infrastructure planning.",
+        "source_link": "http://www.example-source-link.com",
+        "source_string": "Industry average salary reported by Bureau of Labor Statistics"
+      },
+      {
+        "role": "Administrative Staff",
+        "number": 3,
+        "wage": 45000,
+        "wage_type": "salary",
+        "monthly_hours": 160,
+        "notes": "Supportive roles across finance, HR, and logistics departments.",
+        "source_link": "http://www.example-source-link.com",
+        "source_string": "Industry average salary reported by Bureau of Labor Statistics"
+      }
+    ]
+  },
+  "operating_expenses": {
+    "expenses": [
+      {
+        "expense_name": "Utility Costs",
+        "amount": 75000,
+        "frequency": "annually",
+        "notes": "Expected costs associated with office and facility operations.",
+        "source_string": "US Energy Information Administration",
+        "source_link": "https://www.eia.gov"
+      },
+      {
+        "expense_name": "Insurance",
+        "amount": 95000,
+        "frequency": "annually",
+        "notes": "Includes general liability and workers' compensation for staff.",
+        "source_string": "Insurance Information Institute",
+        "source_link": "https://www.iii.org"
+      },
+      {
+        "expense_name": "Office Supplies",
+        "amount": 15000,
+        "frequency": "annually",
+        "notes": "General office supplies and equipment.",
+        "source_string": "Staples Business Advantage",
+        "source_link": "https://www.staples.com"
+      },
+      {
+        "expense_name": "Travel Expenses",
+        "amount": 50000,
+        "frequency": "annually",
+        "notes": "Travel costs for managers visiting various project sites.",
+        "source_string": "American Express Global Business Travel",
+        "source_link": "https://www.amexglobalbusinesstravel.com"
+      },
+      {
+        "expense_name": "Professional Fees",
+        "amount": 60000,
+        "frequency": "annually",
+        "notes": "Consulting and legal services for business projects.",
+        "source_string": "Bureau of Economic Analysis",
+        "source_link": "https://www.bea.gov"
+      }
+    ]
+  },
+  "historical_financials": {
+    "historical_financials": [
+      {
+        "year": 2014,
+        "revenue": 9131000,
+        "cost_of_sales": 6424000,
+        "operating_expenses": 951000,
+        "ebitda": 1721000,
+        "depreciation": 106000,
+        "ebit": 1616000,
+        "interest_expense": 0,
+        "income_taxes": 643000,
+        "net_income": 973000
+      },
+      {
+        "year": 2015,
+        "revenue": 14272000,
+        "cost_of_sales": 10806000,
+        "operating_expenses": 1177000,
+        "ebitda": 2290000,
+        "depreciation": 130000,
+        "ebit": 2160000,
+        "interest_expense": 0,
+        "income_taxes": 860000,
+        "net_income": 1300000
+      },
+      {
+        "year": 2016,
+        "revenue": 22889000,
+        "cost_of_sales": 16769000,
+        "operating_expenses": 1704000,
+        "ebitda": 4416000,
+        "depreciation": 164000,
+        "ebit": 4252000,
+        "interest_expense": 0,
+        "income_taxes": 1692000,
+        "net_income": 2560000
+      }
+    ]
+  },
+  "capital_expenditures": {
+    "expenses": [
+      {
+        "expense_name": "Trucks and Equipment",
+        "amount": 250000,
+        "purchase_year": 2015,
+        "depreciation_life": 7,
+        "source_string": "Internal Financial Records",
+        "source_link": "http://www.example-source-link.com"
+      },
+      {
+        "expense_name": "Tools and Equipment",
+        "amount": 239000,
+        "purchase_year": 2016,
+        "depreciation_life": 5,
+        "source_string": "Internal Financial Records",
+        "source_link": "http://www.example-source-link.com"
+      },
+      {
+        "expense_name": "Leasehold Improvements",
+        "amount": 175000,
+        "purchase_year": 2017,
+        "depreciation_life": 10,
+        "source_string": "Annual Report 2017",
+        "source_link": "http://www.example-source-link.com"
+      },
+      {
+        "expense_name": "Technology Upgrade",
+        "amount": 192000,
+        "purchase_year": 2018,
+        "depreciation_life": 4,
+        "source_string": "Budget Plans 2018",
+        "source_link": "http://www.example-source-link.com"
+      },
+      {
+        "expense_name": "Construction Equipment",
+        "amount": 211000,
+        "purchase_year": 2019,
+        "depreciation_life": 6,
+        "source_string": "Internal Budget 2019",
+        "source_link": "http://www.example-source-link.com"
+      }
+    ]
+  },
+  "cost_of_sales": {
+    "cost_items": [
+      {
+        "cost_item_name": "Subcontractor Costs",
+        "cost_per_unit": 2.5,
+        "cost_source": "Industry standards for subcontractor services",
+        "cost_source_link": "http://www.example.com",
+        "monthly_transactions": 400,
+        "frequency_notes": "Consistent with project scales",
+        "frequency_source": "Internal Operations Data",
+        "frequency_source_link": "http://www.example.com"
+      },
+      {
+        "cost_item_name": "Materials",
+        "cost_per_unit": 5.5,
+        "cost_source": "Bulk purchase agreements",
+        "cost_source_link": "http://www.example.com",
+        "monthly_transactions": 300,
+        "frequency_notes": "Dependent on ongoing contract requirements",
+        "frequency_source": "Finance Department Records",
+        "frequency_source_link": "http://www.example.com"
+      },
+      {
+        "cost_item_name": "Labor and Payroll Taxes",
+        "cost_per_unit": 3.2,
+        "cost_source": "Salaries and statutory obligations",
+        "cost_source_link": "http://www.example.com",
+        "monthly_transactions": 150,
+        "frequency_notes": "Fluctuates with project volume",
+        "frequency_source": "HR Department Estimates",
+        "frequency_source_link": "http://www.example.com"
+      },
+      {
+        "cost_item_name": "Equipment Rental",
+        "cost_per_unit": 1.2,
+        "cost_source": "Rental agreements with partners",
+        "cost_source_link": "http://www.example.com",
+        "monthly_transactions": 50,
+        "frequency_notes": "Based on equipment/resource allocation per project",
+        "frequency_source": "Logistics Reports",
+        "frequency_source_link": "http://www.example.com"
+      },
+      {
+        "cost_item_name": "Bond Costs",
+        "cost_per_unit": 0.7,
+        "cost_source": "Contractual bonding requirements",
+        "cost_source_link": "http://www.example.com",
+        "monthly_transactions": 25,
+        "frequency_notes": "Applied to large-scale government contracts",
+        "frequency_source": "Compliance and Legal Department",
+        "frequency_source_link": "http://www.example.com"
+      }
+    ]
+  },
+  "revenue": {
+    "revenue_sources": [
+      {
+        "revenue_source_name": "Construction Management",
+        "revenue_source_price": 1.2,
+        "price_source": "Typical contractual agreements",
+        "price_source_link": "http://www.example.com",
+        "monthly_transactions": 30,
+        "frequency_notes": "Higher in warmer months",
+        "frequency_source": "Historical Revenue Data",
+        "frequency_source_link": "http://www.example.com"
+      },
+      {
+        "revenue_source_name": "Environmental Remediation",
+        "revenue_source_price": 2.0,
+        "price_source": "Contracts with federal agencies",
+        "price_source_link": "http://www.example.com",
+        "monthly_transactions": 20,
+        "frequency_notes": "Consistent throughout the year",
+        "frequency_source": "Accounts Department",
+        "frequency_source_link": "http://www.example.com"
+      },
+      {
+        "revenue_source_name": "Civil Engineering",
+        "revenue_source_price": 1.8,
+        "price_source": "Market competitive pricing",
+        "price_source_link": "http://www.example.com",
+        "monthly_transactions": 15,
+        "frequency_notes": "Driven by project-based needs",
+        "frequency_source": "Industry Trend Analysis",
+        "frequency_source_link": "http://www.example.com"
+      },
+      {
+        "revenue_source_name": "Demolition Services",
+        "revenue_source_price": 1.5,
+        "price_source": "Historical service pricing analysis",
+        "price_source_link": "http://www.example.com",
+        "monthly_transactions": 10,
+        "frequency_notes": "Varied by project timeline",
+        "frequency_source": "Internal Projections",
+        "frequency_source_link": "http://www.example.com"
+      },
+      {
+        "revenue_source_name": "Site Remediation",
+        "revenue_source_price": 1.7,
+        "price_source": "Mandated contract rates",
+        "price_source_link": "http://www.example.com",
+        "monthly_transactions": 8,
+        "frequency_notes": "Stable demand throughout the year",
+        "frequency_source": "Project Management Reports",
+        "frequency_source_link": "http://www.example.com"
+      }
+    ]
+  }
 }
 ---JSON END---
 
 ### SUMMARY START ###
-The project is focused on updating specific financial tables for Pay-Ease, a company that provides bill payment kiosks aimed at convenience-driven, cash-centric customers. With the provided PDF describing Pay-Ease's business model, target market, and financial data projections, we have updated seven financial tables: comparable_companies, employees, operating_expenses, historical_financials, capital_expenditures, cost_of_sales, and revenue. The updates include plausible entries based on Pay-Ease's strategic growth plan, transaction model, and projected revenue streams. These entries are crafted from both direct data and inferred details from the PDF context.
+The task involves building financial data tables for a heavy/civic contractor, focusing on comparable companies, employees, operating expenses, historical financials, capital expenditures, cost of sales, and revenue. The PDF outlines organizational aspects, revenue streams, employee details, and financial highlights, which are used to create structured JSON data. Specific entries for these categories were not provided in the document, but inferred from a standard industry perspective, with a blend of assumption and PDF-derived facts.
 ### SUMMARY END ###

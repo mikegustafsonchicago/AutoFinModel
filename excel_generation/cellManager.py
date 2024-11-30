@@ -90,22 +90,34 @@ class CellManager:
                 raise KeyError(f"Key {keys[0]} not found")
 
     # Method to retrieve a cell reference with any number of tiers
-    def get_cell_reference(self, *keys, format_type='cell_ref', absolute_row=False, absolute_col=False):
+    def get_cell_reference(self, *keys, format_type='cell_ref', absolute_row=False, absolute_col=False, default_cell='A1'):
         """
         Retrieves the cell reference with any number of tiers (e.g., sheet -> recipe -> component).
         format_type:
         - 'cell_ref': returns Excel-style reference (e.g., 'A1')
         - 'row': returns row number
         - 'col': returns column number
+        
+        If an error occurs, returns the default_cell reference (defaults to 'A1')
         """
         # Validate format type before proceeding
         valid_formats = ['cell_ref', 'row', 'col']
         if format_type not in valid_formats:
-            raise ValueError(f"Invalid format_type: '{format_type}'. Must be one of: {valid_formats}")
+            print(f"\n{'='*80}")
+            print(f"ERROR: Invalid format_type '{format_type}'")
+            print(f"Valid formats are: {valid_formats}")
+            print(f"Returning default value: {default_cell if format_type == 'cell_ref' else 1}")
+            print(f"{'='*80}\n")
+            return default_cell if format_type == 'cell_ref' else 1
 
-         # Validate that keys were provided
+        # Validate that keys were provided
         if not keys:
-            raise ValueError("No keys provided. Must provide at least one key (e.g., sheet name)")
+            print(f"\n{'='*80}")
+            print("ERROR: No keys provided to get_cell_reference")
+            print("Expected at least one key (e.g., sheet name)")
+            print(f"Returning default value: {default_cell if format_type == 'cell_ref' else 1}")
+            print(f"{'='*80}\n")
+            return default_cell if format_type == 'cell_ref' else 1
 
         try:
             row, col = self._get_reference_recursive(self.cell_references, keys)
@@ -122,12 +134,16 @@ class CellManager:
                     current_dict = current_dict[key]
                 else:
                     available_keys = list(current_dict.keys())
-                    raise KeyError(
-                        f"\nRequested path: {' -> '.join(requested_path)}\n"
-                        f"Available path: {' -> '.join(available_path)}\n"
-                        f"Key '{key}' not found at level {i+1}.\n"
-                        f"Available keys at this level: {available_keys}"
-                    )
+                    print(f"\n{'='*80}")
+                    print("ERROR: Invalid key path in cell reference lookup")
+                    print(f"Requested path: {' -> '.join(requested_path)}")
+                    print(f"Available path: {' -> '.join(available_path)}")
+                    print(f"Failed at: '{key}' (level {i+1})")
+                    print(f"Available keys at this level: {available_keys}")
+                    print(f"Current dictionary state: {current_dict}")
+                    print(f"Returning default value: {default_cell if format_type == 'cell_ref' else 1}")
+                    print(f"{'='*80}\n")
+                    return default_cell if format_type == 'cell_ref' else 1
 
         try:
             if format_type == 'cell_ref':
@@ -137,46 +153,12 @@ class CellManager:
             else:  # format_type == 'col'
                 return col-1  # Adjust for indexing mismatch when returning column
         except Exception as e:
-            raise Exception(f"Error processing cell reference for {' -> '.join(keys)}: {str(e)}")
-
-
-# Data Structure Description:
-
-# The cell_references attribute is a multi-tier dictionary that allows for storing cell references in a hierarchical format.
-# You can define as many levels of hierarchy as needed. Each level corresponds to a key in the dictionary.
-
-# Example of a cell_references structure:
-# cell_references = {
-#     'Recipes': {                      # The sheet or high-level category
-#         'Large Black Coffee': {        # A recipe or mid-level category
-#             'Coffee': (5, 2),          # A component within the recipe (row 5, column 2)
-#             'Water': (6, 3)            # Another component (row 6, column 3)
-#         },
-#         'Cappuccino': {                # Another recipe
-#             'Milk': {
-#                 'Steamed': (7, 4)      # Nested component (row 7, column 4)
-#             }
-#         }
-#     }
-# }
-
-# This structure allows for:
-# - Organizing cell references by sheets, recipes, components, or any other hierarchical levels.
-# - Flexible, dynamic addition of references.
-# - Easy retrieval of specific cell references based on hierarchical keys.
-
-# ---------------------------------------
-# Example Usage (commented out):
-#
-# # Adding using sheet -> recipe -> ingredient/component hierarchy
-# cell_manager.add_cell_reference('Recipes', 'Large Black Coffee', 'Coffee', cell_ref='B3')
-# cell_manager.add_cell_reference('Recipes', 'Large Black Coffee', 'Water', row=4, col=3)
-#
-# # Adding using more tiers (e.g., for detailed recipes)
-# cell_manager.add_cell_reference('Recipes', 'Cappuccino', 'Milk', 'Steamed', cell_ref='C5')
-#
-# # Retrieving in different formats
-# print(cell_manager.get_cell_reference('Recipes', 'Large Black Coffee', 'Coffee', format_type='cell_ref'))  # Outputs: 'B3'
-# print(cell_manager.get_cell_reference('Recipes', 'Large Black Coffee', 'Water', format_type='row'))         # Outputs: 4
-# print(cell_manager.get_cell_reference('Recipes', 'Cappuccino', 'Milk', 'Steamed', format_type='col'))       # Outputs: 3
-# ---------------------------------------
+            print(f"\n{'='*80}")
+            print("ERROR: Failed to process cell reference")
+            print(f"Keys: {' -> '.join(str(k) for k in keys)}")
+            print(f"Format type: {format_type}")
+            print(f"Row: {row}, Column: {col}")
+            print(f"Error details: {str(e)}")
+            print(f"Returning default value: {default_cell if format_type == 'cell_ref' else 1}")
+            print(f"{'='*80}\n")
+            return default_cell if format_type == 'cell_ref' else 1

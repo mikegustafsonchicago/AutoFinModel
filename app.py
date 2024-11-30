@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify, render_template, send_file, session
 import logging
 import os
+import sys
 import api_processing
 from excel_generation.auto_financial_modeling import generate_excel_model
 from json_manager import JsonManager
@@ -11,7 +12,7 @@ from config import UPLOAD_FOLDER
 from prompt_builder import PromptBuilder
 from excel_generation.catalyst_partners_page import make_catalyst_summary
 
-
+from powerpoint_generation.ppt_generation import generate_ppt
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG,  # Set level to DEBUG for maximum output
@@ -43,12 +44,17 @@ def landing():
 @app.route('/app')
 def application():
     project_name = "financial"
-    initialize_session_files(project_name, json_manager)
+    # Only initialize files if they don't exist
+    if not os.path.exists(os.path.join(os.getcwd(), 'temp_business_data')):
+        initialize_session_files(project_name, json_manager)
     return render_template('index.html', title="Application")
 
 @app.route('/catalyst')
 def catalyst():
     project_name = "catalyst"
+    # Only initialize files if they don't exist
+    if not os.path.exists(os.path.join(os.getcwd(), 'temp_business_data')):
+        initialize_session_files(project_name, json_manager)
     return render_template('catalyst.html', title="Catalyst")
 
 @app.route('/set_data')
@@ -144,7 +150,7 @@ def download_excel():
         # Generate Excel file
         logging.info(f"Generating Excel file for {project_name} project")
         file_path = generate_excel_model() if project_name == "financial" else make_catalyst_summary()
-        
+        logging.debug(f"In app.py in download_excel, file_path is {file_path}")
         # Verify file exists before attempting to send
         if not os.path.exists(file_path):
             logging.error(f"Generated Excel file not found at path: {file_path}")
@@ -163,6 +169,54 @@ def download_excel():
     except Exception as e:
         logging.error(f"Error generating Excel file: {str(e)}", exc_info=True)
         return jsonify({"error": f"Failed to generate Excel file: {str(e)}"}), 500
+
+
+@app.route('/download_ppt', methods=['GET'])
+def download_ppt():
+    try:
+        project_name = request.args.get('project_name')
+        logging.debug(f"Attempting to generate PowerPoint file for project: {project_name}")
+        
+        if not project_name:
+            logging.error("No project name provided in request")
+            return jsonify({"error": "Project name is required to generate the PowerPoint file"}), 400
+            
+        # Validate project name is one of the expected values
+        if project_name not in ["financial", "catalyst"]:
+            logging.error(f"Invalid project name received: {project_name}")
+            return jsonify({"error": "Invalid project name"}), 400
+            
+        # Get current directory and construct output path
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        ppt_dir = os.path.join(current_dir, 'powerpoint_generation')
+        output_path = os.path.join(ppt_dir, 'output_ppt.pptx')
+        
+        # Generate PowerPoint file
+        logging.info(f"Generating PowerPoint file for {project_name} project")
+        
+        # Import and run PPT generation script
+        sys.path.append(ppt_dir)
+        generate_ppt()
+        
+        # Verify file exists before attempting to send
+        if not os.path.exists(output_path):
+            logging.error(f"Generated PowerPoint file not found at path: {output_path}")
+            return jsonify({"error": "Failed to generate PowerPoint file"}), 500
+            
+        logging.info(f"Successfully generated PowerPoint file at: {output_path}")
+        
+        # Get filename from path
+        filename = os.path.basename(output_path)
+        
+        # Set Content-Disposition header with filename
+        response = send_file(output_path, as_attachment=True)
+        response.headers["Content-Disposition"] = f"attachment; filename={filename}"
+        return response
+        
+    except Exception as e:
+        logging.error(f"Error generating PowerPoint file: {str(e)}", exc_info=True)
+        return jsonify({"error": f"Failed to generate PowerPoint file: {str(e)}"}), 500
+
 
 
 # Route to clear and re-initialize the JSON files

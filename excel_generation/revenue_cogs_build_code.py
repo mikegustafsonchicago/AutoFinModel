@@ -1,110 +1,120 @@
-from helper_functions import number_to_column_letter, get_cell_identifier
+
 import calendar
 from datetime import datetime
+from workbook_sheet_manager_code import SheetManager
+from helper_functions import number_to_column_letter, get_cell_identifier
 
-
-class RevenueCogsBuildPage:
-    def __init__(self, workbook_manager, cell_manager, business_object):
-        self.workbook_manager = workbook_manager
-        self.cell_manager = cell_manager
-        self.business_object = business_object
+class RevenueCogsBuildPage(SheetManager):
+    def __init__(self, workbook_manager, business_object, sheet_name):
+        super().__init__(workbook_manager, business_object, sheet_name)
         self.num_forecasted_years = self.workbook_manager.num_forecasted_years
         self.num_hist_years = len(self.business_object.hist_IS) if self.business_object.hist_IS else 0
         
         # Set start columns
-        self.annual_hist_start = 3
+        self.annual_hist_start = 7
         self.annual_year0_start = self.annual_hist_start + self.num_hist_years
         self.gap_between_annual_and_monthly = 1
         self.monthly_start_col = self.annual_year0_start + self.num_forecasted_years + self.gap_between_annual_and_monthly
         
-        # Create the sheet
-        self.sheet_name = 'Revenue COGS Build'
-        self.sheet = self.workbook_manager.add_sheet(self.sheet_name)
         self.populate_sheet()
-
-    def write_to_sheet(self, row, col, value, format_name='plain', print_formula=False, url_display=None):
-        """Helper function to write to sheet using workbook manager"""
-        self.workbook_manager.validate_and_write(self.sheet, row, col, value, format_name, print_formula, url_display)
-
-    def populate_headers(self, row, col):
-        """Populate the header row with years and months"""
-        self.year_row = row
-        # Annual headers
-        self.write_to_sheet(row-1, self.annual_year0_start-self.num_hist_years, 'Historical', format_name='bold')
-        self.write_to_sheet(row-1, self.annual_year0_start, 'Projected', format_name='bold')
-        
-        # Add historical years
-        for i in range(self.num_hist_years):
-            year = self.business_object.hist_IS[i]["year"]
-            self.write_to_sheet(row, self.annual_hist_start + i, year, format_name='year_format')
-            
-        # Add projected years
-        start_year_date = datetime(self.business_object.start_year, 1, 1)
-        self.write_to_sheet(row, self.annual_year0_start, start_year_date, format_name='year_format')
-        for col in range(self.annual_year0_start+1, self.annual_year0_start+self.num_forecasted_years):
-            self.write_to_sheet(row, col, f"=edate({get_cell_identifier(row, col-1)},12)", format_name='year_format')
 
     def populate_sheet(self):
         """Main function to populate the entire sheet"""
         # Set column widths
-        self.sheet.set_column('A:A', 5)
-        self.sheet.set_column('B:B', 25)
-        self.sheet.set_column('C:C', 10)
-        self.sheet.set_column('D:D', 15)
-        self.sheet.set_column('E:E', 12)
-        self.sheet.set_column('F:F', 30)
-        self.sheet.set_column('G:G', 10)
+        self.xlsxwriter_sheet.set_column('A:A', 5)   # Margin column
+        self.xlsxwriter_sheet.set_column('B:B', 35)  # Revenue source name
+        self.xlsxwriter_sheet.set_column('C:C', 15)  # Price
+        self.xlsxwriter_sheet.set_column('D:D', 12)  # Frequency
+        self.xlsxwriter_sheet.set_column('E:E', 25)  # Frequency notes
+        self.xlsxwriter_sheet.set_column('F:F', 25)  # Price source
+        self.xlsxwriter_sheet.set_column('G:G', 10)  # Frequency source
+        self.xlsxwriter_sheet.set_column('H:H', 20)  # Historical data start
+        self.xlsxwriter_sheet.set_column('I:I', 20)  # Historical and projected years
+
 
         # Page Title
         self.write_to_sheet(1, 1, 'Revenue and COGS Build', format_name="title")
         
         # Create the color banner row
-        self.sheet.set_row(2, 5) # Make the row height smaller
+        self.xlsxwriter_sheet.set_row(2, 5) # Make the row height smaller
         for col in range(1,10):
             self.write_to_sheet(2, col, "", format_name="color_banner")
 
         row = 5
-        col = self.annual_hist_start
+        col = 1
+
+        ##------ Revenue section ------##
+        self.write_to_sheet(row, col, "Revenue Build", format_name='bold')
+        row += 1        
+     
+        headers = ["Name", "Price", "Monthly Transactions", "Frequency Notes", "Total Monthly Revenue", "", "Price Source", "Frequency Source"]
+        for i, header in enumerate(headers):
+            self.write_to_sheet(row, i+col, header, format_name="underline")
+        row += 1
+
+        revenue_sources = self.business_object.revenue_sources
+        for source in revenue_sources:
+            # Write revenue source data in specified order
+            self.write_to_sheet(row, col, source["revenue_source_name"])
+            self.write_to_sheet(row, col+1, source["revenue_source_price"], format_name="currency_cents") 
+            self.write_to_sheet(row, col+2, source["monthly_transactions"], format_name="number")
+            self.write_to_sheet(row, col+3, source["frequency_notes"])
+            cell1 = get_cell_identifier(row,col+1, absolute_row=True)
+            cell2 = get_cell_identifier(row,col+2, absolute_row=True)
+            formula_string = f"={cell1}*{cell2}"
+            self.write_to_sheet(row, col+4, formula_string, format_name="currency")
+            # Add price source as link
+            self.write_to_sheet(row, col+6, f'=HYPERLINK("{source["price_source_link"]}", "{source["price_source"]}")', format_name='URL')
+            # Add frequency source as link
+            self.write_to_sheet(row, col+7, f'=HYPERLINK("{source["frequency_source_link"]}", "{source["frequency_source"]}")', format_name='URL')
+
+            # Save reference to price cell for this revenue source
+            self.cell_manager.add_cell_reference(self.sheet_name, source["revenue_source_name"],
+                                               row=row, col=col+4)
+            
+            row += 1
+        self.write_to_sheet(row, col+3, "Total")
+        self.write_to_sheet(row, col+4, f"=sum({number_to_column_letter(col+4)}${row-len(revenue_sources)+1}:{number_to_column_letter(col+4)}${row})", format_name="currency")
+        self.cell_manager.add_cell_reference(self.sheet_name, "Total Revenue", row=row, col=col+4)
+        row+=1
+        
+        # Add bottom border under revenue section
+        for i in range(10):
+            self.write_to_sheet(row, col+i, "", format_name="bottom_border")
+        row += 2
+
+
+        ##------ COGS section ------##
+        self.write_to_sheet(row, col, "COGS Build", format_name='bold')
+        row += 1
 
         # Add headers
-        self.populate_headers(row, col)
-        row += 2
+        headers = ["Name", "Cost", "Monthly Transactions", "Frequency Notes", "Total Monthly Cost","", "Cost Source", "Frequency Source"]
+        for i, header in enumerate(headers):
+            self.write_to_sheet(row, i+col, header, format_name="underline")
+        row += 1
 
-        # Revenue section
-        self.write_to_sheet(row, col-3, "Revenue Build", format_name='bold')
-        row += 1
-        
-        # Revenue assumptions  
-        self.write_to_sheet(row, col-3, "Revenue assumptions:", format_name='italic')
-        row += 1
-        
-        # Add revenue metrics
-        metrics = [
-            "Average check per customer",
-            "Store hours per day",
-            "Days open per month", 
-            "Customers per hour",
-            "Total customers per month",
-            "Growth rate in customer growth"
-        ]
-        
-        for metric in metrics:
-            self.write_to_sheet(row, col-3, metric)
-            
-            # Add historical data if available
-            for i in range(self.num_hist_years):
-                if metric == "Total customers per month":
-                    # Calculate total customers from historical revenue
-                    hist_revenue = self.business_object.hist_IS[i]["revenue"]
-                    formula = f"={hist_revenue}/12/25" # Assuming $25 average check
-                    self.write_to_sheet(row, self.annual_hist_start + i, formula, format_name='number')
-                else:
-                    self.write_to_sheet(row, self.annual_hist_start + i, "", format_name='number')
+        for direct_cost in self.business_object.cost_of_sales_items:
+            # Write cost item data
+            self.write_to_sheet(row, col, direct_cost['cost_item_name'])
+            self.write_to_sheet(row, col+1, direct_cost['cost_per_unit'], format_name="currency_cents")
+            self.write_to_sheet(row, col+2, direct_cost['monthly_transactions'], format_name="number")
+            self.write_to_sheet(row, col+3, direct_cost['frequency_notes'])
+            cell1 = get_cell_identifier(row,col+1, absolute_row=True)
+            cell2 = get_cell_identifier(row,col+2, absolute_row=True)
+            formula_string = f"={cell1}*{cell2}"
+            self.write_to_sheet(row, col+4, formula_string, format_name="currency")
+            # Add cost source as link
+            self.write_to_sheet(row, col+6, f'=HYPERLINK("{direct_cost["cost_source_link"]}", "{direct_cost["cost_source"]}")', format_name='URL')
+            # Add frequency source as link
+            self.write_to_sheet(row, col+7, f'=HYPERLINK("{direct_cost["frequency_source_link"]}", "{direct_cost["frequency_source"]}")', format_name='URL')
+
+            # Save reference to cost per unit cell for this cost item
+            self.cell_manager.add_cell_reference(self.sheet_name, direct_cost['cost_item_name'],
+                                               row=row, col=col+4)
+
             row += 1
-
-        # COGS section  
-        self.write_to_sheet(row, col-3, "COGS Build", format_name='bold')
-        row += 2
-
-        # Save key row references for other sheets
-        self.cell_manager.add_cell_reference(self.sheet_name, "Revenue", "Build", row=row, col=col)
+        self.write_to_sheet(row, col+3, "Total")
+        self.write_to_sheet(row, col+4, f"=sum({number_to_column_letter(col+4)}${row-len(revenue_sources)+1}:{number_to_column_letter(col+4)}${row})", format_name="currency")
+        self.cell_manager.add_cell_reference(self.sheet_name, "Total COGS", row=row, col=col+4)
+        row+=1

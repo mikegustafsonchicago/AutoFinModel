@@ -142,7 +142,7 @@ class OpexCapexPage:
         self.operating_expenses_sheet.set_column('D:D', 15) 
         self.operating_expenses_sheet.set_column('E:E', 12)
         self.operating_expenses_sheet.set_column('F:F', 30)
-        self.operating_expenses_sheet.set_column('G:G', 10)
+        self.operating_expenses_sheet.set_column('G:BA', 10)  # Set columns G through BA (50 columns) to width 10
         
         # -- Headers and titles -- #
         

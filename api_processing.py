@@ -32,7 +32,7 @@ def manage_api_calls(business_description, project_name, user_input, update_scop
     # Ensure prompt_manager is passed and used within this function
     if prompt_manager is None:
        raise ValueError("prompt_manager must be initialized and passed to manage_api_calls.")
-       
+    prompt_manager.reset_prompts()   
     #Initialize the output variable
     openAI_output = {"text": "", "json_data": {}}
     
@@ -97,12 +97,12 @@ def manage_api_calls(business_description, project_name, user_input, update_scop
     
     
     for chunk_dict in chunk_list:
-        logging.debug(f"Here's the user prompt {prompt_manager.user_prompt}")
+        
         chunk_text = get_pdf_content_by_page_indices(pdf_name, chunk_dict['start_page'], chunk_dict['end_page']) if pdf_name else None
         prompt_manager.add_pdf_chunk(chunk_text)
 
         # Make the API call and process the response
-        response, status_code = prepare_payload(chunk_text, chunk_dict['start_page'], chunk_dict['end_page'],json_manager, project_name=project_name, prompt_manager=prompt_manager )
+        response, status_code = manage_call_for_payload(chunk_text, chunk_dict['start_page'], chunk_dict['end_page'],json_manager, project_name=project_name, prompt_manager=prompt_manager )
         if status_code != 200:
             return response, status_code
         
@@ -118,7 +118,7 @@ def manage_api_calls(business_description, project_name, user_input, update_scop
 
 
 
-def prepare_payload(pdf_chunk, page_start, page_end, json_manager, project_name=None, prompt_manager=None):
+def manage_call_for_payload(pdf_chunk, page_start, page_end, json_manager, project_name=None, prompt_manager=None):
     """
     Processes each chunk of data with OpenAI API
     """
@@ -150,7 +150,6 @@ def make_openai_api_call(system_prompt, user_prompt):
     """
     Makes the actual API call to OpenAI and returns the response.
     """
-    
     load_dotenv()
     api_key = getenv('OPENAI_API_KEY')
     if not api_key:

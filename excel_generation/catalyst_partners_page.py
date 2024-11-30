@@ -23,8 +23,8 @@ import calendar
 from datetime import datetime
 
 from business_entity_code import BusinessEntity
-from helper_functions import FormatManager
 from cellManager import CellManager
+from excel_generation.workbook_sheet_manager_code import WorkbookManager
 
 
 
@@ -44,67 +44,6 @@ sys.path.append(current_dir)
 sys.path.append(parent_dir)
 
 
-#----Create a workbook manager----#
-class WorkbookManager:
-    def __init__(self):
-        self.name = 'Catalyst_Partners_Summary.xlsx'
-        # Create outputs directory if it doesn't exist
-        current_dir = os.path.dirname(os.path.abspath(__file__))
-        parent_dir = os.path.dirname(current_dir)
-        self.output_dir = os.path.join(parent_dir, 'outputs')
-        os.makedirs(self.output_dir, exist_ok=True)
-        
-        # Create workbook in outputs directory
-        self.output_path = os.path.join(self.output_dir, self.name)
-        self.workbook = xlsxwriter.Workbook(self.output_path)
-        self.num_forecasted_years=10
-        self.cell_info={}
-        self.sheets = {}  # Dictionary to store worksheet references
-        self.format_manager = FormatManager(self.workbook, config_file='catalystPartners.yaml')  # Initialize formats once
-        
-    def add_sheet(self, sheet_name):
-        sheet = self.workbook.add_worksheet(sheet_name)
-        self.sheets[sheet_name] = sheet
-        return sheet
-    
-    def close_workbook(self):
-        # Save the workbook and close
-       self.workbook.close()
-        
-    def validate_and_write(self, sheet, row, col, formula_string, format_name='plain', print_formula=False, url_display=None):
-        """
-        Validate and write data, formula, or URL to the specified cell.
-        - If the input is a URL, write_url is used with optional display text.
-        - Handles formula and plain data as well.
-        
-        Parameters:
-        - sheet: The worksheet object where data is written.
-        - row: The row index for writing.
-        - col: The column index for writing.
-        - formula_string: The data, formula, or URL to write.
-        - format_name: The format to apply (default is 'plain').
-        - print_formula: If set to True, formula is displayed instead of being calculated (for formulas only).
-        - url_display: Optional display text for URLs (if provided).
-        """
-        # Get the format from the format manager
-        cell_format = self.format_manager.get_format(format_name)
-    
-        # Check if the input is a URL (starts with 'http' or 'www')
-        if isinstance(formula_string, str) and (formula_string.startswith('http') or formula_string.startswith('www')):
-            # Write URL with optional display text
-            display_text = url_display if url_display else formula_string
-            sheet.write_url(row, col, formula_string, cell_format, display_text)
-        elif isinstance(formula_string, str) and formula_string.startswith('='):
-            # Check if it's an array formula
-            if formula_string.startswith('={') and formula_string.endswith('}'):
-                formula = formula_string[2:-1]  # Remove outer braces
-                sheet.write_array_formula(row, col, row, col, formula, cell_format)
-            else:
-                # Write regular formula
-                sheet.write_formula(row, col, formula_string, cell_format)
-        else:
-            # Write plain data
-            sheet.write(row, col, formula_string, cell_format)
 
 
 class Sheet:
@@ -915,8 +854,8 @@ def make_catalyst_summary():
         print(f"Current working directory: {os.getcwd()}")
         
         # Main 
-        business_entity = BusinessEntity()
-        catalyst_workbook = WorkbookManager()
+        business_entity = BusinessEntity("catalyst")
+        catalyst_workbook = WorkbookManager("catalyst_partners")
         cell_manager = CellManager()
 
         # Make the sheets
@@ -932,10 +871,6 @@ def make_catalyst_summary():
             HumanCapitalSheet(catalyst_workbook, cell_manager, business_entity, sheet_name='Human Capital'),
             ReferencesSheet(catalyst_workbook, cell_manager, business_entity, sheet_name='References')
         ]
-
-        # Force a small delay to ensure all writes complete
-        import time
-        time.sleep(1)
    
         # Close the workbook explicitly
         catalyst_workbook.close_workbook()
