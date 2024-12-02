@@ -1,0 +1,26 @@
+{
+                "fees_key_terms": {
+                "filename": "fees_key_terms.json",
+                "root_key": "terms",
+                "description": "Stores fund terms and fee structures",
+                "version": "1.0",
+                "explanation_file": "fees_key_terms_explanation.txt",
+                "default_content": {
+                    "terms": [
+                        {
+                            "currency": "USD",
+                            "target_fundraise": "$0 million",
+                            "management_fee": "0%",
+                            "carried_interest": "0%",
+                            "preferred_return": "0%",
+                            "investment_period": "0 years",
+                            "fund_term": "0 years",
+                            "GP_commitment": "0%",
+                            "GP_commitment_funding_source": "Placeholder Source",
+                            "source_string": "Placeholder Source",
+                            "source_link": "https://example.com"
+                        }
+                    ]
+                }
+            }
+}

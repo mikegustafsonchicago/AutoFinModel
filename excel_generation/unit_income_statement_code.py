@@ -85,7 +85,7 @@ class UnitIncomePage(SheetManager):
                 self.write_to_sheet(row, self.annual_year0_start-3, "Total Revenue", format_name='bold')
                 self.create_in_column_addition_subtraction(row, [["+", r] for r in range(row-len(self.business_object.revenue_sources), row)])
                 self.revenue_row = row
-                self.cell_manager.add_cell_reference(self.sheet_name, "Total Revenue", row=row, col=self.annual_year0_start-3)
+                self.cell_manager.add_cell_reference(self.sheet_name, "Total Revenue", row=row, col=self.annual_year0_start)
                 row += 1
                 self.create_percent_change_line(row, row-1)
                 row += 1
@@ -104,7 +104,7 @@ class UnitIncomePage(SheetManager):
                 self.write_to_sheet(row, self.annual_year0_start-3, "Total Direct Costs", format_name='bold')
                 self.create_in_column_addition_subtraction(row, [["+", r] for r in range(row-len(self.business_object.cost_of_sales_items), row)])
                 self.cogs_row = row
-                self.cell_manager.add_cell_reference(self.sheet_name, "Total Direct Costs", row=row, col=self.annual_year0_start-3)
+                self.cell_manager.add_cell_reference(self.sheet_name, "Total Direct Costs", row=row, col=self.annual_year0_start)
                 row += 1
                 self.create_percent_margin_line(row, row-1)
                 
@@ -112,7 +112,7 @@ class UnitIncomePage(SheetManager):
                 self.write_to_sheet(row, self.annual_year0_start-3, line, format_name='bold')
                 self.create_in_column_addition_subtraction(row, [["+", self.revenue_row], ["-", self.cogs_row]]) 
                 self.gross_profit_row=row
-                self.cell_manager.add_cell_reference(self.sheet_name, "Gross Profit", row=row, col=self.annual_year0_start-3)
+                self.cell_manager.add_cell_reference(self.sheet_name, "Gross Profit", row=row, col=self.annual_year0_start)
                 row+=1
                 self.create_percent_margin_line(row, row-1)
                 row+=1
@@ -123,6 +123,7 @@ class UnitIncomePage(SheetManager):
                 ref_col = self.cell_manager.get_cell_reference("OPEX_CAPEX", "SGA", format_type='col')
                 self.create_monthly_referenced_line(row, ref_row, ref_col, "OPEX_CAPEX")
                 self.sga_row=row
+                self.cell_manager.add_cell_reference(self.sheet_name, "SGA", row=row, col=self.annual_year0_start)
                 
             elif line=="Employee Salaries":
                 self.create_annual_sum_from_months_line(row)
@@ -130,11 +131,20 @@ class UnitIncomePage(SheetManager):
                 ref_col = self.cell_manager.get_cell_reference("Unit Employees", "salaries", format_type='col')
                 self.create_monthly_referenced_line(row, ref_row, ref_col, "Unit Employees")
                 self.employee_row=row
+                self.cell_manager.add_cell_reference(self.sheet_name, "Employee Salaries", row=row, col=self.annual_year0_start)
+                
+            elif line=="R&D":
+                self.create_annual_sum_from_months_line(row)
+                for col in range(self.monthly_start_col, self.monthly_start_col+12*self.num_forecasted_years):
+                    self.write_to_sheet(row, col, 0, format_name="currency")
+                self.rd_row=row
+                self.cell_manager.add_cell_reference(self.sheet_name, "R&D", row=row, col=self.annual_year0_start)
                 
             elif line == "EBITDA":
                 self.write_to_sheet(row, self.annual_year0_start-3, line, format_name='bold')
                 self.create_in_column_addition_subtraction(row, [["+", self.gross_profit_row], ["-", self.sga_row], ["-", self.employee_row]]) 
                 self.ebitda_row = row
+                self.cell_manager.add_cell_reference(self.sheet_name, "EBITDA", row=row, col=self.annual_year0_start)
                 row+=1
                 self.create_percent_margin_line(row, row-1)
                 row+=1
@@ -145,11 +155,13 @@ class UnitIncomePage(SheetManager):
                 ref_col = self.cell_manager.get_cell_reference("OPEX_CAPEX", "Depreciation", format_type='col')
                 self.create_monthly_referenced_line(row, ref_row, ref_col, "OPEX_CAPEX")
                 self.depreciation_row = row
+                self.cell_manager.add_cell_reference(self.sheet_name, "Depreciation", row=row, col=self.annual_year0_start)
                 
             elif line == "EBIT":
                 self.write_to_sheet(row, self.annual_year0_start-3, line, format_name='bold')
                 self.create_in_column_addition_subtraction(row, [["+", self.ebitda_row], ["-", self.depreciation_row]]) 
                 self.ebit_row = row
+                self.cell_manager.add_cell_reference(self.sheet_name, "EBIT", row=row, col=self.annual_year0_start)
                 row+=1
                 self.create_percent_margin_line(row, row-1)
                 row+=1
@@ -159,6 +171,7 @@ class UnitIncomePage(SheetManager):
                 for col in range(self.monthly_start_col, self.monthly_start_col+12*self.num_forecasted_years):
                     self.write_to_sheet(row, col, 0, format_name="currency")
                 self.interest_row=row
+                self.cell_manager.add_cell_reference(self.sheet_name, "Interest", row=row, col=self.annual_year0_start)
                 
             elif line=="Taxes":
                 self.create_annual_sum_from_months_line(row)
@@ -168,6 +181,7 @@ class UnitIncomePage(SheetManager):
                     formula_string = f'={tax_rate_cell}*{get_cell_identifier(self.ebitda_row, col)}'
                     self.write_to_sheet(row, col, formula_string, format_name='currency')
                 self.tax_row=row
+                self.cell_manager.add_cell_reference(self.sheet_name, "Taxes", row=row, col=self.annual_year0_start)
                 
             elif line == "Net Income":
                 self.write_to_sheet(row, self.annual_year0_start-3, line, format_name='bold')

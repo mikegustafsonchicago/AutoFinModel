@@ -20,9 +20,6 @@ class ConsolidatedIncomeStatement(SheetManager):
         self.annual_hist_start=4
         self.annual_start_col = self.annual_hist_start + self.num_hist_years
         self.annual_year0_start = self.annual_start_col
-        self.gap_between_annual_and_monthly=1 #Number of columns between last annual and first monthly
-        self.monthly_start_col=self.annual_year0_start+self.num_forecasted_years+self.gap_between_annual_and_monthly #Dynamically set the start cols
-
 
         self.populate_sheet()
 
@@ -37,22 +34,6 @@ class ConsolidatedIncomeStatement(SheetManager):
         self.write_to_sheet(row, self.annual_year0_start, start_year_date, format_name='year_format')
         for col in range(self.annual_year0_start+1, self.annual_year0_start+self.num_forecasted_years):
                 self.write_to_sheet(row, col, f"=edate({get_cell_identifier(row, col-1)},12)", format_name='year_format')
-        
-        #Monthly headers
-        col=self.monthly_start_col
-        self.write_to_sheet(row-1, col, 'Monthly Pro Forma', format_name='bold')
-        for year in range(self.business_object.start_year, self.business_object.start_year+self.num_forecasted_years):
-            for month in range(1,13):
-                if year ==self.business_object.start_year and month == 1:
-                    self.write_to_sheet(row, col, datetime(year,month,1), format_name='year_format')
-                else:
-                    self.write_to_sheet(row, col, f"=edate({get_cell_identifier(row, col-1)},1)", format_name='year_format')
-                self.write_to_sheet(row+1, col, calendar.month_abbr[month], format_name='bottom_border')
-                col+=1
-                
-        #Line below the headers
-        for col in range(self.annual_hist_start, self.annual_year0_start+self.num_forecasted_years):
-            self.write_to_sheet(row+1, col, '', format_name='bottom_border')
         
         #Historical headers
         self.write_to_sheet(row-1, self.annual_hist_start, 'Historical', format_name='bold')
@@ -80,7 +61,7 @@ class ConsolidatedIncomeStatement(SheetManager):
         
         # Create the color banner row
         self.xlsxwriter_sheet.set_row(2, 5)
-        for col in range(1,(self.num_forecasted_years+1)*12+self.gap_between_annual_and_monthly+(self.annual_year0_start-self.annual_hist_start)):
+        for col in range(1, self.annual_year0_start+self.num_forecasted_years):
             self.workbook_manager.validate_and_write(self.xlsxwriter_sheet, 2, col, "", format_name="color_banner")
         
         row = 5
@@ -88,8 +69,6 @@ class ConsolidatedIncomeStatement(SheetManager):
         
         ##----Headers----##
         self.populate_headers(row, col)
-        
-        
         
         #Data
         statement_lines_ref = ["Revenue", 
@@ -105,7 +84,6 @@ class ConsolidatedIncomeStatement(SheetManager):
                                "Taxes",
                                "Net Income"]
 
-        
         row +=2
         
         for line in statement_lines_ref:
@@ -113,124 +91,78 @@ class ConsolidatedIncomeStatement(SheetManager):
             self.write_to_sheet(row, self.annual_hist_start-3, line, format_name='plain')
             
             if line=="Revenue":
-                #Historical
-                #TODO: Fix self.populate_annual_hist_data(row, line, format_name = 'currency')
-                #Annual Pro Forma
-                self.create_annual_sum_from_months_line(row)
-                ref_row = self.cell_manager.get_cell_reference("Unit_IS", "Net_Income", format_type='row')
-                ref_col = self.cell_manager.get_cell_reference("Unit_IS", "Net_Income", format_type='col')
-                self.create_monthly_referenced_line(row, ref_row, ref_col, "Unit_IS")
+                ref_row = self.cell_manager.get_cell_reference("Roll Out", "Total_Revenue", format_type='row')
+                ref_col = self.cell_manager.get_cell_reference("Roll Out", "Total_Revenue", format_type='col')
+                self.create_annual_referenced_line(row, ref_row, ref_col, "Roll Out")
                 self.revenue_row = row
-                #row+=1
-                #self.create_percent_change_line(row, row-1)
                 
             elif line=="Direct Costs":
-                #Historical
-                #TODO: Fix self.populate_annual_hist_data(row, line, format_name = 'currency')
-                #Annual Pro Forma
-                self.create_annual_sum_from_months_line(row)
-                ref_row = self.cell_manager.get_cell_reference("Unit_IS", "Total Direct Costs", format_type='row')
-                ref_col = self.cell_manager.get_cell_reference("Unit_IS", "Total Direct Costs", format_type='col')
-                self.create_monthly_referenced_line(row, ref_row, ref_col, "Unit_IS")
+                ref_row = self.cell_manager.get_cell_reference("Roll Out", "Total_Direct_Costs", format_type='row')
+                ref_col = self.cell_manager.get_cell_reference("Roll Out", "Total_Direct_Costs", format_type='col')
+                self.create_annual_referenced_line(row, ref_row, ref_col, "Roll Out")
                 self.cogs_row = row
-                #row+=1
-                #self.create_percent_margin_line(row, row-1)
                 
             elif line == "Gross Profit":
-                #Historical
-                #TODO: Fix self.populate_annual_hist_data(row, line, format_name = 'sum_line')
-                #Annual Pro Forma
                 self.write_to_sheet(row, self.annual_hist_start-3, line, format_name='bold')
-                self.create_in_column_addition_subtraction(row, [["+", self.revenue_row], ["-", self.cogs_row]]) 
+                self.create_in_column_addition_subtraction(row, [["+", self.revenue_row], ["-", self.cogs_row]], annual_only=True) 
                 self.gross_profit_row=row
                 row+=1
-                self.create_percent_margin_line(row, row-1)
+                self.create_percent_margin_line(row, row-1, annual_only=True)
                 row+=1
                 
             elif line=="SG&A":
-                #Historical
-                #TODO: Fix self.populate_annual_hist_data(row, line, format_name = 'currency')
-                #Annual Pro Forma
-                ref_row = self.cell_manager.get_cell_reference("OPEX_CAPEX", "SGA", format_type='row')
-                ref_col = self.cell_manager.get_cell_reference("OPEX_CAPEX", "SGA", format_type='col')
-                self.create_monthly_referenced_line(row, ref_row, ref_col, "OPEX_CAPEX")
+                ref_row = self.cell_manager.get_cell_reference("Roll Out", "Total_SG&A", format_type='row')
+                ref_col = self.cell_manager.get_cell_reference("Roll Out", "Total_SG&A", format_type='col')
+                self.create_annual_referenced_line(row, ref_row, ref_col, "Roll Out")
                 self.sga_row=row
                 
             elif line=="Employee Salaries":
-                #Historical
-                #TODO: Fix self.populate_annual_hist_data(row, line, format_name = 'currency')
-                #Annual Pro Forma
-                self.create_annual_sum_from_months_line(row)
-                ref_row = self.cell_manager.get_cell_reference("Unit Employees", "salaries", format_type='row')
-                ref_col = self.cell_manager.get_cell_reference("Unit Employees", "salaries", format_type='col')
-                self.create_monthly_referenced_line(row, ref_row, ref_col, "Unit Employees")
+                ref_row = self.cell_manager.get_cell_reference("Roll Out", "Total_Employee_Salaries", format_type='row')
+                ref_col = self.cell_manager.get_cell_reference("Roll Out", "Total_Employee_Salaries", format_type='col')
+                self.create_annual_referenced_line(row, ref_row, ref_col, "Roll Out")
                 self.employee_row=row
                 
             elif line == "EBITDA":
-                #Historical
-                #TODO: Fix self.populate_annual_hist_data(row, line, format_name = 'sum_line')
-                #Annual Pro Forma
                 self.write_to_sheet(row, self.annual_hist_start-3, line, format_name='bold')
-                self.create_in_column_addition_subtraction(row, [["+", self.gross_profit_row], ["-", self.sga_row], ["-", self.employee_row]]) 
+                self.create_in_column_addition_subtraction(row, [["+", self.gross_profit_row], ["-", self.sga_row], ["-", self.employee_row]], annual_only=True) 
                 self.ebitda_row = row
                 row+=1
-                self.create_percent_margin_line(row, row-1)
+                self.create_percent_margin_line(row, row-1, annual_only=True)
                 row+=1
             
             elif line=="Depreciation":
-                #Historical
-                #TODO: Fix self.populate_annual_hist_data(row, line, format_name = 'currency')
-                #Annual Pro Forma
-                self.create_annual_sum_from_months_line(row)
-                ref_row = self.cell_manager.get_cell_reference("OPEX_CAPEX", "Depreciation", format_type='row')
-                ref_col = self.cell_manager.get_cell_reference("OPEX_CAPEX", "Depreciation", format_type='col')
-                self.create_monthly_referenced_line(row, ref_row, ref_col, "OPEX_CAPEX")
+                ref_row = self.cell_manager.get_cell_reference("Roll Out", "Total_Depreciation", format_type='row')
+                ref_col = self.cell_manager.get_cell_reference("Roll Out", "Total_Depreciation", format_type='col')
+                self.create_annual_referenced_line(row, ref_row, ref_col, "Roll Out")
                 self.depreciation_row = row
                 
             elif line == "EBIT":
-                #Historical
-                #TODO: Fix self.populate_annual_hist_data(row, line, format_name = 'sum_line')
-                #Annual Pro Forma
                 self.write_to_sheet(row, self.annual_hist_start-3, line, format_name='bold')
-                self.create_in_column_addition_subtraction(row, [["+", self.ebitda_row], ["-", self.depreciation_row]]) 
+                self.create_in_column_addition_subtraction(row, [["+", self.ebitda_row], ["-", self.depreciation_row]], annual_only=True) 
                 self.ebit_row = row
                 row+=1
-                self.create_percent_margin_line(row, row-1)
+                self.create_percent_margin_line(row, row-1, annual_only=True)
                 row+=1
                 
             elif line=="Interest":
-                #Historical
-                #TODO: Fix self.populate_annual_hist_data(row, line, format_name = 'currency')
-                #Annual Pro Forma
-                self.create_annual_sum_from_months_line(row)
-                ref_row = self.cell_manager.get_cell_reference("Revenue COGS Build", "Total Revenue", format_type='row')
-                ref_col = self.cell_manager.get_cell_reference("Revenue COGS Build", "Total Revenue", format_type='col')
-                self.create_monthly_referenced_line(row, ref_row, ref_col, "Revenue COGS Build")
+                ref_row = self.cell_manager.get_cell_reference("Roll Out", "Total_Interest", format_type='row')
+                ref_col = self.cell_manager.get_cell_reference("Roll Out", "Total_Interest", format_type='col')
+                self.create_annual_referenced_line(row, ref_row, ref_col, "Roll Out")
                 self.interest_row=row
                 
             elif line=="Taxes":
-                #Historical
-                #TODO: Fix self.populate_annual_hist_data(row, line, format_name = 'currency')
-                #Annual Pro Forma
-                self.create_annual_sum_from_months_line(row)
                 self.write_to_sheet(row, self.annual_hist_start-2, 0.21, format_name="percent_input")
                 self.tax_rate_cell = get_cell_identifier(row, self.annual_hist_start-2, absolute_row=True, absolute_col=True)
-                for col in range(self.monthly_start_col, self.monthly_start_col+self.num_forecasted_years*12):
+                for col in range(self.annual_year0_start, self.annual_year0_start+self.num_forecasted_years):
                     formula_string = f'={self.tax_rate_cell}*{get_cell_identifier(self.ebitda_row, col)}'
                     self.write_to_sheet(row, col, formula_string, format_name='currency')
                 self.tax_row=row
                 
             elif line == "Net Income":
-                #Historical
-                #TODO: Fix self.populate_annual_hist_data(row, line, format_name = 'sum_line')
-                #Annual Pro Forma
                 self.write_to_sheet(row, self.annual_hist_start-3, line, format_name='bold')
-                self.create_in_column_addition_subtraction(row, [["+", self.ebit_row], ["-", self.interest_row], ["-", self.tax_row]]) 
-
-                self.cell_manager.add_cell_reference(self.sheet_name, "Net_Income", row=row, col=self.monthly_start_col)
+                self.create_in_column_addition_subtraction(row, [["+", self.ebit_row], ["-", self.interest_row], ["-", self.tax_row]], annual_only=True) 
+                self.cell_manager.add_cell_reference(self.sheet_name, "Net_Income", row=row, col=self.annual_year0_start)
                 row+=1
-                self.create_percent_margin_line(row, row-1)
-            else:
-                self.write_to_sheet(row+1, self.monthly_start_col, 'hihello', format_name='bottom_border')
-            row+=1
+                self.create_percent_margin_line(row, row-1, annual_only=True)
             
+            row+=1

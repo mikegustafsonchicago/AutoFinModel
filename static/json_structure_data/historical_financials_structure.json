@@ -1,0 +1,103 @@
+{
+    "historical_financials": {
+        "filename": "hist_IS.json",
+        "root_key": "historical_financials", 
+        "description": "Stores historical income statement data",
+        "version": "1.0",
+        "explanation_file": "historical_financials_explanation.txt",
+        "default_content": {
+            "historical_financials": [
+                {
+                    "year": 2023,
+                    "revenue": 1000000.0,
+                    "cost_of_sales": 600000.0,
+                    "operating_expenses": 200000.0,
+                    "ebitda": 200000.0,
+                    "depreciation": 50000.0,
+                    "ebit": 150000.0,
+                    "interest_expense": 10000.0,
+                    "income_taxes": 35000.0,
+                    "net_income": 105000.0
+                }
+            ]
+        },
+        "structure": {
+            "historical_financials": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "required": [
+                        "year",
+                        "revenue", 
+                        "cost_of_sales",
+                        "operating_expenses",
+                        "ebitda",
+                        "depreciation",
+                        "ebit",
+                        "interest_expense",
+                        "income_taxes",
+                        "net_income"
+                    ],
+                    "properties": {
+                        "year": {
+                            "type": "number",
+                            "description": "Fiscal year",
+                            "order": 1
+                        },
+                        "revenue": {
+                            "type": "number",
+                            "description": "Total revenue",
+                            "minimum": 0,
+                            "order": 2
+                        },
+                        "cost_of_sales": {
+                            "type": "number",
+                            "description": "Direct costs of goods/services sold",
+                            "minimum": 0,
+                            "order": 3
+                        },
+                        "operating_expenses": {
+                            "type": "number",
+                            "description": "Operating expenses excluding depreciation",
+                            "minimum": 0,
+                            "order": 4
+                        },
+                        "ebitda": {
+                            "type": "number",
+                            "description": "Earnings before interest, taxes, depreciation & amortization",
+                            "order": 5
+                        },
+                        "depreciation": {
+                            "type": "number",
+                            "description": "Depreciation & amortization expense",
+                            "minimum": 0,
+                            "order": 6
+                        },
+                        "ebit": {
+                            "type": "number",
+                            "description": "Earnings before interest & taxes",
+                            "order": 7
+                        },
+                        "interest_expense": {
+                            "type": "number",
+                            "description": "Interest expense",
+                            "minimum": 0,
+                            "order": 8
+                        },
+                        "income_taxes": {
+                            "type": "number",
+                            "description": "Income tax expense",
+                            "minimum": 0,
+                            "order": 9
+                        },
+                        "net_income": {
+                            "type": "number",
+                            "description": "Net income",
+                            "order": 10
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

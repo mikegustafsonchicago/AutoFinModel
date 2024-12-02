@@ -1,0 +1,24 @@
+{
+     "fundamentals": {
+                "filename": "fundamentals.json",
+                "root_key": "fundamentals",
+                "description": "Stores basic firm information",
+                "version": "1.0",
+                "explanation_file": "fundamentals_explanation.txt",
+                "default_content": {
+                    "fundamentals": [
+                        {
+                            "firm_name": "Placeholder Firm",
+                            "founded_year": 2020,
+                            "primary_office": "Placeholder City",
+                            "ownership_structure": "Placeholder Structure", 
+                            "total_employees": 0,
+                            "diversity_status": "Placeholder Status",
+                            "website": "www.placeholder.com",
+                            "source_string": "Placeholder Source",
+                            "source_link": "https://example.com"
+                        }
+                    ]
+                }
+            }
+}

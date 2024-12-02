@@ -1,0 +1,89 @@
+{
+  "capital_expenditures": {
+    "filename": "capex.json",
+    "root_key": "expenses",
+    "description": "Stores capital expenditure (CAPEX) information", 
+    "version": "1.0",
+    "explanation_file": "capex_explanation.txt",
+    "default_content": {
+      "expenses": [
+        {
+          "expense_name": "Sample Capital Expenditure",
+          "amount": 50000.0,
+          "frequency": "One-time",
+          "depreciation_life": 5,
+          "purchase_year": 2024,
+          "source_link": "https://example.com",
+          "source_string": "Sample Source",
+          "notes": "Sample capital expenditure"
+        }
+      ]
+    },
+    "structure": {
+      "expenses": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "required": [
+            "expense_name",
+            "amount",
+            "frequency",
+            "depreciation_life",
+            "purchase_year",
+            "source_link",
+            "source_string",
+            "notes"
+          ],
+          "properties": {
+            "expense_name": {
+              "type": "string",
+              "description": "Name of the capital expenditure item",
+              "min_length": 1,
+              "max_length": 100,
+              "order": 1
+            },
+            "amount": {
+              "type": "number",
+              "description": "Cost of the capital expenditure",
+              "minimum": 0,
+              "order": 2
+            },
+            "frequency": {
+              "type": "string", 
+              "description": "Frequency or timing of the expenditure",
+              "order": 3
+            },
+            "depreciation_life": {
+              "type": "number",
+              "description": "Number of years over which to depreciate this asset",
+              "minimum": 1,
+              "order": 4
+            },
+            "purchase_year": {
+              "type": "number",
+              "description": "Year the capital expenditure is planned/made",
+              "minimum": 2000,
+              "order": 5
+            },
+            "source_link": {
+              "type": "string",
+              "description": "URL to source of cost information",
+              "format": "uri",
+              "order": 6
+            },
+            "source_string": {
+              "type": "string",
+              "description": "Description of the cost information source",
+              "order": 7
+            },
+            "notes": {
+              "type": "string",
+              "description": "Additional notes about the capital expenditure",
+              "order": 8
+            }
+          }
+        }
+      }
+    }
+  }
+}

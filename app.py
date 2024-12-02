@@ -57,6 +57,15 @@ def catalyst():
         initialize_session_files(project_name, json_manager)
     return render_template('catalyst.html', title="Catalyst")
 
+
+@app.route('/real_estate')
+def real_estate():
+    project_name = "real_estate"
+    # Only initialize files if they don't exist
+    if not os.path.exists(os.path.join(os.getcwd(), 'temp_business_data')):
+        initialize_session_files(project_name, json_manager)
+    return render_template('real_estate.html', title="Real Estate")
+
 @app.route('/set_data')
 def set_data():
     # Mark session as "permanent" so it doesn’t expire when the browser is closed
@@ -95,8 +104,6 @@ def call_openai():
 
     pdf_file_name = data.get('pdfFileName')
     pdf_file_name = os.path.join(UPLOAD_FOLDER, pdf_file_name)
-    logging.debug(f"In app.py in call_openai, project_name is {project_name}")
-    logging.debug(f"In app.py in call_openai, data is {data}")
     response_data, status_code = api_processing.manage_api_calls(
         business_description=business_description,
         project_name = project_name, 
@@ -116,19 +123,11 @@ def call_openai():
 # Route to serve table data (CAPEX, OPEX, etc.)
 @app.route('/api/table_data/<project_name>/<table_identifier>', methods=['GET'])
 def get_table_data(project_name, table_identifier):
-    # Get the appropriate file structures based on project
-    files_and_structures = json_manager.CATALYST_FILES_AND_STRUCTURES if project_name == "catalyst" else json_manager.FILES_AND_STRUCTURES
-    
-    # Get the root key from the file structure
-    root_key = files_and_structures[table_identifier]["root_key"] if table_identifier in files_and_structures else None
-    
     # Load the table data
     table_data = json_manager.load_json_data(table_identifier, project_name)
-    
     # Return both the data and root key
     return jsonify({
-        "data": table_data,
-        "root_key": root_key
+        "data": table_data
     })
    
 
@@ -150,7 +149,6 @@ def download_excel():
         # Generate Excel file
         logging.info(f"Generating Excel file for {project_name} project")
         file_path = generate_excel_model() if project_name == "financial" else make_catalyst_summary()
-        logging.debug(f"In app.py in download_excel, file_path is {file_path}")
         # Verify file exists before attempting to send
         if not os.path.exists(file_path):
             logging.error(f"Generated Excel file not found at path: {file_path}")
@@ -182,7 +180,7 @@ def download_ppt():
             return jsonify({"error": "Project name is required to generate the PowerPoint file"}), 400
             
         # Validate project name is one of the expected values
-        if project_name not in ["financial", "catalyst"]:
+        if project_name not in ["financial", "catalyst", "real_estate"]:
             logging.error(f"Invalid project name received: {project_name}")
             return jsonify({"error": "Invalid project name"}), 400
             
@@ -231,7 +229,6 @@ def clear_all_data():
         return jsonify({"error": "Project name is required to clear data."}), 400
 
     # Log the project name and clear data
-    logging.debug(f"Project name is {project_name}")
     initialize_session_files(project_name, json_manager)
 
     return jsonify({"message": "All data cleared successfully!"}), 200

@@ -1,0 +1,15 @@
+Structure Explanation:
+
+The operating expenses table stores information about regular business operating costs. The data must be structured exactly as follows to match the system configuration:
+
+Root Key: "expenses" (This exact root key must be used)
+Structure:
+- expenses (Array): Contains operating expense entries with the following required fields:
+  - expense_name (String): Name or description of the operating expense
+  - amount (Number): Cost of the expense in dollars (minimum 0)
+  - frequency (String): How often the expense occurs (e.g. monthly, annually)
+  - notes (String): These notes should clarify why the expense was chosen to be included in the operating expenses, or justify the amount.
+  - source_link (String): URL to expense source information. If the source was part of this api call, or is not a website, leave this blank ("").
+  - source_string (String): Description of expense source. Be precise, ideally down to the page or paragraph. If you don't have a source, write "No source"
+
+Do not include employee wages in the operating expenses section, they are included in the employees section.

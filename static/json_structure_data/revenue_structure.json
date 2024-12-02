@@ -1,0 +1,96 @@
+{
+    "revenue": {
+        "filename": "revenue_build.json",
+        "root_key": "revenue_sources",
+        "description": "Stores revenue sources and pricing information",
+        "version": "1.0",
+        "explanation_file": "revenue_build_explanation.txt",
+        "structure": {
+            "revenue_sources": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "required": [
+                        "revenue_source_name",
+                        "revenue_source_price", 
+                        "price_source",
+                        "price_source_link",
+                        "price_notes",
+                        "monthly_transactions",
+                        "frequency_notes",
+                        "frequency_source",
+                        "frequency_source_link"
+                    ],
+                    "properties": {
+                        "revenue_source_name": {
+                            "type": "string",
+                            "description": "Name of the revenue stream",
+                            "min_length": 1,
+                            "max_length": 100,
+                            "order": 1
+                        },
+                        "revenue_source_price": {
+                            "type": "number",
+                            "description": "Price per unit/service",
+                            "minimum": 0,
+                            "order": 2
+                        },
+                        "price_source": {
+                            "type": "string",
+                            "description": "Source of the pricing information",
+                            "order": 3
+                        },
+                        "price_source_link": {
+                            "type": "string",
+                            "description": "URL to pricing source",
+                            "format": "uri",
+                            "order": 4
+                        },
+                        "price_notes": {
+                            "type": "string",
+                            "description": "Additional context about pricing",
+                            "order": 5
+                        },
+                        "monthly_transactions": {
+                            "type": "number",
+                            "description": "Number of transactions per month",
+                            "minimum": 0,
+                            "order": 6
+                        },
+                        "frequency_notes": {
+                            "type": "string",
+                            "description": "Additional context about frequency",
+                            "order": 7
+                        },
+                        "frequency_source": {
+                            "type": "string",
+                            "description": "Source of frequency data",
+                            "order": 8
+                        },
+                        "frequency_source_link": {
+                            "type": "string",
+                            "description": "URL to frequency source",
+                            "format": "uri",
+                            "order": 9
+                        }
+                    }
+                }
+            }
+        },
+        "default_content": {
+            "revenue_sources": [
+                {
+                    "revenue_source_name": "Sample Revenue Stream",
+                    "price": 25.00,
+                    "price_source": "Industry Average", 
+                    "price_source_link": "https://example.com/pricing",
+                    "price_notes": "Price selected from historical data, page 3 of CIM",
+                    "monthly_transactions": 100,
+                    "frequency_notes": "Frequency set to produce acceptable monthly revenue",
+                    "frequency_source": "Confidential Information Memorandum, Page 13, Section 3.1",
+                    "frequency_source_link": "https://example.com/research"
+                }
+            ]
+        }
+    }
+}

@@ -415,7 +415,11 @@ class OpexCapexPage:
         self.operating_expenses_sheet.set_column('D:D', 15) 
         self.operating_expenses_sheet.set_column('E:E', 12)
         self.operating_expenses_sheet.set_column('F:F', 30)
-        self.operating_expenses_sheet.set_column('G:G', 10)
+        self.operating_expenses_sheet.set_column('G:G', 5)
+        # Set columns I through DD to width 12
+        for col_num in range(8, 30): # I is column 8, DD is column 29
+            col_letter = number_to_column_letter(col_num)
+            self.operating_expenses_sheet.set_column(f'{col_letter}:{col_letter}', 12)
         
         # -- Headers and titles -- #
         

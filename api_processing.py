@@ -8,7 +8,7 @@ import os
 import json
 import requests
 import logging
-from config import MAX_TOKENS_PER_CALL, RUNNING_SUMMARY_FILE, OPENAI_MODEL
+from config import MAX_TOKENS_PER_CALL, RUNNING_SUMMARY_FILE, OPENAI_MODEL, DEFAULT_PROJECT_NAME, CATALYST_TABLE, FINANCIALS_TABLE
 from pdf_processing import get_page_token_counts, get_pdf_content_by_page_indices
 from running_summary_manager import RunningSummaryManager #Import the running summary manager
 from prompt_builder import PromptBuilder
@@ -38,7 +38,7 @@ def manage_api_calls(business_description, project_name, user_input, update_scop
     
     
     # Load tables and determine update/context scope
-    all_tables = list(json_manager.CATALYST_FILES_AND_STRUCTURES.keys() if project_name == "catalyst" else json_manager.FILES_AND_STRUCTURES.keys())
+    all_tables = list(CATALYST_TABLE.keys() if project_name == "catalyst" else FINANCIALS_TABLE.keys() if project_name == "financial" else FINANCIALS_TABLE.keys() if DEFAULT_PROJECT_NAME == "financial" else CATALYST_TABLE.keys())
     update_tables = all_tables if update_scope == "all" else [update_scope]
     context_tables = [table for table in all_tables if table not in update_tables]
     tables_data = {table: json_manager.load_json_data(table, project_name) for table in update_tables}
@@ -60,7 +60,7 @@ def manage_api_calls(business_description, project_name, user_input, update_scop
     # Calculate overhead token count
     syetem_prompt_tokens = prompt_manager.get_token_count('system')
     user_inupt_tokens = prompt_manager.get_token_count('user')
-    logging.info(f"Estimated system prompt token count: {syetem_prompt_tokens} tokens")
+    logging.info(f"Estimated system prompt [before payload] token count: {syetem_prompt_tokens} tokens")
     logging.info(f"Estimated user prompt token count: {user_inupt_tokens} tokens")
     logging.debug(f"User prompt is {prompt_manager.user_input}")
     
@@ -109,6 +109,7 @@ def manage_api_calls(business_description, project_name, user_input, update_scop
     # Update the final summary and JSON data
     openAI_output["text"] += response.get("text", "")
     openAI_output["json_data"].update(response.get("JSONData", {}))
+    prompt_manager.display_tokens_and_cost(openAI_output)
 
     # Update JSON files with the aggregated data
     json_manager.update_json_files(openAI_output["json_data"], project_name)

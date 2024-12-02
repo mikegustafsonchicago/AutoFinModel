@@ -1,0 +1,15 @@
+Structure Explanation:
+
+The capital expenditures table stores information about capital investments and assets. The data must be structured exactly as follows to match the system configuration:
+
+Root Key: "expenses" (This exact root key must be used)
+Structure:
+- expenses (Array): Contains capital expenditure entries with the following required fields:
+  - expense_name (String): Name of the capital expenditure item
+  - amount (Number): Cost of the capital item in dollars (minimum 0)
+  - frequency (String): Timing or frequency of the expenditure
+  - source_link (String): URL to source of cost information. This is optional. If the source was part of this api call, or is not  a website, leave this blank.
+  - source_string (String): Description of the cost information source
+  - notes (String): Additional notes about the capital expenditure
+  - depreciation_life (Number): Number of years over which to depreciate this asset (minimum 1)
+  - purchase_year (Number): The year in which the capital expenditure will be made

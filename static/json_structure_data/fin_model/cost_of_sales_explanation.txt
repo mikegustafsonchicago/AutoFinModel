@@ -9,10 +9,11 @@ Structure:
   - cost_item_name (String): Name of the cost item or direct cost (1-100 chars)
   - cost_per_unit (Number): Cost per unit/service (>= 0)
   - cost_source (String): Description of cost information source
-  - cost_source_link (String): URL to cost source documentation
+  - cost_source_link (String): URL to cost source documentation. This is never optional, but if you can't provide a referencable source, write "No Source"
+  - cost_notes (String): Additional context and explanation about how the cost was determined or calculated
   - monthly_transactions (Number): Number of transactions per month (>= 0)
   - frequency_notes (String): Additional context about transaction frequency
   - frequency_source (String): Description of frequency data source
-  - frequency_source_link (String): URL to frequency source documentation
+  - frequency_source_link (String): URL to frequency source documentation. This is optional. If the source was part of this api call, or is not  a website, leave this blank.
 
 The root key and all other elements of the example file sent must be used exactly as shown to maintain compatibility with the system's FILES_AND_STRUCTURES configuration.

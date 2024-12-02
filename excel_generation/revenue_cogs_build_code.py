@@ -21,15 +21,17 @@ class RevenueCogsBuildPage(SheetManager):
     def populate_sheet(self):
         """Main function to populate the entire sheet"""
         # Set column widths
-        self.xlsxwriter_sheet.set_column('A:A', 5)   # Margin column
-        self.xlsxwriter_sheet.set_column('B:B', 35)  # Revenue source name
-        self.xlsxwriter_sheet.set_column('C:C', 15)  # Price
-        self.xlsxwriter_sheet.set_column('D:D', 12)  # Frequency
-        self.xlsxwriter_sheet.set_column('E:E', 25)  # Frequency notes
-        self.xlsxwriter_sheet.set_column('F:F', 25)  # Price source
-        self.xlsxwriter_sheet.set_column('G:G', 10)  # Frequency source
-        self.xlsxwriter_sheet.set_column('H:H', 20)  # Historical data start
-        self.xlsxwriter_sheet.set_column('I:I', 20)  # Historical and projected years
+        self.xlsxwriter_sheet.set_column('A:A', 5)   # Left margin column
+        self.xlsxwriter_sheet.set_column('B:B', 35)  # Name column
+        self.xlsxwriter_sheet.set_column('C:C', 15)  # Price column
+        self.xlsxwriter_sheet.set_column('D:D', 12)  # Monthly transactions column
+        self.xlsxwriter_sheet.set_column('E:E', 25)  # Total monthly revenue column
+        self.xlsxwriter_sheet.set_column('F:F', 5)   # Spacer column
+        self.xlsxwriter_sheet.set_column('G:G', 30)  # Price notes column
+        self.xlsxwriter_sheet.set_column('H:H', 30)  # Frequency notes column
+        self.xlsxwriter_sheet.set_column('I:I', 25)  # Price source column
+        self.xlsxwriter_sheet.set_column('J:J', 25)  # Frequency source column
+        self.xlsxwriter_sheet.set_column('K:K', 25)  # Additional spacing
 
 
         # Page Title
@@ -47,34 +49,38 @@ class RevenueCogsBuildPage(SheetManager):
         self.write_to_sheet(row, col, "Revenue Build", format_name='bold')
         row += 1        
      
-        headers = ["Name", "Price", "Monthly Transactions", "Frequency Notes", "Total Monthly Revenue", "", "Price Source", "Frequency Source"]
+        headers = ["Name", "Price", "Monthly Transactions", "Total Monthly Revenue", "", "Price Notes", "Frequency Notes", "Price Source", "Frequency Source"]
         for i, header in enumerate(headers):
-            self.write_to_sheet(row, i+col, header, format_name="underline")
+            if header in ["Price", "Monthly Transactions", "Total Monthly Revenue"]:
+                self.write_to_sheet(row, i+col, header, format_name="underline_right_wrap")
+            else:
+                self.write_to_sheet(row, i+col, header, format_name="underline")
         row += 1
 
         revenue_sources = self.business_object.revenue_sources
         for source in revenue_sources:
             # Write revenue source data in specified order
             self.write_to_sheet(row, col, source["revenue_source_name"])
-            self.write_to_sheet(row, col+1, source["revenue_source_price"], format_name="currency_cents") 
-            self.write_to_sheet(row, col+2, source["monthly_transactions"], format_name="number")
-            self.write_to_sheet(row, col+3, source["frequency_notes"])
+            self.write_to_sheet(row, col+1, source["revenue_source_price"], format_name="currency_input") 
+            self.write_to_sheet(row, col+2, source["monthly_transactions"], format_name="input")
             cell1 = get_cell_identifier(row,col+1, absolute_row=True)
             cell2 = get_cell_identifier(row,col+2, absolute_row=True)
             formula_string = f"={cell1}*{cell2}"
-            self.write_to_sheet(row, col+4, formula_string, format_name="currency")
+            self.write_to_sheet(row, col+3, formula_string, format_name="currency")
+            self.write_to_sheet(row, col+5, source["price_notes"])  
+            self.write_to_sheet(row, col+6, source["frequency_notes"])
             # Add price source as link
-            self.write_to_sheet(row, col+6, f'=HYPERLINK("{source["price_source_link"]}", "{source["price_source"]}")', format_name='URL')
+            self.write_to_sheet(row, col+7, f'=HYPERLINK("{source["price_source_link"]}", "{source["price_source"]}")', format_name='URL')
             # Add frequency source as link
-            self.write_to_sheet(row, col+7, f'=HYPERLINK("{source["frequency_source_link"]}", "{source["frequency_source"]}")', format_name='URL')
+            self.write_to_sheet(row, col+8, f'=HYPERLINK("{source["frequency_source_link"]}", "{source["frequency_source"]}")', format_name='URL')
 
             # Save reference to price cell for this revenue source
             self.cell_manager.add_cell_reference(self.sheet_name, source["revenue_source_name"],
-                                               row=row, col=col+4)
+                                               row=row, col=col+3)
             
             row += 1
-        self.write_to_sheet(row, col+3, "Total")
-        self.write_to_sheet(row, col+4, f"=sum({number_to_column_letter(col+4)}${row-len(revenue_sources)+1}:{number_to_column_letter(col+4)}${row})", format_name="currency")
+        self.write_to_sheet(row, col+2, "Total", format_name="bold_right")
+        self.write_to_sheet(row, col+3, f"=sum({number_to_column_letter(col+3)}${row-len(revenue_sources)+1}:{number_to_column_letter(col+3)}${row})", format_name="currency")
         self.cell_manager.add_cell_reference(self.sheet_name, "Total Revenue", row=row, col=col+4)
         row+=1
         
@@ -88,33 +94,36 @@ class RevenueCogsBuildPage(SheetManager):
         self.write_to_sheet(row, col, "COGS Build", format_name='bold')
         row += 1
 
-        # Add headers
-        headers = ["Name", "Cost", "Monthly Transactions", "Frequency Notes", "Total Monthly Cost","", "Cost Source", "Frequency Source"]
+        headers = ["Name", "Cost", "Monthly Transactions", "Total Monthly Cost", "", "Cost Notes", "Frequency Notes", "Cost Source", "Frequency Source"]
         for i, header in enumerate(headers):
-            self.write_to_sheet(row, i+col, header, format_name="underline")
+            if header in ["Cost", "Monthly Transactions", "Total Monthly Cost"]:
+                self.write_to_sheet(row, i+col, header, format_name="underline_right_wrap")
+            else:
+                self.write_to_sheet(row, i+col, header, format_name="underline")
         row += 1
 
         for direct_cost in self.business_object.cost_of_sales_items:
             # Write cost item data
             self.write_to_sheet(row, col, direct_cost['cost_item_name'])
-            self.write_to_sheet(row, col+1, direct_cost['cost_per_unit'], format_name="currency_cents")
-            self.write_to_sheet(row, col+2, direct_cost['monthly_transactions'], format_name="number")
-            self.write_to_sheet(row, col+3, direct_cost['frequency_notes'])
+            self.write_to_sheet(row, col+1, direct_cost['cost_per_unit'], format_name="currency_input")
+            self.write_to_sheet(row, col+2, direct_cost['monthly_transactions'], format_name="input")
             cell1 = get_cell_identifier(row,col+1, absolute_row=True)
             cell2 = get_cell_identifier(row,col+2, absolute_row=True)
             formula_string = f"={cell1}*{cell2}"
-            self.write_to_sheet(row, col+4, formula_string, format_name="currency")
+            self.write_to_sheet(row, col+3, formula_string, format_name="currency")
+            self.write_to_sheet(row, col+5, direct_cost['cost_notes'])
+            self.write_to_sheet(row, col+6, direct_cost['frequency_notes'])
             # Add cost source as link
-            self.write_to_sheet(row, col+6, f'=HYPERLINK("{direct_cost["cost_source_link"]}", "{direct_cost["cost_source"]}")', format_name='URL')
+            self.write_to_sheet(row, col+7, f'=HYPERLINK("{direct_cost["cost_source_link"]}", "{direct_cost["cost_source"]}")', format_name='URL')
             # Add frequency source as link
-            self.write_to_sheet(row, col+7, f'=HYPERLINK("{direct_cost["frequency_source_link"]}", "{direct_cost["frequency_source"]}")', format_name='URL')
+            self.write_to_sheet(row, col+8, f'=HYPERLINK("{direct_cost["frequency_source_link"]}", "{direct_cost["frequency_source"]}")', format_name='URL')
 
             # Save reference to cost per unit cell for this cost item
             self.cell_manager.add_cell_reference(self.sheet_name, direct_cost['cost_item_name'],
-                                               row=row, col=col+4)
+                                               row=row, col=col+3)
 
             row += 1
-        self.write_to_sheet(row, col+3, "Total")
-        self.write_to_sheet(row, col+4, f"=sum({number_to_column_letter(col+4)}${row-len(revenue_sources)+1}:{number_to_column_letter(col+4)}${row})", format_name="currency")
+        self.write_to_sheet(row, col+2, "Total", format_name="bold_right")
+        self.write_to_sheet(row, col+3, f"=sum({number_to_column_letter(col+3)}${row-len(revenue_sources)+1}:{number_to_column_letter(col+3)}${row})", format_name="currency")
         self.cell_manager.add_cell_reference(self.sheet_name, "Total COGS", row=row, col=col+4)
         row+=1

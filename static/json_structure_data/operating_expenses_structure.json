@@ -1,0 +1,73 @@
+{
+    "operating_expenses": {
+        "filename": "OPEX.json",
+        "root_key": "expenses",
+        "description": "Stores operating expense information", 
+        "version": "1.0",
+        "explanation_file": "opex_explanation.txt",
+        "default_content": {
+            "expenses": [
+                {
+                    "expense_name": "Sample Operating Expense",
+                    "amount": 1000.0,
+                    "frequency": "Monthly",
+                    "source_string": "Sample Source",
+                    "source_link": "https://example.com",
+                    "notes": "Sample operating expense"
+                }
+            ]
+        },
+        "structure": {
+            "expenses": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "required": [
+                        "expense_name",
+                        "amount", 
+                        "frequency",
+                        "source_string",
+                        "source_link",
+                        "notes"
+                    ],
+                    "properties": {
+                        "expense_name": {
+                            "type": "string",
+                            "description": "Name of the operating expense",
+                            "min_length": 1,
+                            "max_length": 100,
+                            "order": 1
+                        },
+                        "amount": {
+                            "type": "number", 
+                            "description": "Cost amount per occurrence",
+                            "minimum": 0,
+                            "order": 2
+                        },
+                        "frequency": {
+                            "type": "string",
+                            "description": "How often the expense occurs",
+                            "order": 3
+                        },
+                        "source_string": {
+                            "type": "string",
+                            "description": "Source of the cost information",
+                            "order": 4
+                        },
+                        "source_link": {
+                            "type": "string",
+                            "description": "URL to cost source",
+                            "format": "uri",
+                            "order": 5
+                        },
+                        "notes": {
+                            "type": "string",
+                            "description": "Additional notes about the expense",
+                            "order": 6
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

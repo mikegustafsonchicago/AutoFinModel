@@ -1,0 +1,22 @@
+{            "seed_terms": {
+                "filename": "seed_terms.json",
+                "root_key": "investments",
+                "description": "Stores seed investment terms",
+                "version": "1.0",
+                "explanation_file": "seed_terms_explanation.txt",
+                "default_content": {
+                    "investments": [
+                        {
+                            "expense_name": "Target Seed Investment Placeholder",
+                            "initial_investment": "Initial Seed Investment Placeholder",
+                            "fundraising_date": "Placeholder Date",
+                            "revenue_share": "0%",
+                            "revenue_share_cap": "0.0x",
+                            "revenue_share_tail": "0%",
+                            "source_string": "Placeholder Source",
+                            "source_link": "https://example.com"
+                        }
+                    ]
+                }
+            }
+        }

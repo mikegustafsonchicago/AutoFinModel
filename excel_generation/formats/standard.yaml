@@ -116,6 +116,8 @@ size_eight:
   font_size: 8
 number:
   num_format: "0"
+number_one_decimal:
+  num_format: "0.0"
 currency:
   num_format: "$#,##0"
 currency_cents:
@@ -135,6 +137,13 @@ underline:
 underline_wrap:
   underline: true
   text_wrap: true
+underline_right:
+  underline: true
+  align: right
+underline_right_wrap:
+  underline: true
+  text_wrap: true
+  align: right
 italic:
   italic: true
 top_border:

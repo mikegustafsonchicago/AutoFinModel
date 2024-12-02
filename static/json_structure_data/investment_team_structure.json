@@ -1,0 +1,20 @@
+{
+                "investment_team": {
+                "filename": "investment_team.json",
+                "root_key": "team_members",
+                "description": "Stores investment team information",
+                "version": "1.0",
+                "explanation_file": "investment_team_explanation.txt",
+                "default_content": {
+                    "team_members": [
+                        {
+                            "investment_team_member_name": "Placeholder Name",
+                            "investment_team_member_title": "Placeholder Title",
+                            "investment_team_member_join_date": 2020,
+                            "source_string": "Placeholder Source",
+                            "source_link": "https://example.com"
+                        }
+                    ]
+                }
+            }
+}

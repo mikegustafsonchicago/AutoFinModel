@@ -1,5 +1,5 @@
 import { clearAllData, uploadPDF, dollarFormatter } from './shared-modules.js';
-const PROJECT_NAME = "financial";
+const PROJECT_NAME = "real_estate";
 
 
 
@@ -760,9 +760,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // Attach the clearAllData function to the button
-document.getElementById('clearDataButton').addEventListener('click', () => {
-    clearAllData(PROJECT_NAME);
-});
+document.getElementById('clearDataButton').addEventListener('click', clearAllData);
 
 
 // Function to handle uploading the file to AI and update checkmark

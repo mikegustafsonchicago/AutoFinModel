@@ -1,0 +1,16 @@
+Structure Explanation:
+
+The comparables table stores information about comparable companies. The data must be structured exactly as follows to match the system configuration:
+
+Root Key: "comparables" (This exact root key must be used)
+Structure:
+- comparables (Array): Contains comparable company entries with the following required fields:
+  - company_name (String): The name of the comparable company
+  - enterprise_value (Number): Total company value in millions (minimum 0)
+  - market_cap (Number): The market capitalization of the company in millions (minimum 0)
+  - ebitda (Number): Earnings before interest, taxes, depreciation and amortization in millions
+  - equity_beta (Number): Stock volatility relative to market
+  - asset_beta (Number): Asset volatility measure
+  - ev_ebitda_multiple (Number): Enterprise value to EBITDA multiple
+  - source (String): Source of the comparable data
+  - source_date (String): Date the comparable data was sourced

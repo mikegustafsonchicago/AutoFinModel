@@ -10,7 +10,8 @@ Structure:
   - wage (Number): Wage amount in dollars (minimum 0)
   - wage_type (String): Must be either "hourly" or "salary" 
   - monthly_hours (Number): Expected work hours per month (minimum 0)
-  - notes (String): Additional notes about the role
-  - source_link (String): URL to wage/role source information
-  - source_string (String): Description of wage/role source
+  - notes (String): These notes should be to justify the chosen value for role, wage, quantity, or monthly hours. Don't describe the role further.
+  - source_link (String): URL to wage/role source information. This is optional. If the source was part of this api call, or is not  a website, leave this blank.
+  - source_string (String): Description of wage/role source. This is not optional. If you don't have a source, write "No source"
 
+You may add employees you believe are relevant to the business, even if they aren't found in any sources. However, you must provide a source_string that says "No source".

@@ -44,6 +44,8 @@ class RollOutPage(SheetManager):
         self.xlsxwriter_sheet.set_column('A:A', 5) 
         self.xlsxwriter_sheet.set_column('B:B', 15) 
         self.xlsxwriter_sheet.set_column('D:D', 10)
+        for col_letter in ['G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P']:
+            self.xlsxwriter_sheet.set_column(f'{col_letter}:{col_letter}', 12)
         #Set all the annual model column width
         start_col_letter = number_to_column_letter(self.annual_hist_start)
         end_col_letter = number_to_column_letter(self.annual_year0_start+self.num_forecasted_years)
@@ -67,16 +69,16 @@ class RollOutPage(SheetManager):
         
         #Data
         statement_lines_ref = {
-                               "Revenue": {"sheet": "Unit_IS", "ref_name":"Net_Income"}, 
-                               "Direct Costs": {"sheet": "Unit_IS", "ref_name":"Net_Income"}, 
-                               "Gross Profit": {"sheet": "Unit_IS", "ref_name":"Net_Income"}, 
-                               "SG&A": {"sheet": "Unit_IS", "ref_name":"Net_Income"},
-                               "Employee Salaries": {"sheet": "Unit_IS", "ref_name":"Net_Income"},
-                               "R&D": {"sheet": "Unit_IS", "ref_name":"Net_Income"},
-                               "EBITDA": {"sheet": "Unit_IS", "ref_name":"Net_Income"},
-                               "Depreciation": {"sheet": "Unit_IS", "ref_name":"Net_Income"},
-                               "EBIT": {"sheet": "Unit_IS", "ref_name":"Net_Income"},
-                               "Interest": {"sheet": "Unit_IS", "ref_name":"Net_Income"}, 
+                               "Revenue": {"sheet": "Unit_IS", "ref_name":"Total Revenue"}, 
+                               "Direct Costs": {"sheet": "Unit_IS", "ref_name":"Total Direct Costs"}, 
+                               "Gross Profit": {"sheet": "Unit_IS", "ref_name":"Gross Profit"}, 
+                               "SG&A": {"sheet": "Unit_IS", "ref_name":"SGA"},
+                               "Employee Salaries": {"sheet": "Unit_IS", "ref_name":"Employee Salaries"},
+                               "R&D": {"sheet": "Unit_IS", "ref_name":"R&D"},
+                               "EBITDA": {"sheet": "Unit_IS", "ref_name":"EBITDA"},
+                               "Depreciation": {"sheet": "Unit_IS", "ref_name":"Depreciation"},
+                               "EBIT": {"sheet": "Unit_IS", "ref_name":"EBIT"},
+                               "Interest": {"sheet": "Unit_IS", "ref_name":"Interest"}, 
                                "Net Income": {"sheet": "Unit_IS", "ref_name":"Net_Income"}
                                }
 
@@ -94,7 +96,8 @@ class RollOutPage(SheetManager):
         for year in range(self.business_object.start_year, self.business_object.start_year + self.num_forecasted_years):
             row+=1
             self.write_to_sheet(row, col, year)
-            self.write_to_sheet(row, col+1, 0, format_name='input')
+            value = 1 if year == self.business_object.start_year else 0
+            self.write_to_sheet(row, col+1, value, format_name='input')
         row+=2
         
         #Create the sections that calculate the financial info based on the schedule
@@ -106,15 +109,15 @@ class RollOutPage(SheetManager):
             ref_row = self.cell_manager.get_cell_reference(sheet_name, ref_name, format_type='row')
             ref_col = self.cell_manager.get_cell_reference(sheet_name, ref_name, format_type='col')
             self.create_annual_referenced_line(row, ref_row, ref_col, "Unit_IS")
-            line_result_row = row
+            section_data_row = row
             row+=2
             for year_rowwise in range(self.business_object.start_year, self.business_object.start_year + self.num_forecasted_years):
                 year_delta = year_rowwise -self.business_object.start_year
                 col=self.annual_year0_start
                 for year_columnwise in range(self.business_object.start_year, self.business_object.start_year + self.num_forecasted_years):
                     if year_columnwise >= year_rowwise:
-                        formula_string = f"=H12*{get_cell_identifier(row, self.new_units_col)}"
-                        self.write_to_sheet(row, col, formula_string)
+                        formula_string = f"={get_cell_identifier(section_data_row, col)}*{get_cell_identifier(row, self.new_units_col)}"
+                        self.write_to_sheet(row, col, formula_string, format_name="currency")
                     col+=1
                 
                 self.write_to_sheet(row, self.new_units_col-1, year_rowwise)
@@ -122,5 +125,15 @@ class RollOutPage(SheetManager):
                 self.write_to_sheet(row, self.new_units_col, formula_string)
 
                 row+=1
+        
+            # Add sum line for each year's column
+            for col in range(self.annual_year0_start, self.annual_year0_start+self.num_forecasted_years):
+                formula_string = f"=SUM({number_to_column_letter(col)}${row-self.num_forecasted_years+1}:{number_to_column_letter(col)}${row-1})"
+                self.write_to_sheet(row, col, formula_string, format_name="sum_line")
+            
+            # Add cell reference for the sum row
+            self.cell_manager.add_cell_reference(self.sheet_name, f"Total_{line.replace(' ', '_')}", row=row, col=self.annual_year0_start)
+            
+            row += 2
            
             

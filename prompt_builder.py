@@ -10,7 +10,7 @@ import os
 import json
 from json_manager import JsonManager
 from file_manager import write_file
-from config import RUNNING_SUMMARY_DIR, PROMPT_DIR
+from config import RUNNING_SUMMARY_DIR, PROMPT_DIR, OPENAI_COST_PER_INPUT_TOKEN, OPENAI_COST_PER_OUTPUT_TOKEN
 from pdf_processing import count_tokens  
 import logging
 
@@ -149,3 +149,14 @@ class PromptBuilder:
             total_tokens += count_tokens(self.user_prompt)
             
         return total_tokens
+
+    def display_tokens_and_cost(self, response):
+        total_input_tokens = self.get_token_count('system') + self.get_token_count('user')
+        total_output_tokens = count_tokens(response["text"])
+        input_cost = total_input_tokens * OPENAI_COST_PER_INPUT_TOKEN
+        output_cost = total_output_tokens * OPENAI_COST_PER_OUTPUT_TOKEN
+        total_cost = input_cost + output_cost
+        
+        logging.info(f"Total input tokens: {total_input_tokens}, cost: ${input_cost:.4f} USD")
+        logging.info(f"Total output tokens: {total_output_tokens}, cost: ${output_cost:.4f} USD") 
+        logging.info(f"Total cost: ${total_cost:.4f} USD")

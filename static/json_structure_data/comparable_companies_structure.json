@@ -1,0 +1,95 @@
+{
+    "comparables": {
+        "filename": "comparables.json",
+        "root_key": "comparables",
+        "description": "Stores comparable company metrics and multiples",
+        "version": "1.0",
+        "explanation_file": "comparables_explanation.txt",
+        "default_content": {
+            "comparables": [
+                {
+                    "company_name": "Sample Company",
+                    "enterprise_value": 100.0,
+                    "market_cap": 80.0,
+                    "ebitda": 10.0,
+                    "equity_beta": 1.0,
+                    "asset_beta": 0.8,
+                    "ev_ebitda_multiple": 10.0,
+                    "source": "Sample Source",
+                    "source_date": "2024-01-01"
+                }
+            ]
+        },
+        "structure": {
+            "comparables": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "required": [
+                        "company_name",
+                        "enterprise_value", 
+                        "market_cap",
+                        "ebitda",
+                        "equity_beta",
+                        "asset_beta",
+                        "ev_ebitda_multiple",
+                        "source",
+                        "source_date"
+                    ],
+                    "properties": {
+                        "company_name": {
+                            "type": "string",
+                            "description": "Name of the comparable company",
+                            "min_length": 1,
+                            "max_length": 100,
+                            "order": 1
+                        },
+                        "enterprise_value": {
+                            "type": "number",
+                            "description": "Enterprise value in millions",
+                            "minimum": 0,
+                            "order": 2
+                        },
+                        "market_cap": {
+                            "type": "number",
+                            "description": "Market capitalization in millions", 
+                            "minimum": 0,
+                            "order": 3
+                        },
+                        "ebitda": {
+                            "type": "number",
+                            "description": "EBITDA in millions",
+                            "order": 4
+                        },
+                        "equity_beta": {
+                            "type": "number",
+                            "description": "Equity beta",
+                            "order": 5
+                        },
+                        "asset_beta": {
+                            "type": "number",
+                            "description": "Asset/unlevered beta",
+                            "order": 6
+                        },
+                        "ev_ebitda_multiple": {
+                            "type": "number",
+                            "description": "EV/EBITDA multiple",
+                            "order": 7
+                        },
+                        "source": {
+                            "type": "string",
+                            "description": "Source of the comparable data",
+                            "order": 8
+                        },
+                        "source_date": {
+                            "type": "string",
+                            "description": "Date the comparable data was sourced",
+                            "format": "date",
+                            "order": 9
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

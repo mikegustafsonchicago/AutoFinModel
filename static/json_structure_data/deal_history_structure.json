@@ -1,0 +1,23 @@
+{
+    "deal_history": {
+                "filename": "deal_history.json",
+                "root_key": "deals",
+                "description": "Stores historical deal information",
+                "version": "1.0",
+                "explanation_file": "deal_history_explanation.txt",
+                "default_content": {
+                    "deals": [
+                        {
+                            "date": "Placeholder Date",
+                            "firm": "Placeholder Firm",
+                            "amount": "$0",
+                            "realized": "No",
+                            "syndicate_partners": "Placeholder Partners",
+                            "source_string": "Placeholder Source",
+                            "source_link": "https://example.com"
+                        }
+                    ]
+                }
+            }
+            
+        }

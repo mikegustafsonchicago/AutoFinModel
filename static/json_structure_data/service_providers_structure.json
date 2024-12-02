@@ -1,0 +1,19 @@
+{
+    "service_providers": {
+        "filename": "service_providers.json",
+        "root_key": "providers", 
+        "description": "Stores service provider information",
+        "version": "1.0",
+        "explanation_file": "service_providers_explanation.txt",
+        "default_content": {
+            "providers": [
+                {
+                    "service_type": "Placeholder Service",
+                    "firm_name": "Placeholder Firm",
+                    "source_string": "Placeholder Source",
+                    "source_link": "https://example.com"
+                }
+            ]
+        }
+    }
+}

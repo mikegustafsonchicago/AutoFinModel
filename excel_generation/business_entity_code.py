@@ -46,7 +46,7 @@ class BusinessEntity:
             self.employees = self.employees if self.employees else []
             self.hist_IS = self.json_manager.load_json_data("historical_financials")
             self.hist_IS = self.hist_IS if self.hist_IS else []
-            self.comparables_valuation = self.json_manager.load_json_data("comparable_companies")
+            self.comparables_valuation = self.json_manager.load_json_data("comparables")
             self.comparables_valuation = self.comparables_valuation if self.comparables_valuation else []
        
             # Get earliest year from historical financials, default to current year if no data
@@ -59,7 +59,6 @@ class BusinessEntity:
         #CATALYST Loads
         elif project_name == "catalyst":
             self.fundamentals = self.json_manager.load_json_data("fundamentals", project_name="catalyst")
-            logging.debug(f"Fundamentals: {self.fundamentals}")
             self.fundamentals = self.fundamentals if self.fundamentals else []
             self.investment_team = self.json_manager.load_json_data("investment_team", project_name="catalyst")
             self.investment_team = self.investment_team if self.investment_team else []

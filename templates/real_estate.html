@@ -3,13 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AutoFinModel - Build Your Model</title>
+    <title>AI for Commercial Real Estate</title>
     <link href="https://unpkg.com/tabulator-tables@5.2.7/dist/css/tabulator.min.css" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
 </head>
 <body>
     <div class="layout">
-		<!--<a href="/catalyst" class="nav-link">Catalyst</a>-->
         <!-- AI Prompt Section - Now at top -->
         <div class="card ai-prompt">
             <div class="card-header">
@@ -17,8 +16,8 @@
             </div>
             <div class="card-content">
                 <div class="input-group">
-                    <label for="businessDescription">Business Description:</label>
-                    <textarea id="businessDescription" class="textarea" rows="4"></textarea>
+                    <label for="businessDescription">Property Description:</label>
+                    <textarea id="businessDescription" class="textarea" rows="4" placeholder="Describe the property type, location, size, current use, etc."></textarea>
                 </div>
                 
                 <div class="input-group">
@@ -28,7 +27,7 @@
                 
                 <div class="upload-section">
                     <div id="uploadZone" class="upload-zone">
-                        <p>Click or drag files to upload</p>
+                        <p>Click or drag files to upload (property docs, market reports, etc.)</p>
                         <input type="file" id="pdfUpload" accept=".pdf" multiple hidden>
                     </div>
 
@@ -44,7 +43,7 @@
                         <tbody></tbody>
                     </table>
                 </div>
-				<div id="loading" style="display: none;">Loading...</div>
+                <div id="loading" style="display: none;">Loading...</div>
                 <div class="input-group">
                     <label>AI Response:</label>
                     <div id="aiResponse" class="ai-response"></div>
@@ -54,161 +53,120 @@
 
         <!-- Main Content - Tables and forms -->
         <main class="container">
-            <h1 class="page-title">Build a financial model with AI assistance</h1>
+            <h1 class="page-title">Commercial Real Estate Analysis with AI Assistance</h1>
 
-            <!-- Revenue Data Section -->
+            <!-- Rental Revenue Section -->
             <div class="card">
                 <div class="card-header">
-                    <h2 class="card-title">Revenue Data</h2>
+                    <h2 class="card-title">Rental Revenue</h2>
                 </div>
                 <div class="card-content">
                     <div id="revenueTable" class="table-container"></div>
                     <div class="button-group">
                         <button class="button button-outline">
                             <span class="icon">+</span>
-                            Add Row
+                            Add Unit/Space
                         </button>
                         <button id="revenueAIButton" class="button button-ai">
                             <span class="icon">✨</span>
-                            Add Revenue Data with AI
+                            Add Market Rental Data with AI
                         </button>
                     </div>
                 </div>
             </div>
 
-            <!-- Inventory and COGS Section -->
+            <!-- Operating Expenses Section -->
             <div class="card">
                 <div class="card-header">
-                    <h2 class="card-title">Inventory and COGS Data</h2>
-                </div>
-                <div class="card-content">
-                    <div id="purchasesTable" class="table-container"></div>
-                    <div class="button-group">
-                        <button class="button button-outline">
-                            <span class="icon">+</span>
-                            Add Row
-                        </button>
-                        <button id="purchasesAIButton" class="button button-ai">
-                            <span class="icon">✨</span>
-                            Add Purchase Data with AI
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Employees Section -->
-            <div class="card">
-                <div class="card-header">
-                    <h2 class="card-title">Employees Data</h2>
-                </div>
-                <div class="card-content">
-                    <div id="employeesTable" class="table-container"></div>
-                    <div class="button-group">
-                        <button class="button button-outline">
-                            <span class="icon">+</span>
-                            Add Row
-                        </button>
-                        <button id="employeesAIButton" class="button button-ai">
-                            <span class="icon">✨</span>
-                            Add Employee Data with AI
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- CAPEX Section -->
-            <div class="card">
-                <div class="card-header">
-                    <h2 class="card-title">CAPEX Data</h2>
-                </div>
-                <div class="card-content">
-                    <div id="capexTable" class="table-container"></div>
-                    <div class="button-group">
-                        <button class="button button-outline">
-                            <span class="icon">+</span>
-                            Add Row
-                        </button>
-                        <button id="capexAIButton" class="button button-ai">
-                            <span class="icon">✨</span>
-                            Add CAPEX Data with AI
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- OPEX Section -->
-            <div class="card">
-                <div class="card-header">
-                    <h2 class="card-title">OPEX Data</h2>
+                    <h2 class="card-title">Operating Expenses</h2>
                 </div>
                 <div class="card-content">
                     <div id="opexTable" class="table-container"></div>
                     <div class="button-group">
                         <button class="button button-outline">
                             <span class="icon">+</span>
-                            Add Row
+                            Add Expense
                         </button>
                         <button id="opexAIButton" class="button button-ai">
                             <span class="icon">✨</span>
-                            Add OPEX Data with AI
+                            Add Market Expenses with AI
                         </button>
                     </div>
                 </div>
             </div>
 
-            <!-- Historical Financial Data Section -->
-			<div class="card">
-				<div class="card-header">
-					<h2 class="card-title">Firm Historical Financial Data</h2>
-				</div>
-				<div class="card-content">
-					<div id="historicalISTable" class="table-container"></div>
-					<div class="button-group">
-						<button class="button button-outline">
-							<span class="icon">+</span>
-							Add Row
-						</button>
-						<button id="historicalISAIButton" class="button button-ai">
-							<span class="icon">✨</span>
-							Add Historical Data with AI
-						</button>
-					</div>
-				</div>
-			</div>
+            <!-- Capital Expenditures Section -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Capital Improvements</h2>
+                </div>
+                <div class="card-content">
+                    <div id="capexTable" class="table-container"></div>
+                    <div class="button-group">
+                        <button class="button button-outline">
+                            <span class="icon">+</span>
+                            Add Improvement
+                        </button>
+                        <button id="capexAIButton" class="button button-ai">
+                            <span class="icon">✨</span>
+                            Add Capital Improvements with AI
+                        </button>
+                    </div>
+                </div>
+            </div>
 
-             <!-- Valuation Comparables Section -->
-			<div class="card">
-				<div class="card-header">
-					<h2 class="card-title">Valuation Comparables</h2>
-				</div>
-				<div class="card-content">
-					<div id="comparablesTable" class="table-container"></div>
-					<div class="button-group">
-						<button class="button button-outline">
-							<span class="icon">+</span>
-							Add Row
-						</button>
-						<button id="comparablesAIButton" class="button button-ai">
-							<span class="icon">✨</span>
-							Add Comparable Company with AI
-						</button>
-					</div>
-				</div>
-			</div>
+            <!-- Tenant Information Section -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Tenant Information</h2>
+                </div>
+                <div class="card-content">
+                    <div id="tenantsTable" class="table-container"></div>
+                    <div class="button-group">
+                        <button class="button button-outline">
+                            <span class="icon">+</span>
+                            Add Tenant
+                        </button>
+                        <button id="tenantsAIButton" class="button button-ai">
+                            <span class="icon">✨</span>
+                            Add Tenant Details with AI
+                        </button>
+                    </div>
+                </div>
+            </div>
 
+            <!-- Market Comparables Section -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Market Comparables</h2>
+                </div>
+                <div class="card-content">
+                    <div id="comparablesTable" class="table-container"></div>
+                    <div class="button-group">
+                        <button class="button button-outline">
+                            <span class="icon">+</span>
+                            Add Comparable
+                        </button>
+                        <button id="comparablesAIButton" class="button button-ai">
+                            <span class="icon">✨</span>
+                            Add Market Comps with AI
+                        </button>
+                    </div>
+                </div>
+            </div>
 
             <!-- Download Section -->
             <div class="card">
                 <div class="card-header">
-                    <h2 class="card-title">Generate Model</h2>
+                    <h2 class="card-title">Generate Analysis</h2>
                 </div>
                 <div class="card-content">
                     <div class="button-group">
                         <button id="downloadExcelButton" class="button button-ai">
-                            Download Financial Model (xlsx)
+                            Download Property Analysis (xlsx)
                         </button>
                         <button id="downloadPPTButton" class="button button-ai">
-                            Company Overview (.pptx)
+                            Property Overview (.pptx)
                         </button>
                         <button id="clearDataButton" class="button button-outline">
                             Clear All Data
@@ -220,6 +178,6 @@
     </div>
 
     <script src="https://unpkg.com/tabulator-tables@5.2.7/dist/js/tabulator.min.js"></script>
-    <script type="module" src="{{ url_for('static', filename='js/app.js') }}"></script>
+    <script type="module" src="{{ url_for('static', filename='js/real_estate.js') }}"></script>
 </body>
 </html>

@@ -111,29 +111,16 @@ class SheetManager:
         self.num_hist_years = len(self.business_object.hist_IS) if self.business_object.hist_IS else 0
      #--------Function Definitions--------#
     def create_annual_sum_from_months_line(self, row):
-        """
-        Creates a line in the annual model that sums up the corresponding monthly values.
-        
-        For each year in the annual model, this function creates a SUMIF formula that:
-        1. Looks at the monthly headers (e.g. "Year 1", "Year 2", etc.)
-        2. When the header matches the current annual column's year
-        3. Sums the corresponding monthly values in that row
-        
-        Parameters:
-        - row: The row index where the annual sums will be written. This remains constant
-               as the function iterates across columns for each year.
-        
-        Example:
-        If row 10 contains monthly revenue data, calling this with row=10 will sum up
-        all monthly revenues for Year 1 into the Year 1 annual column, Year 2 monthly 
-        revenues into Year 2 annual column, etc.
-        """
         for col in range(self.annual_start_col, self.annual_start_col+self.num_forecasted_years):
             if_row = self.cell_manager.get_cell_reference(self.sheet_name, "Headers", "Annual", format_type="row")
             
-            formula_string = (f"=sumif($O{if_row}:$ZZ{if_row}, {number_to_column_letter(col)}{if_row}, "
-                              f"$O{row+1}:$ZZ{row+1})"
-                            ) #xlsxwriter indexes from 0, excel doesn't.
+            # Get the first and last monthly columns dynamically
+            first_monthly_col = number_to_column_letter(self.monthly_start_col)
+            last_monthly_col = number_to_column_letter(self.monthly_start_col + (12 * self.num_forecasted_years) - 1)
+            
+            formula_string = (f"=sumif({first_monthly_col}{if_row}:{last_monthly_col}{if_row}, "
+                             f"{number_to_column_letter(col)}{if_row}, "
+                             f"{first_monthly_col}{row+1}:{last_monthly_col}{row+1})")
             self.write_to_sheet(row, col, formula_string, format_name="currency")
 
     def create_percent_change_line(self, row, ref_row):
@@ -147,7 +134,7 @@ class SheetManager:
                 self.write_to_sheet(row, col, formula_string, format_name = "grey_percentage_italic")
 
     def create_monthly_referenced_line(self, row, ref_row, ref_col, ref_sheet_name):
-        #This function writes each row. The consist of annual model and monthly models.
+        #This function populates a row with the contents of an entire row, essentially, repopulating the row across sheets.
         #ref_col and ref_row are the indicies of reference cell in the sheet that the referenced data comes from
         col=self.monthly_start_col
         col_offset = col - ref_col
@@ -201,10 +188,21 @@ class SheetManager:
                 
                 self.write_to_sheet(row, col, formula_string, format_name = "grey_percentage_italic")
                 
-    def create_percent_margin_line(self, row, ref_row):
-        self.write_to_sheet(row, self.annual_year0_start-3, "Margin (%)", format_name="grey_italic_right")
-        for col in range(self.annual_year0_start+1, self.annual_year0_start+12*self.num_forecasted_years+self.gap_between_annual_and_monthly): #Start at col+1 since you can't get a percent change without two cells
-            if col <self.annual_year0_start+self.num_forecasted_years or col>self.monthly_start_col: #Don't write to the intenionally blank columns
+    def create_percent_margin_line(self, row, ref_row, add_annual=True, annual_only=False):
+        self.write_to_sheet(row, self.annual_hist_start-2, "Margin (%)", format_name="grey_italic_right")
+        
+        if add_annual:
+            range_start = self.annual_year0_start
+        else:
+            range_start = self.monthly_start_col
+            
+        if annual_only:
+            range_end = self.annual_year0_start + self.num_forecasted_years
+        else:
+            range_end = self.monthly_start_col + 12*self.num_forecasted_years
+            
+        for col in range(range_start, range_end):
+            if col < self.annual_year0_start + self.num_forecasted_years or (not annual_only and col > self.monthly_start_col - 1):
                 formula_string = f"={get_cell_identifier(row-1,col)}/{get_cell_identifier(self.revenue_row,col, absolute_row=True)}"
                 self.write_to_sheet(row, col, formula_string, format_name = "grey_percentage_italic")
 
@@ -220,15 +218,21 @@ class SheetManager:
                     self.write_to_sheet(row, col, source_cell, format_name='currency_cross')
                     col+=1
 
-    def create_in_column_addition_subtraction(self, row, component_list, add_annual=True):
+    def create_in_column_addition_subtraction(self, row, component_list, add_annual=True, annual_only=False):
         #The component list is a list of 2 items. The first one should always either be "+" or "-". The second one is the row being added or subtracted
         if add_annual:
-            range_start=self.annual_year0_start
+            range_start = self.annual_year0_start
         else:
-            range_start=self.monthly_start_col
-        for col in range(range_start, self.monthly_start_col+12*self.num_forecasted_years):
-            if col < self.annual_year0_start+self.num_forecasted_years or col > self.monthly_start_col-1:
-                formula_string="="
+            range_start = self.monthly_start_col
+            
+        if annual_only:
+            range_end = self.annual_year0_start + self.num_forecasted_years
+        else:
+            range_end = self.monthly_start_col + 12*self.num_forecasted_years
+            
+        for col in range(range_start, range_end):
+            if col < self.annual_year0_start + self.num_forecasted_years or (not annual_only and col > self.monthly_start_col - 1):
+                formula_string = "="
                 for index, component in enumerate(component_list):
                     if index==0 and component == "+":
                         #Don't start equations with "+"

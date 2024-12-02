@@ -1,0 +1,90 @@
+{
+    "employees": {
+        "filename": "employees.json",
+        "root_key": "employees", 
+        "description": "Stores employee information and wages",
+        "version": "1.0",
+        "explanation_file": "employees_explanation.txt",
+        "default_content": {
+            "employees": [
+                {
+                    "role": "Sample Role",
+                    "number": 1,
+                    "wage": 15.0,
+                    "wage_type": "hourly", 
+                    "monthly_hours": 160,
+                    "notes": "Sample employee role",
+                    "source_link": "https://example.com",
+                    "source_string": "Sample Source"
+                }
+            ]
+        },
+        "structure": {
+            "employees": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "required": [
+                        "role",
+                        "number",
+                        "wage",
+                        "wage_type",
+                        "monthly_hours", 
+                        "notes",
+                        "source_link",
+                        "source_string"
+                    ],
+                    "properties": {
+                        "role": {
+                            "type": "string",
+                            "description": "Job title or role of employee",
+                            "min_length": 1,
+                            "max_length": 100,
+                            "order": 1
+                        },
+                        "number": {
+                            "type": "number",
+                            "description": "Number of employees in this role",
+                            "minimum": 0,
+                            "order": 2
+                        },
+                        "wage": {
+                            "type": "number",
+                            "description": "Wage amount (hourly or salary)",
+                            "minimum": 0,
+                            "order": 3
+                        },
+                        "wage_type": {
+                            "type": "string",
+                            "description": "Type of wage - hourly or salary",
+                            "enum": ["hourly", "salary"],
+                            "order": 4
+                        },
+                        "monthly_hours": {
+                            "type": "number",
+                            "description": "Expected monthly hours if hourly wage",
+                            "minimum": 0,
+                            "order": 5
+                        },
+                        "notes": {
+                            "type": "string",
+                            "description": "Additional notes about the role",
+                            "order": 6
+                        },
+                        "source_link": {
+                            "type": "string",
+                            "description": "URL to wage/role source",
+                            "format": "uri",
+                            "order": 7
+                        },
+                        "source_string": {
+                            "type": "string",
+                            "description": "Source of wage/role information",
+                            "order": 8
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

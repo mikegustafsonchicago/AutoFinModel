@@ -1,0 +1,16 @@
+Structure Explanation:
+
+The revenue build table stores revenue source information and pricing. The data must be structured exactly as follows to match the system configuration:
+
+Root Key: "revenue_sources" (This exact root key must be used)
+Structure:
+- revenue_sources (Array): Contains revenue source entries with the following required fields:
+  - revenue_source_name (String): Name of the revenue stream or service being offered
+  - revenue_source_price (Number): Price charged per unit/service (minimum 0)
+  - price_source (String): Source of the pricing information. If the source was part of this api call, you must provide detail about what page this information was found on.
+  - price_source_link (String): URL link to source of pricing data. Must be provided as "No source" if the source was part of this api call or is not a website.
+  - price_notes (String): Additional context and explanation about how the price was determined or calculated
+  - monthly_transactions (Number): Number of transactions expected per month (minimum 0)
+  - frequency_notes (String): This note should precisely explain why the number of monthly transactions was chosen.
+  - frequency_source (String): Source of the transaction frequency data. If the source was part of this api call, make sure to explain what page in the pdf the transaction frequency information was found on.
+  - frequency_source_link (String): URL link to source of frequency data. Must be provided as "No source" if the source was part of this api call or is not a website.
