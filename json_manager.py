@@ -10,7 +10,7 @@ import json
 import logging
 from datetime import datetime
 
-from config import STRUCTURE_FILES_DIR, FINANCIALS_TABLE, CATALYST_TABLE, JSON_FOLDER, DEFAULT_PROJECT_NAME
+from config import STRUCTURE_FILES_DIR, FINANCIALS_TABLE, REAL_ESTATE_TABLE, CATALYST_TABLE, JSON_FOLDER, DEFAULT_PROJECT_NAME
 from excel_generation.ingredients_code import Ingredient
 
 class JsonManager:
@@ -50,10 +50,17 @@ class JsonManager:
             table_structure = CATALYST_TABLE
         elif project_name == "financial":
             table_structure = FINANCIALS_TABLE
+        elif project_name == "real_estate":
+            table_structure = REAL_ESTATE_TABLE
         else:
             # Use default project name if provided name doesn't match expected values
             logging.warning(f"Unknown project name '{project_name}', using default: {DEFAULT_PROJECT_NAME}")
-            table_structure = CATALYST_TABLE if DEFAULT_PROJECT_NAME == "catalyst" else FINANCIALS_TABLE
+            if DEFAULT_PROJECT_NAME == "catalyst":
+                table_structure = CATALYST_TABLE
+            elif DEFAULT_PROJECT_NAME == "real_estate":
+                table_structure = REAL_ESTATE_TABLE
+            else:
+                table_structure = FINANCIALS_TABLE
         
         # Initialize files based on selected structure
         for table_name, structure_filename in table_structure.items():
@@ -82,10 +89,15 @@ class JsonManager:
                 success = False
             
         return success
-
     def load_json_data(self, identifier, project_name=DEFAULT_PROJECT_NAME):
         #Step 1. Get the folder location. Use the TABLE in config.py to find the structure file
-        table_structure = CATALYST_TABLE if project_name == "catalyst" else FINANCIALS_TABLE
+        if project_name == "catalyst":
+            table_structure = CATALYST_TABLE
+        elif project_name == "real_estate":
+            table_structure = REAL_ESTATE_TABLE
+        else:
+            table_structure = FINANCIALS_TABLE
+
         # Get structure filename and validate
         structure_filename = None
         if identifier in table_structure:
@@ -148,7 +160,15 @@ class JsonManager:
     def load_json_explanation(self, table_name, project_name=DEFAULT_PROJECT_NAME):
         """Load explanation text for a given table"""
         # Get the appropriate table mapping based on project
-        table_mapping = CATALYST_TABLE if project_name == "catalyst" else FINANCIALS_TABLE
+        if project_name == "catalyst":
+            table_mapping = CATALYST_TABLE
+        elif project_name == "financial":
+            table_mapping = FINANCIALS_TABLE
+        elif project_name == "real_estate":
+            table_mapping = REAL_ESTATE_TABLE
+        else:
+            logging.error(f"load_json_explanation: Invalid project name: {project_name}")
+            return "No explanation available."
         
         # Check if table exists in mapping
         if table_name not in table_mapping:
@@ -170,8 +190,13 @@ class JsonManager:
             logging.error(f"load_json_explanation: Error loading structure file {structure_filename}: {e}")
             return "No explanation available."
 
-        # Determine project folder
-        project_folder = "catalyst" if project_name == "catalyst" else "fin_model"
+        # Determine project folder based on project name
+        if project_name == "catalyst":
+            project_folder = "catalyst"
+        elif project_name == "real_estate":
+            project_folder = "real_estate"
+        else:
+            project_folder = "fin_model"  # Default to fin_model
         
         file_path = os.path.join(STRUCTURE_FILES_DIR, project_folder, explanation_file)
         
@@ -188,9 +213,13 @@ class JsonManager:
     def update_json_files(self, json_data, project_name):
         """Update JSON files with new data"""
         # Get the appropriate table mapping based on project
-        table_mapping = CATALYST_TABLE if project_name == "catalyst" else FINANCIALS_TABLE
-        
-        if not table_mapping:
+        if project_name == "catalyst":
+            table_mapping = CATALYST_TABLE
+        elif project_name == "financial":
+            table_mapping = FINANCIALS_TABLE
+        elif project_name == "real_estate":
+            table_mapping = REAL_ESTATE_TABLE
+        else:
             logging.error(f"update_json_files: No table mapping found for project: {project_name}")
             return
             

@@ -1,0 +1,26 @@
+Structure Explanation:
+
+The property_details object stores financial and lease information about a commercial property. The data must be structured exactly as follows to match the system configuration:
+
+Structure:
+- property_details (Object): Contains the following required fields:
+  - noi (Number): Net Operating Income (annual), must be >= 0
+  - rent_monthly (Number): Monthly rent amount, must be >= 0
+  - rentable_sqft (Number): Rentable square footage, must be >= 0
+  - land_area (Number): Land area in acres, must be >= 0
+  - tenant_name (String): Name of tenant
+  - website (String): Tenant website
+  - guarantor (String): Lease guarantor
+  - ownership_type (String): Type of property ownership
+  - lease_type (String): Type of lease agreement
+  - landlord_responsibilities (String): Landlord responsibilities under lease
+  - store_open_date (String): Date store opened
+  - lease_term_remaining (Number): Years remaining on lease, must be >= 0
+  - rent_commencement (String): Rent commencement date
+  - lease_expiration (String): Lease expiration date
+  - rent_increases (String): Rent increase terms
+  - options (String): Lease extension options
+
+All fields are required. Numbers must be non-negative. Dates should be provided in a clear format (e.g. "January 2024"). The data should accurately reflect the current financial and lease terms of the property.
+
+Please structure this file exactly the same way as the sample file given, including the root key. Root Key: "property_details" (This exact root key must be used)

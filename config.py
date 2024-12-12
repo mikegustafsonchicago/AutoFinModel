@@ -19,6 +19,7 @@ UPLOAD_FOLDER = "uploads"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)  # Create the folder if it doesn't exist
 
 JSON_FOLDER = os.path.join(os.getcwd(), 'temp_business_data')
+SESSION_LOG_FOLDER = os.path.join(os.getcwd(), 'session_logs')
 
 
 STRUCTURE_FILES_DIR = os.path.join(os.getcwd(), "static", "json_structure_data")
@@ -38,11 +39,17 @@ FINANCIALS_TABLE = {
 
 CATALYST_TABLE = {
     "deal_history": "deal_history_structure.json",
-    "fees_key_terms": "fees_key_terms_structure.json",
+    "fees_key_terms": "fees_key_terms_structure.json", 
     "fundamentals": "fundamentals_structure.json",
     "investment_team": "investment_team_structure.json",
     "seed_terms": "seed_terms_structure.json",
     "service_providers": "service_providers_structure.json"
+}
+
+REAL_ESTATE_TABLE = {
+    "property_zoning": "property_zoning_structure.json",
+    "property_financials": "property_financials_structure.json",
+    "property_fundamentals": "property_fundamentals_structure.json"
 }
 
 

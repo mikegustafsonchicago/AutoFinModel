@@ -2,7 +2,7 @@ Structure Explanation:
 
 The employees table stores employee information and wages. The data must be structured exactly as follows to match the system configuration:
 
-Root Key: "employees" (This exact root key must be used)
+
 Structure:
 - employees (Array): Contains employee role entries with the following required fields:
   - role (String): Job title or role, 1-100 characters
@@ -15,3 +15,4 @@ Structure:
   - source_string (String): Description of wage/role source. This is not optional. If you don't have a source, write "No source"
 
 You may add employees you believe are relevant to the business, even if they aren't found in any sources. However, you must provide a source_string that says "No source".
+Please structure this file exactly the same way as the one sent. Root Key: "employees" (This exact root key must be used)

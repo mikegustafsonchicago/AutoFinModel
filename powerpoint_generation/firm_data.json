@@ -1,0 +1,28 @@
+{
+    "firm_details": {
+        "name": "Coastal Development Partners",
+        "address": "1234 Market Street, Suite 500, Wilmington, NC 28401",
+        "website": "www.coastaldevelopmentpartners.com",
+        "about": "Coastal Development Partners is a full-service real estate development and investment firm focused on residential and mixed-use projects in the Southeastern United States. With over 25 years of combined experience, our team has successfully developed more than 2,000 residential units and over $500 million in real estate assets. We specialize in identifying high-growth markets and creating sustainable, community-focused developments that deliver value to our investors and enhance the neighborhoods we serve.",
+        "contacts": [
+            {
+                "name": "Michael Anderson",
+                "title": "Managing Partner",
+                "phone": "(910) 555-0123",
+                "email": "manderson@coastaldevelopmentpartners.com"
+            },
+            {
+                "name": "Sarah Chen",
+                "title": "Director of Acquisitions",
+                "phone": "(910) 555-0124", 
+                "email": "schen@coastaldevelopmentpartners.com"
+            },
+            {
+                "name": "David Wright",
+                "title": "Development Manager",
+                "phone": "(910) 555-0125",
+                "email": "dwright@coastaldevelopmentpartners.com"
+            }
+        ]
+    }
+}

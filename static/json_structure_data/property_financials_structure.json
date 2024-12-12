@@ -1,0 +1,139 @@
+{
+  "property_financials": {
+    "filename": "property_financials.json",
+    "root_key": "property_details",
+    "description": "Stores commercial property financial and lease information",
+    "version": "1.0",
+    "explanation_file": "property_financials_explanation.txt",
+    "default_content": {
+      "property_details": {
+        "noi": 100000,
+        "rent_monthly": 10000,
+        "rentable_sqft": 5000,
+        "land_area": 1.0,
+        "tenant_name": "Sample Tenant",
+        "website": "example.com",
+        "guarantor": "Sample Guarantor",
+        "ownership_type": "Fee Simple",
+        "lease_type": "NNN",
+        "landlord_responsibilities": "None",
+        "store_open_date": "January 2024",
+        "lease_term_remaining": 10,
+        "rent_commencement": "February 2024", 
+        "lease_expiration": "January 2034",
+        "rent_increases": "3% Annual",
+        "options": "Two (2), Five (5) Year"
+      }
+    },
+    "structure": {
+      "property_details": {
+        "type": "object",
+        "required": [
+          "noi",
+          "rent_monthly",
+          "rentable_sqft",
+          "land_area",
+          "tenant_name",
+          "website",
+          "guarantor", 
+          "ownership_type",
+          "lease_type",
+          "landlord_responsibilities",
+          "store_open_date",
+          "lease_term_remaining",
+          "rent_commencement",
+          "lease_expiration",
+          "rent_increases",
+          "options"
+        ],
+        "properties": {
+          "noi": {
+            "type": "number",
+            "description": "Net Operating Income (annual)",
+            "minimum": 0,
+            "order": 1
+          },
+          "rent_monthly": {
+            "type": "number", 
+            "description": "Monthly rent amount",
+            "minimum": 0,
+            "order": 2
+          },
+          "rentable_sqft": {
+            "type": "number",
+            "description": "Rentable square footage",
+            "minimum": 0,
+            "order": 3
+          },
+          "land_area": {
+            "type": "number",
+            "description": "Land area in acres",
+            "minimum": 0,
+            "order": 4
+          },
+          "tenant_name": {
+            "type": "string",
+            "description": "Name of tenant",
+            "order": 5
+          },
+          "website": {
+            "type": "string",
+            "description": "Tenant website",
+            "order": 6
+          },
+          "guarantor": {
+            "type": "string",
+            "description": "Lease guarantor",
+            "order": 7
+          },
+          "ownership_type": {
+            "type": "string",
+            "description": "Type of property ownership",
+            "order": 8
+          },
+          "lease_type": {
+            "type": "string",
+            "description": "Type of lease agreement",
+            "order": 9
+          },
+          "landlord_responsibilities": {
+            "type": "string",
+            "description": "Landlord responsibilities under lease",
+            "order": 10
+          },
+          "store_open_date": {
+            "type": "string",
+            "description": "Date store opened",
+            "order": 11
+          },
+          "lease_term_remaining": {
+            "type": "number",
+            "description": "Years remaining on lease",
+            "minimum": 0,
+            "order": 12
+          },
+          "rent_commencement": {
+            "type": "string",
+            "description": "Rent commencement date",
+            "order": 13
+          },
+          "lease_expiration": {
+            "type": "string", 
+            "description": "Lease expiration date",
+            "order": 14
+          },
+          "rent_increases": {
+            "type": "string",
+            "description": "Rent increase terms",
+            "order": 15
+          },
+          "options": {
+            "type": "string",
+            "description": "Lease extension options",
+            "order": 16
+          }
+        }
+      }
+    }
+  }
+}

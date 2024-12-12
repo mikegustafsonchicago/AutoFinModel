@@ -1,0 +1,147 @@
+PowerPoint Template Diagnostics
+
+Template: hucks_template.pptx
+
+--------------------------------------------------------------------------------
+
+
+Slide Layouts:
+----------------------------------------
+
+Layout 0:
+  Placeholders:
+    - Placeholder: idx=0, type=CENTER_TITLE (3), name='Title 1'
+    - Placeholder: idx=1, type=SUBTITLE (4), name='Subtitle 2'
+    - Placeholder: idx=10, type=DATE (16), name='Date Placeholder 3'
+    - Placeholder: idx=11, type=FOOTER (15), name='Footer Placeholder 4'
+    - Placeholder: idx=12, type=SLIDE_NUMBER (13), name='Slide Number Placeholder 5'
+
+Layout 1:
+  Placeholders:
+    - Placeholder: idx=1, type=OBJECT (7), name='Content Placeholder 2'
+    - Placeholder: idx=10, type=DATE (16), name='Date Placeholder 3'
+    - Placeholder: idx=11, type=FOOTER (15), name='Footer Placeholder 4'
+    - Placeholder: idx=12, type=SLIDE_NUMBER (13), name='Slide Number Placeholder 5'
+    - Placeholder: idx=0, type=TITLE (1), name='Title Placeholder 1'
+
+Layout 2:
+  Placeholders:
+    - Placeholder: idx=0, type=TITLE (1), name='Title 1'
+    - Placeholder: idx=1, type=BODY (2), name='Text Placeholder 2'
+    - Placeholder: idx=10, type=DATE (16), name='Date Placeholder 3'
+    - Placeholder: idx=11, type=FOOTER (15), name='Footer Placeholder 4'
+    - Placeholder: idx=12, type=SLIDE_NUMBER (13), name='Slide Number Placeholder 5'
+
+Layout 3:
+  Placeholders:
+    - Placeholder: idx=1, type=OBJECT (7), name='Content Placeholder 2'
+    - Placeholder: idx=2, type=OBJECT (7), name='Content Placeholder 3'
+    - Placeholder: idx=10, type=DATE (16), name='Date Placeholder 4'
+    - Placeholder: idx=11, type=FOOTER (15), name='Footer Placeholder 5'
+    - Placeholder: idx=12, type=SLIDE_NUMBER (13), name='Slide Number Placeholder 6'
+    - Placeholder: idx=0, type=TITLE (1), name='Title Placeholder 1'
+
+Layout 4:
+  Placeholders:
+    - Placeholder: idx=1, type=OBJECT (7), name='Content Placeholder 2'
+    - Placeholder: idx=2, type=OBJECT (7), name='Content Placeholder 3'
+    - Placeholder: idx=10, type=DATE (16), name='Date Placeholder 4'
+    - Placeholder: idx=11, type=FOOTER (15), name='Footer Placeholder 5'
+    - Placeholder: idx=12, type=SLIDE_NUMBER (13), name='Slide Number Placeholder 6'
+    - Placeholder: idx=0, type=TITLE (1), name='Title Placeholder 1'
+
+Layout 5:
+  Placeholders:
+    - Placeholder: idx=1, type=OBJECT (7), name='Content Placeholder 2'
+    - Placeholder: idx=2, type=OBJECT (7), name='Content Placeholder 3'
+    - Placeholder: idx=10, type=DATE (16), name='Date Placeholder 4'
+    - Placeholder: idx=11, type=FOOTER (15), name='Footer Placeholder 5'
+    - Placeholder: idx=12, type=SLIDE_NUMBER (13), name='Slide Number Placeholder 6'
+    - Placeholder: idx=0, type=TITLE (1), name='Title Placeholder 1'
+
+Layout 6:
+  Placeholders:
+    - Placeholder: idx=2, type=OBJECT (7), name='Content Placeholder 3'
+    - Placeholder: idx=10, type=DATE (16), name='Date Placeholder 4'
+    - Placeholder: idx=11, type=FOOTER (15), name='Footer Placeholder 5'
+    - Placeholder: idx=12, type=SLIDE_NUMBER (13), name='Slide Number Placeholder 6'
+    - Placeholder: idx=0, type=TITLE (1), name='Title Placeholder 1'
+    - Placeholder: idx=13, type=OBJECT (7), name='Content Placeholder 2'
+    - Placeholder: idx=14, type=OBJECT (7), name='Content Placeholder 3'
+
+Layout 7:
+  Placeholders:
+    - Placeholder: idx=10, type=DATE (16), name='Date Placeholder 4'
+    - Placeholder: idx=11, type=FOOTER (15), name='Footer Placeholder 5'
+    - Placeholder: idx=12, type=SLIDE_NUMBER (13), name='Slide Number Placeholder 6'
+    - Placeholder: idx=0, type=TITLE (1), name='Title Placeholder 1'
+
+Layout 8:
+  Placeholders:
+    - Placeholder: idx=10, type=DATE (16), name='Date Placeholder 4'
+    - Placeholder: idx=11, type=FOOTER (15), name='Footer Placeholder 5'
+    - Placeholder: idx=12, type=SLIDE_NUMBER (13), name='Slide Number Placeholder 6'
+    - Placeholder: idx=0, type=TITLE (1), name='Title Placeholder 1'
+
+Layout 9:
+  Placeholders:
+    - Placeholder: idx=1, type=BODY (2), name='Text Placeholder 2'
+    - Placeholder: idx=2, type=OBJECT (7), name='Content Placeholder 3'
+    - Placeholder: idx=3, type=BODY (2), name='Text Placeholder 4'
+    - Placeholder: idx=4, type=OBJECT (7), name='Content Placeholder 5'
+    - Placeholder: idx=10, type=DATE (16), name='Date Placeholder 6'
+    - Placeholder: idx=11, type=FOOTER (15), name='Footer Placeholder 7'
+    - Placeholder: idx=12, type=SLIDE_NUMBER (13), name='Slide Number Placeholder 8'
+    - Placeholder: idx=0, type=TITLE (1), name='Title Placeholder 1'
+
+Layout 10:
+  Placeholders:
+    - Placeholder: idx=0, type=TITLE (1), name='Title 1'
+    - Placeholder: idx=10, type=DATE (16), name='Date Placeholder 2'
+    - Placeholder: idx=11, type=FOOTER (15), name='Footer Placeholder 3'
+    - Placeholder: idx=12, type=SLIDE_NUMBER (13), name='Slide Number Placeholder 4'
+
+Layout 11:
+  Placeholders:
+    - Placeholder: idx=10, type=DATE (16), name='Date Placeholder 2'
+    - Placeholder: idx=11, type=FOOTER (15), name='Footer Placeholder 3'
+    - Placeholder: idx=12, type=SLIDE_NUMBER (13), name='Slide Number Placeholder 4'
+
+Layout 12:
+  Placeholders:
+    - Placeholder: idx=10, type=DATE (16), name='Date Placeholder 6'
+    - Placeholder: idx=11, type=FOOTER (15), name='Footer Placeholder 7'
+    - Placeholder: idx=12, type=SLIDE_NUMBER (13), name='Slide Number Placeholder 8'
+
+Layout 13:
+  Placeholders:
+    - Placeholder: idx=0, type=TITLE (1), name='Title 1'
+    - Placeholder: idx=1, type=OBJECT (7), name='Content Placeholder 2'
+    - Placeholder: idx=2, type=BODY (2), name='Text Placeholder 3'
+    - Placeholder: idx=10, type=DATE (16), name='Date Placeholder 4'
+    - Placeholder: idx=11, type=FOOTER (15), name='Footer Placeholder 5'
+    - Placeholder: idx=12, type=SLIDE_NUMBER (13), name='Slide Number Placeholder 6'
+
+Layout 14:
+  Placeholders:
+    - Placeholder: idx=0, type=TITLE (1), name='Title 1'
+    - Placeholder: idx=2, type=BODY (2), name='Text Placeholder 3'
+    - Placeholder: idx=10, type=DATE (16), name='Date Placeholder 4'
+    - Placeholder: idx=11, type=FOOTER (15), name='Footer Placeholder 5'
+    - Placeholder: idx=12, type=SLIDE_NUMBER (13), name='Slide Number Placeholder 6'
+
+Layout 15:
+  Placeholders:
+    - Placeholder: idx=0, type=TITLE (1), name='Title 1'
+    - Placeholder: idx=1, type=BODY (2), name='Vertical Text Placeholder 2'
+    - Placeholder: idx=10, type=DATE (16), name='Date Placeholder 3'
+    - Placeholder: idx=11, type=FOOTER (15), name='Footer Placeholder 4'
+    - Placeholder: idx=12, type=SLIDE_NUMBER (13), name='Slide Number Placeholder 5'
+
+Layout 16:
+  Placeholders:
+    - Placeholder: idx=0, type=TITLE (1), name='Vertical Title 1'
+    - Placeholder: idx=1, type=BODY (2), name='Vertical Text Placeholder 2'
+    - Placeholder: idx=10, type=DATE (16), name='Date Placeholder 3'
+    - Placeholder: idx=11, type=FOOTER (15), name='Footer Placeholder 4'
+    - Placeholder: idx=12, type=SLIDE_NUMBER (13), name='Slide Number Placeholder 5'

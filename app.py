@@ -8,11 +8,12 @@ from json_manager import JsonManager
 from file_manager import initialize_session_files
 from datetime import datetime, timedelta
 from config import UPLOAD_FOLDER
+from session_info_manager import SessionInfoManager
 
 from prompt_builder import PromptBuilder
 from excel_generation.catalyst_partners_page import make_catalyst_summary
 
-from powerpoint_generation.ppt_generation import generate_ppt
+from powerpoint_generation.ppt_financial import generate_ppt
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG,  # Set level to DEBUG for maximum output
@@ -33,6 +34,7 @@ logging.debug(f"\n\n\n------Website Refresh at {current_time}---------\n--------
 global prompt_manager, json_manager  # Add json_manager to global declaration
 prompt_manager = None
 json_manager = JsonManager()
+session_info_manager = SessionInfoManager()
 
 
 

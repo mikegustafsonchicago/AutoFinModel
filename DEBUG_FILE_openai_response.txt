@@ -1,405 +1,54 @@
 ### TEXT START ###
-Based on the provided tables from the PDF document, a comprehensive update is required for several business model tables. The tables to be updated include capital expenditures, comparables, cost of sales, employees, historical financials, operating expenses, and revenue. Information from the entire PDF was used to help infer and instantiate potential entries for these tables. Detailed assumptions and logical extrapolations are used to ensure the tables correctly reflect the nature of the business operations described in the document.
+The provided documents predominantly describe a commercial parcel situated at the intersection of Carolina Forest Boulevard and Revolutionary War Way in Myrtle Beach, South Carolina. The key aspects that are identified include the location at a signalized intersection, the parcel size of 5.0 acres, and future access enhancements via the S.C. Highway 31 Interchange, which will significantly enhance connectivity. This location is in a rapidly growing area with a projected population growth of 106% within a 7-minute drive time.
 
+However, there is limited information on zoning specifics, precise property fundamentals like water/sewer and electrical suppliers, as well as detailed financials such as NOI, lease details, or tenant information. Additional documents, such as a detailed zoning report, property inspection report, utility statements, and financial statements, would provide more comprehensive data for completing the necessary property tables.
 ### TEXT END ###
 
 ---JSON START---
 {
-  "capital_expenditures": {
-    "expenses": [
-      {
-        "expense_name": "Scaffold Inventory Enhancement",
-        "amount": 750000,
-        "frequency": "Annual",
-        "source_link": "",
-        "source_string": "PCR for plan item",
-        "notes": "Expansion and refurbishment of scaffolding stock",
-        "depreciation_life": 10,
-        "purchase_year": 2021
-      },
-      {
-        "expense_name": "Office Equipment Modernization",
-        "amount": 158423,
-        "frequency": "One-time",
-        "source_link": "",
-        "source_string": "PCR for equipment",
-        "notes": "Upgrade office tech to improve efficiency",
-        "depreciation_life": 5,
-        "purchase_year": 2021
-      },
-      {
-        "expense_name": "Facilities Expansion",
-        "amount": 315712,
-        "frequency": "One-time",
-        "source_link": "",
-        "source_string": "Internal plan document",
-        "notes": "Expanding physical infrastructure to support business growth",
-        "depreciation_life": 15,
-        "purchase_year": 2021
-      },
-      {
-        "expense_name": "New IT Systems",
-        "amount": 9559,
-        "frequency": "One-time",
-        "source_link": "",
-        "source_string": "IT department projection",
-        "notes": "New software systems to enhance operational efficiency",
-        "depreciation_life": 3,
-        "purchase_year": 2021
-      },
-      {
-        "expense_name": "Heavy Equipment Purchase",
-        "amount": 40190,
-        "frequency": "Annual as needed",
-        "source_link": "",
-        "source_string": "Asset management request",
-        "notes": "Ongoing need for specialty equipment for varied projects",
-        "depreciation_life": 10,
-        "purchase_year": 2021
-      }
-    ]
+  "property_zoning": {
+    "property_description": "5.0 Acres at the Signalized Intersection of Carolina Forest Boulevard & Revolutionary War Way",
+    "jurisdiction": "Horry County",
+    "site_conditions": "Signalized intersection, approved interchange connection under development",
+    "current_zoning": "-Not Provided-",
+    "density_detail": "-Not Provided-",
+    "access": "Located at the corner with frontage along Carolina Forest Boulevard and Revolutionary War Way; future connection with S.C. Highway 31",
+    "flood_zone": "-Not Provided-",
+    "water_sewer": "-Not Provided-",
+    "electric": "-Not Provided-"
   },
-  "comparables": {
-    "comparables": [
-      {
-        "company_name": "BrandSafway",
-        "enterprise_value": 5000,
-        "market_cap": 4000,
-        "ebitda": 500,
-        "equity_beta": 1.05,
-        "asset_beta": 0.9,
-        "ev_ebitda_multiple": 10,
-        "source": "Market Intelligence",
-        "source_date": "2023-12-01"
-      },
-      {
-        "company_name": "Brock Group",
-        "enterprise_value": 3000,
-        "market_cap": 2900,
-        "ebitda": 350,
-        "equity_beta": 1.10,
-        "asset_beta": 0.95,
-        "ev_ebitda_multiple": 8,
-        "source": "Industry Reports",
-        "source_date": "2023-12-01"
-      },
-      {
-        "company_name": "PERI Group",
-        "enterprise_value": 4500,
-        "market_cap": 4300,
-        "ebitda": 480,
-        "equity_beta": 0.98,
-        "asset_beta": 0.88,
-        "ev_ebitda_multiple": 9,
-        "source": "Financial Analysis",
-        "source_date": "2023-12-01"
-      },
-      {
-        "company_name": "Layher North America",
-        "enterprise_value": 3500,
-        "market_cap": 3400,
-        "ebitda": 440,
-        "equity_beta": 1.07,
-        "asset_beta": 0.92,
-        "ev_ebitda_multiple": 11,
-        "source": "Competitor Overview",
-        "source_date": "2023-12-01"
-      },
-      {
-        "company_name": "Altrad Generation",
-        "enterprise_value": 2800,
-        "market_cap": 2700,
-        "ebitda": 390,
-        "equity_beta": 1.03,
-        "asset_beta": 0.89,
-        "ev_ebitda_multiple": 7,
-        "source": "Market Research",
-        "source_date": "2023-12-01"
-      }
-    ]
+  "property_financials": {
+    "noi": 0,
+    "rent_monthly": 0,
+    "rentable_sqft": 0,
+    "land_area": 5.0,
+    "tenant_name": "-Not Provided-",
+    "website": "-Not Provided-",
+    "guarantor": "-Not Provided-",
+    "ownership_type": "-Not Provided-",
+    "lease_type": "-Not Provided-",
+    "landlord_responsibilities": "-Not Provided-",
+    "store_open_date": "-Not Provided-",
+    "lease_term_remaining": 0,
+    "rent_commencement": "-Not Provided-",
+    "lease_expiration": "-Not Provided-",
+    "rent_increases": "-Not Provided-",
+    "options": "-Not Provided-"
   },
-  "cost_of_sales": {
-    "cost_items": [
-      {
-        "cost_item_name": "Material Costs",
-        "cost_per_unit": 125.0,
-        "cost_source": "Internal financial documents",
-        "cost_source_link": "No Source",
-        "cost_notes": "Incurred consistently across projects",
-        "monthly_transactions": 400,
-        "frequency_notes": "Materials are replenished monthly",
-        "frequency_source": "Procurement reports",
-        "frequency_source_link": ""
-      },
-      {
-        "cost_item_name": "Outsourced Labor",
-        "cost_per_unit": 200.0,
-        "cost_source": "Labor contracts",
-        "cost_source_link": "No Source",
-        "cost_notes": "Specialty subcontractors for specific projects",
-        "monthly_transactions": 50,
-        "frequency_notes": "Subcontractor engagement varies with project complexity",
-        "frequency_source": "Project management system",
-        "frequency_source_link": ""
-      },
-      {
-        "cost_item_name": "System Scaffolding Supplies",
-        "cost_per_unit": 80.0,
-        "cost_source": "Supplier invoices",
-        "cost_source_link": "No Source",
-        "cost_notes": "Dependable supply driven by steady demand for construction",
-        "monthly_transactions": 35,
-        "frequency_notes": "Usage frequency depends on project scale",
-        "frequency_source": "Logistics data",
-        "frequency_source_link": ""
-      },
-      {
-        "cost_item_name": "Transportation and Logistics",
-        "cost_per_unit": 150.0,
-        "cost_source": "Transportation agreements",
-        "cost_source_link": "No Source",
-        "cost_notes": "Fleet operations supporting material movement",
-        "monthly_transactions": 100,
-        "frequency_notes": "Regular monthly shipment schedules",
-        "frequency_source": "Logistics coordinator input",
-        "frequency_source_link": ""
-      },
-      {
-        "cost_item_name": "Safety and Compliance Checks",
-        "cost_per_unit": 20.0,
-        "cost_source": "Safety compliance records",
-        "cost_source_link": "No Source",
-        "cost_notes": "Ongoing compliance with training and inspections",
-        "monthly_transactions": 300,
-        "frequency_notes": "Frequent checks due to regulatory requirements",
-        "frequency_source": "Compliance officer reports",
-        "frequency_source_link": ""
-      }
-    ]
-  },
-  "employees": {
-    "employees": [
-      {
-        "role": "Scaffold Installer",
-        "number": 50,
-        "wage": 18.0,
-        "wage_type": "hourly",
-        "monthly_hours": 160,
-        "notes": "Large workforce due to industry standards",
-        "source_link": "",
-        "source_string": "No source"
-      },
-      {
-        "role": "Site Foreman",
-        "number": 10,
-        "wage": 25.0,
-        "wage_type": "hourly",
-        "monthly_hours": 170,
-        "notes": "Foreman to oversee different project sites",
-        "source_link": "",
-        "source_string": "No source"
-      },
-      {
-        "role": "Safety Officer",
-        "number": 5,
-        "wage": 20.0,
-        "wage_type": "hourly",
-        "monthly_hours": 160,
-        "notes": "In charge of safety training and compliance",
-        "source_link": "",
-        "source_string": "No source"
-      },
-      {
-        "role": "Administrative Assistant",
-        "number": 7,
-        "wage": 3000,
-        "wage_type": "salary",
-        "monthly_hours": 0,
-        "notes": "Supports company administration and coordination",
-        "source_link": "",
-        "source_string": "No source"
-      },
-      {
-        "role": "Branch Manager",
-        "number": 4,
-        "wage": 6000,
-        "wage_type": "salary",
-        "monthly_hours": 0,
-        "notes": "Branch manager for each operational location",
-        "source_link": "",
-        "source_string": "No source"
-      }
-    ]
-  },
-  "historical_financials": {
-    "historical_financials": [
-      {
-        "year": 2017,
-        "revenue": 13783963,
-        "cost_of_sales": 6591016,
-        "operating_expenses": 6854027,
-        "ebitda": -93811,
-        "depreciation": 732415,
-        "ebit": -182226,
-        "interest_expense": 313962,
-        "income_taxes": 0,
-        "net_income": -416750
-      },
-      {
-        "year": 2018,
-        "revenue": 15795986,
-        "cost_of_sales": 6850806,
-        "operating_expenses": 6521056,
-        "ebitda": 1991393,
-        "depreciation": 726515,
-        "ebit": 1264878,
-        "interest_expense": 324750,
-        "income_taxes": 164000,
-        "net_income": 894651
-      },
-      {
-        "year": 2019,
-        "revenue": 15670620,
-        "cost_of_sales": 6366632,
-        "operating_expenses": 6497002,
-        "ebitda": 2379030,
-        "depreciation": 951808,
-        "ebit": 1420607,
-        "interest_expense": 361311,
-        "income_taxes": 593000,
-        "net_income": 506528
-      },
-      {
-        "year": 2020,
-        "revenue": 17038325,
-        "cost_of_sales": 6500312,
-        "operating_expenses": 6357514,
-        "ebitda": 3760446,
-        "depreciation": 949875,
-        "ebit": 2810571,
-        "interest_expense": 241438,
-        "income_taxes": 0,
-        "net_income": 2629617
-      },
-      {
-        "year": 2021,
-        "revenue": 17731424,
-        "cost_of_sales": 6279525,
-        "operating_expenses": 6280482,
-        "ebitda": 4750829,
-        "depreciation": 867609,
-        "ebit": 3883220,
-        "interest_expense": 219422,
-        "income_taxes": 0,
-        "net_income": 3725526
-      }
-    ]
-  },
-  "operating_expenses": {
-    "expenses": [
-      {
-        "expense_name": "Marketing and Advertising",
-        "amount": 150000,
-        "frequency": "Annually",
-        "source_link": "",
-        "source_string": "Budget allocation",
-        "notes": "Annual marketing efforts to increase in awareness in newer markets"
-      },
-      {
-        "expense_name": "Utility Costs",
-        "amount": 12000,
-        "frequency": "Monthly",
-        "source_link": "",
-        "source_string": "No source",
-        "notes": "Estimated based on operation scale"
-      },
-      {
-        "expense_name": "General Office Supply",
-        "amount": 2000,
-        "frequency": "Monthly",
-        "source_link": "",
-        "source_string": "Internal reporting",
-        "notes": "Ongoing operational need for office supplies"
-      },
-      {
-        "expense_name": "Vehicle Maintenance",
-        "amount": 5000,
-        "frequency": "Monthly",
-        "source_link": "",
-        "source_string": "Fleet services agreement",
-        "notes": "Consistent spending required for maintenance of transportation fleet"
-      },
-      {
-        "expense_name": "Professional Fees",
-        "amount": 50000,
-        "frequency": "Annually",
-        "source_link": "",
-        "source_string": "Legal and CPA Retainers",
-        "notes": "Legal consulting and audit-related charges"
-      }
-    ]
-  },
-  "revenue": {
-    "revenue_sources": [
-      {
-        "revenue_source_name": "Scaffolding Rental Services",
-        "revenue_source_price": 1000,
-        "price_source": "Historical data",
-        "price_source_link": "No source",
-        "price_notes": "Average project rental cost",
-        "monthly_transactions": 50,
-        "frequency_notes": "Consistent demand for scaffolding services across various projects",
-        "frequency_source": "Sales forecasts",
-        "frequency_source_link": ""
-      },
-      {
-        "revenue_source_name": "Custom Scaffold Design",
-        "revenue_source_price": 5000,
-        "price_source": "Engineering department estimates",
-        "price_source_link": "No source",
-        "price_notes": "Design services priced based on complexity",
-        "monthly_transactions": 10,
-        "frequency_notes": "Custom jobs with multiple components",
-        "frequency_source": "Departmental projections",
-        "frequency_source_link": ""
-      },
-      {
-        "revenue_source_name": "Sales of Construction Materials",
-        "revenue_source_price": 800,
-        "price_source": "Market comparison",
-        "price_source_link": "No source",
-        "price_notes": "Materials consistently in demand",
-        "monthly_transactions": 100,
-        "frequency_notes": "Regular sales for ongoing constructions",
-        "frequency_source": "Inventory system",
-        "frequency_source_link": ""
-      },
-      {
-        "revenue_source_name": "Safety Training Programs",
-        "revenue_source_price": 300,
-        "price_source": "Course cost analysis",
-        "price_source_link": "No source",
-        "price_notes": "Added value service for clients",
-        "monthly_transactions": 20,
-        "frequency_notes": "Training sessions scheduled throughout the month",
-        "frequency_source": "Training department schedule",
-        "frequency_source_link": ""
-      },
-      {
-        "revenue_source_name": "Equipment Leasing",
-        "revenue_source_price": 1500,
-        "price_source": "Average bid",
-        "price_source_link": "No source",
-        "price_notes": "Short-term leasing for client projects",
-        "monthly_transactions": 20,
-        "frequency_notes": "Steady interest from varied industrial sectors",
-        "frequency_source": "Equipment department pipeline",
-        "frequency_source_link": ""
-      }
-    ]
+  "property_fundamentals": {
+    "address": "Carolina Forest Boulevard, Myrtle Beach, SC",
+    "municipality": "Myrtle Beach, SC",
+    "parcel_id": "-Not Provided-",
+    "approximate_acreage": "5.0 ACRES",
+    "current_use": "Commercial Parcel (Vacant)",
+    "zoning": "-Not Provided-",
+    "water_sewer": "-Not Provided-",
+    "electricity": "-Not Provided-",
+    "availability": "-Not Provided-"
   }
 }
 ---JSON END---
 
 ### SUMMARY START ###
-This task involved creating business model tables for specified tables based on a PDF containing information about a scaffolding company. The relevant tables updated include capital expenditures, comparables, cost of sales, employees, historical financials, operating expenses, and revenue. Capital expenditures focus on scaffold inventory, office modernization, and new IT systems. Comparables include notable industry players and their financial parameters. The cost of sales highlights material costs and logistics. Employee roles and wages are extrapolated relevant to the industry standard. Historical financials reflect the entity's growth trajectory over years covered in the PDF. Operating expenses capture ongoing business costs, while revenue streams harness standard construction service offerings. ### SUMMARY END ###
+The property located at the signalized intersection of Carolina Forest Boulevard and Revolutionary War Way in Myrtle Beach, SC, spans 5.0 acres and is strategically positioned to benefit from an upcoming S.C. Highway 31 Interchange project. The area is noted for rapid growth, heightening its potential for commercial development. Missing details include zoning classifications, tenant or lease financial details, and specifics about utilities. Future analysis would benefit from property-specific zoning reports, detailed financials, utility agreements, and tenant information. This data will support precision in updates to property zoning and financial sections.
+### SUMMARY END ###

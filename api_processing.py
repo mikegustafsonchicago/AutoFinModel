@@ -8,7 +8,7 @@ import os
 import json
 import requests
 import logging
-from config import MAX_TOKENS_PER_CALL, RUNNING_SUMMARY_FILE, OPENAI_MODEL, DEFAULT_PROJECT_NAME, CATALYST_TABLE, FINANCIALS_TABLE
+from config import MAX_TOKENS_PER_CALL, RUNNING_SUMMARY_FILE, OPENAI_MODEL, DEFAULT_PROJECT_NAME, CATALYST_TABLE, FINANCIALS_TABLE, REAL_ESTATE_TABLE
 from pdf_processing import get_page_token_counts, get_pdf_content_by_page_indices
 from running_summary_manager import RunningSummaryManager #Import the running summary manager
 from prompt_builder import PromptBuilder
@@ -36,18 +36,30 @@ def manage_api_calls(business_description, project_name, user_input, update_scop
     #Initialize the output variable
     openAI_output = {"text": "", "json_data": {}}
     
-    
+
     # Load tables and determine update/context scope
-    all_tables = list(CATALYST_TABLE.keys() if project_name == "catalyst" else FINANCIALS_TABLE.keys() if project_name == "financial" else FINANCIALS_TABLE.keys() if DEFAULT_PROJECT_NAME == "financial" else CATALYST_TABLE.keys())
+    if project_name == "catalyst":
+        all_tables = list(CATALYST_TABLE.keys())
+    elif project_name == "real_estate":
+        all_tables = list(REAL_ESTATE_TABLE.keys())
+    elif project_name == "financial":
+        all_tables = list(FINANCIALS_TABLE.keys())
+    else:
+        # Use default project name if provided name doesn't match expected values
+        if DEFAULT_PROJECT_NAME == "catalyst":
+            all_tables = list(CATALYST_TABLE.keys())
+        elif DEFAULT_PROJECT_NAME == "real_estate":
+            all_tables = list(REAL_ESTATE_TABLE.keys())
+        else:
+            all_tables = list(FINANCIALS_TABLE.keys())
     update_tables = all_tables if update_scope == "all" else [update_scope]
+    logging.debug(f"Update tables are {update_tables}")
     context_tables = [table for table in all_tables if table not in update_tables]
     tables_data = {table: json_manager.load_json_data(table, project_name) for table in update_tables}
     context_data = {table: json_manager.load_json_data(table, project_name) for table in context_tables}
-    logging.debug(f"The update tables are {update_tables}")
     
     #Get the running summary to feed into the prompt
     running_summary = summary_manager.get_summary()
-    print(tables_data)
     # Initialize the prompt manager and add basic components
     prompt_manager.update_system_prompt_info(
                                             update_tables=tables_data, 

@@ -26,4 +26,4 @@ For example:
 The above examples are provided only to illustrate the structure of each table type. Reproduce only the tables specifically included in the input JSON data.
 **Ensure each table name is used as a key, and all values are properly structured according to the specified format.**
 
-Your primary function is to assist with providing sourcing for the data. For all data, either provide a direct reference, or "No Source".
+Your primary function is to assist with providing sourcing for the data. For any given uploaded file, please keep source naming consistent. For example "CIM - Page 12" or "CIM - Paragraph 3". For all data, either provide a direct reference, or "No Source".

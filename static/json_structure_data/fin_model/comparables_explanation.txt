@@ -5,12 +5,12 @@ The comparables table stores information about comparable companies. The data mu
 Root Key: "comparables" (This exact root key must be used)
 Structure:
 - comparables (Array): Contains comparable company entries with the following required fields:
-  - company_name (String): The name of the comparable company
-  - enterprise_value (Number): Total company value in millions (minimum 0)
-  - market_cap (Number): The market capitalization of the company in millions (minimum 0)
-  - ebitda (Number): Earnings before interest, taxes, depreciation and amortization in millions
-  - equity_beta (Number): Stock volatility relative to market
-  - asset_beta (Number): Asset volatility measure
-  - ev_ebitda_multiple (Number): Enterprise value to EBITDA multiple
-  - source (String): Source of the comparable data
+  - company_name (String): The name of the comparable company. This is not optional. If there is no company name, there is no comparable.
+  - enterprise_value (Number): Total company value in millions (minimum 0). Optional. If no information is provided, write "-"
+  - market_cap (Number): The market capitalization of the company in millions (minimum 0). Optional. If no information is provided, write "-"
+  - ebitda (Number): Earnings before interest, taxes, depreciation and amortization in millions. Optional. If no information is provided, write "-"
+  - equity_beta (Number): Stock volatility relative to market. Optional. If no information is provided, write "-"
+  - asset_beta (Number): Asset volatility measure. Optional. If no information is provided, write "-"
+  - ev_ebitda_multiple (Number): Enterprise value to EBITDA multiple. Optional. If no information is provided, write "-"
+  - source (String): Source of the comparable data. Be extremely precise, ideally, explain the paragraph or page number from the uploaded document. This is never optional, but if you can't provide a referencable source, write "No Source"
   - source_date (String): Date the comparable data was sourced

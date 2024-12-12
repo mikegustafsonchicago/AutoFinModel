@@ -3,54 +3,56 @@ const PROJECT_NAME = "real_estate";
 
 
 
-let revenueTable;
+let propertyTable;
 
-// Initialize Tabulator for revenue data
-revenueTable = new Tabulator("#revenueTable", {
+// Initialize Tabulator for property fundamentals data
+propertyTable = new Tabulator("#propertyTable", {
     layout: "fitData",
     autoResize: true,
     columns: [
         {
-            title: "Revenue Source",
-            field: "revenue_source_name",
+            title: "Address",
+            field: "address",
             editor: "input"
         },
         {
-            title: "Price",
-            field: "revenue_source_price", 
-            editor: "number",
-            formatter: dollarFormatter
-        },
-        {
-            title: "Price Source",
-            field: "price_source",
-            formatter: function(cell) {
-                const source = cell.getValue();
-                const row = cell.getRow().getData();
-                const url = row.price_source_link;
-                return url ? `<a href="${url}" target="_blank">${source}</a>` : source;
-            },
+            title: "Municipality", 
+            field: "municipality",
             editor: "input"
         },
         {
-            title: "# Transactions/Month",
-            field: "monthly_transactions",
-            editor: "number"
-        },
-        {
-            title: "Frequency Notes",
-            field: "frequency_notes",
+            title: "Parcel ID",
+            field: "parcel_id",
             editor: "input"
         },
         {
-            title: "Frequency Source",
-            field: "frequency_source",
-            formatter: function(cell) {
-                const source = cell.getValue();
-                const row = cell.getRow().getData();
-                const url = row.frequency_source_link;
-                return url ? `<a href="${url}" target="_blank">${source}</a>` : source;
-            },
+            title: "Approximate Acreage",
+            field: "approximate_acreage",
+            editor: "input"
+        },
+        {
+            title: "Current Use",
+            field: "current_use",
+            editor: "input"
+        },
+        {
+            title: "Zoning",
+            field: "zoning",
+            editor: "input"
+        },
+        {
+            title: "Water/Sewer",
+            field: "water_sewer",
+            editor: "input"
+        },
+        {
+            title: "Electricity",
+            field: "electricity",
+            editor: "input"
+        },
+        {
+            title: "Availability",
+            field: "availability",
             editor: "input"
         },
         {
@@ -62,7 +64,7 @@ revenueTable = new Tabulator("#revenueTable", {
             hozAlign: "center",
             cellClick: function(e, cell) {
                 cell.getRow().delete();
-                revenueTable.redraw();
+                propertyTable.redraw();
             }
         }
     ]
@@ -70,37 +72,20 @@ revenueTable = new Tabulator("#revenueTable", {
 
 
 
-// Initialize Tabulator table for Inventory and COGS data
-const purchasesTable = new Tabulator("#purchasesTable", {
+// Initialize Tabulator table for Property Zoning data
+const zoningTable = new Tabulator("#zoningTable", {
     layout: "fitData", // Fit columns to width of table
     autoResize: true, // Enable auto-resize
     columns: [
-        { title: "Cost Item Name", field: "cost_item_name", editor: "input" },
-        { title: "Cost Per Unit", field: "cost_per_unit", editor: "number", formatter: dollarFormatter },
-        {
-            title: "Cost Source",
-            field: "cost_source",
-            formatter: function(cell) {
-                const source = cell.getValue();
-                const row = cell.getRow().getData();
-                const url = row.cost_source_link;
-                return url ? `<a href="${url}" target="_blank">${source}</a>` : source;
-            },
-            editor: "input"
-        },
-        { title: "Monthly Transactions", field: "monthly_transactions", editor: "number" },
-        { title: "Frequency Notes", field: "frequency_notes", editor: "input" },
-        {
-            title: "Frequency Source",
-            field: "frequency_source",
-            formatter: function(cell) {
-                const source = cell.getValue();
-                const row = cell.getRow().getData();
-                const url = row.frequency_source_link;
-                return url ? `<a href="${url}" target="_blank">${source}</a>` : source;
-            },
-            editor: "input"
-        },
+        { title: "Property Description", field: "property_description", editor: "input" },
+        { title: "Jurisdiction", field: "jurisdiction", editor: "input" },
+        { title: "Site Conditions", field: "site_conditions", editor: "input" },
+        { title: "Current Zoning", field: "current_zoning", editor: "input" },
+        { title: "Density Detail", field: "density_detail", editor: "input" },
+        { title: "Access", field: "access", editor: "input" },
+        { title: "Flood Zone", field: "flood_zone", editor: "input" },
+        { title: "Water/Sewer", field: "water_sewer", editor: "input" },
+        { title: "Electric", field: "electric", editor: "input" },
         {
             title: "",  // Add the delete button
             formatter: function () {
@@ -110,7 +95,7 @@ const purchasesTable = new Tabulator("#purchasesTable", {
             hozAlign: "center",
             cellClick: function (e, cell) {
                 cell.getRow().delete();
-                purchasesTable.redraw();
+                zoningTable.redraw();
             },
         }
     ]
@@ -119,32 +104,26 @@ const purchasesTable = new Tabulator("#purchasesTable", {
 
 
 
-// Initialize Tabulator table for Employees data
-const employeesTable = new Tabulator("#employeesTable", {
+// Initialize Tabulator table for Property Financials data
+const propertyFinancialsTable = new Tabulator("#propertyFinancialsTable", {
     layout: "fitData",  // Fit columns to width of table
     columns: [
-        { title: "Role", field: "role", editor: "input" },
-        { title: "Number", field: "number", editor: "number" },
-        { title: "Wage", field: "wage", editor: "number", formatter: dollarFormatter },
-        { title: "Wage Frequency", field: "wage_type", editor: "input" },
-		{ title: "Notes/Assumptions", field: "notes", editor: "input" },
-        {
-            title: "Source", 
-            field: "source_string",  // Use source_string as the base field
-            formatter: function(cell, formatterParams) {
-                // Get the source_string and source_link from the row data
-                let sourceString = cell.getValue();  // source_string
-                let sourceLink = cell.getRow().getData().source_link;  // source_link
-                
-                // If both source_string and source_link exist, return a clickable link
-                if (sourceLink) {
-                    return `<a href="${sourceLink}" target="_blank">${sourceString}</a>`;
-                } else {
-                    return sourceString;  // Return just the source_string if no link is provided
-                }
-            },
-            editor: "input"  // Allow editing if needed
-        },
+        { title: "NOI", field: "noi", editor: "number", formatter: dollarFormatter },
+        { title: "Monthly Rent", field: "rent_monthly", editor: "number", formatter: dollarFormatter },
+        { title: "Rentable Sq Ft", field: "rentable_sqft", editor: "number" },
+        { title: "Land Area (Acres)", field: "land_area", editor: "number" },
+        { title: "Tenant Name", field: "tenant_name", editor: "input" },
+        { title: "Website", field: "website", editor: "input" },
+        { title: "Guarantor", field: "guarantor", editor: "input" },
+        { title: "Ownership Type", field: "ownership_type", editor: "input" },
+        { title: "Lease Type", field: "lease_type", editor: "input" },
+        { title: "Landlord Responsibilities", field: "landlord_responsibilities", editor: "input" },
+        { title: "Store Open Date", field: "store_open_date", editor: "input" },
+        { title: "Lease Term Remaining", field: "lease_term_remaining", editor: "number" },
+        { title: "Rent Commencement", field: "rent_commencement", editor: "input" },
+        { title: "Lease Expiration", field: "lease_expiration", editor: "input" },
+        { title: "Rent Increases", field: "rent_increases", editor: "input" },
+        { title: "Options", field: "options", editor: "input" },
         {
             title: "", 
             formatter: function() {
@@ -154,120 +133,7 @@ const employeesTable = new Tabulator("#employeesTable", {
             hozAlign: "center",  // Center the button in the cell
             cellClick: function(e, cell) {
                 cell.getRow().delete();  // Delete the row when clicked
-                employeesTable.redraw();  // Force redraw in case of layout issues
-            }
-        }
-    ]
-});
-
-
-// Initialize Tabulator table for CAPEX data
-const capexTable = new Tabulator("#capexTable", {
-    layout: "fitData",  // Fit columns to width of table
-    columns: [
-        { title: "Expense Name", field: "expense_name", editor: "input" },
-        { title: "Amount", field: "amount", editor: "number", formatter: dollarFormatter },
-        { title: "Purchase Year", field: "purchase_year", editor: "number" },
-        { title: "Depreciation Life (years)", field: "depreciation_life", editor: "number" },
-		{ title: "Notes", field: "notes", editor: "input" },
-        {
-            title: "Source", 
-            field: "source_string",  // Use source_string as the base field
-            formatter: function(cell, formatterParams) {
-                // Get the source_string and source_link from the row data
-                let sourceString = cell.getValue();  // source_string
-                let sourceLink = cell.getRow().getData().source_link;  // source_link
-                
-                // If both source_string and source_link exist, return a clickable link
-                if (sourceLink) {
-                    return `<a href="${sourceLink}" target="_blank">${sourceString}</a>`;
-                } else {
-                    return sourceString;  // Return just the source_string if no link is provided
-                }
-            },
-            editor: "input"  // Allow editing if needed
-        },
-        {
-            title: "", 
-            formatter: function() {
-                return "<button class='delete-btn'>X</button>";  // Apply the custom class
-            },
-            width: 80,  // Adjust width to make it proportional
-            hozAlign: "center",  // Center the button in the cell
-            cellClick: function(e, cell) {
-                cell.getRow().delete();  // Delete the row when clicked
-                capexTable.redraw();  // Force redraw in case of layout issues
-            }
-        }
-    ]
-});
-
-
-// Initialize Tabulator table for OPEX data
-const opexTable = new Tabulator("#opexTable", {
-    layout: "fitData",  // Fit columns to width of table
-    columns: [
-        { title: "Expense Name", field: "expense_name", editor: "input" },
-        { title: "Amount", field: "amount", editor: "number", formatter: dollarFormatter },
-        { title: "Frequency", field: "frequency", editor: "input" },
-        { title: "Notes", field: "notes", editor: "input" },
-        {
-            title: "Source", 
-            field: "source_string",  // Use source_string as the base field
-            formatter: function(cell, formatterParams) {
-                // Get the source_string and source_link from the row data
-                let sourceString = cell.getValue();  // source_string
-                let sourceLink = cell.getRow().getData().source_link;  // source_link
-                
-                // If both source_string and source_link exist, return a clickable link
-                if (sourceLink) {
-                    return `<a href="${sourceLink}" target="_blank">${sourceString}</a>`;
-                } else {
-                    return sourceString;  // Return just the source_string if no link is provided
-                }
-            },
-            editor: "input"  // Allow editing if needed
-        },
-        {
-            title: "", 
-            formatter: function() {
-                return "<button class='delete-btn'>X</button>";  // Apply the custom class
-            },
-            width: 80,  // Adjust width to make it proportional
-            hozAlign: "center",  // Center the button in the cell
-            cellClick: function(e, cell) {
-                cell.getRow().delete();  // Delete the row when clicked
-                opexTable.redraw();  // Force redraw in case of layout issues
-            }
-        }
-    ]
-});
-
-
-// Initialize Tabulator table for Historical Financial Data
-const historicalISTable = new Tabulator("#historicalISTable", {
-    layout: "fitData",
-    columns: [
-        { title: "Year", field: "year", editor: "number" },
-        { title: "Revenue", field: "revenue", editor: "number", formatter: dollarFormatter },
-        { title: "Cost of Sales", field: "cost_of_sales", editor: "number", formatter: dollarFormatter },
-        { title: "Operating Expenses", field: "operating_expenses", editor: "number", formatter: dollarFormatter },
-        { title: "EBITDA", field: "ebitda", editor: "number", formatter: dollarFormatter },
-        { title: "Depreciation", field: "depreciation", editor: "number", formatter: dollarFormatter },
-        { title: "EBIT", field: "ebit", editor: "number", formatter: dollarFormatter },
-        { title: "Interest Expense", field: "interest_expense", editor: "number", formatter: dollarFormatter },
-        { title: "Income Taxes", field: "income_taxes", editor: "number", formatter: dollarFormatter },
-        { title: "Net Income", field: "net_income", editor: "number", formatter: dollarFormatter },
-        {
-            title: "",
-            formatter: function () {
-                return "<button class='delete-btn'>X</button>";
-            },
-            width: 80,
-            hozAlign: "center",
-            cellClick: function (e, cell) {
-                cell.getRow().delete();
-                historicalISTable.redraw();
+                propertyFinancialsTable.redraw();  // Force redraw in case of layout issues
             }
         }
     ]
@@ -275,33 +141,7 @@ const historicalISTable = new Tabulator("#historicalISTable", {
 
 
 
-// Initialize Tabulator table for Comparable Companies
-const comparablesTable = new Tabulator("#comparablesTable", {
-    layout: "fitData",
-    columns: [
-        { title: "Company Name", field: "company_name", editor: "input" },
-        { title: "Enterprise Value", field: "enterprise_value", editor: "number", formatter: dollarFormatter },
-        { title: "Market Cap", field: "market_cap", editor: "number", formatter: dollarFormatter },
-        { title: "EBITDA", field: "ebitda", editor: "number", formatter: dollarFormatter },
-        { title: "Equity Beta", field: "equity_beta", editor: "number" },
-        { title: "Asset Beta", field: "asset_beta", editor: "number" },
-        { title: "EV/EBITDA", field: "ev_ebitda_multiple", editor: "number" },
-        { title: "Source", field: "source", editor: "input" },
-        { title: "Source Date", field: "source_date", editor: "input" },
-        {
-            title: "",
-            formatter: function () {
-                return "<button class='delete-btn'>X</button>";
-            },
-            width: 80,
-            hozAlign: "center",
-            cellClick: function (e, cell) {
-                cell.getRow().delete();
-                comparablesTable.redraw();
-            }
-        }
-    ]
-});
+
 
 
 // Function to adjust table height based on visible rows
@@ -316,9 +156,7 @@ function adjustTableHeight(table) {
     table.redraw(); // Redraw the table to apply new height
 }
 
-document.getElementById('historicalISAIButton').addEventListener('click', function () {
-    preparePayload('historicalISTable');
-});
+
 
 
 
@@ -326,13 +164,9 @@ document.getElementById('historicalISAIButton').addEventListener('click', functi
 refreshTables();
 
 function refreshTables(){
-    loadTableData("revenue", revenueTable);
-    loadTableData("cost_of_sales", purchasesTable);
-    loadTableData("operating_expenses", opexTable);
-    loadTableData("capital_expenditures", capexTable);
-    loadTableData("employees", employeesTable);
-    loadTableData("historical_financials", historicalISTable);
-    loadTableData("comparables", comparablesTable);
+    loadTableData("property_fundamentals", propertyTable);
+    loadTableData("property_zoning", zoningTable); 
+    loadTableData("property_financials", propertyFinancialsTable);
 }
 
 // Function to load table data from the backend with conditional logic based on tableIdentifier
@@ -402,89 +236,48 @@ function addRow(table) {
     // Determine the table type and define the row structure accordingly
     let newRow = {};
 
-    if (table === capexTable) {
-        // CAPEX table structure
+    if (table === propertyTable) {
         newRow = {
-            expense_name: "",
-            amount: 0,
-            frequency: "",
-            source_link: "",
-            source_string: "",
-            notes: ""
+            address: "",
+            municipality: "",
+            parcel_id: "",
+            approximate_acreage: "",
+            current_use: "",
+            zoning: "",
+            water_sewer: "",
+            electricity: "",
+            availability: ""
         };
-    } else if (table === opexTable) {
-        // OPEX table structure
+    } else if (table === zoningTable) {
         newRow = {
-            expense_name: "",
-            amount: 0,
-            frequency: "",
-            source_string: "",
-            source_link: "",
-            notes: ""
+            property_description: "",
+            jurisdiction: "",
+            site_conditions: "",
+            current_zoning: "",
+            density_detail: "",
+            access: "",
+            flood_zone: "",
+            water_sewer: "",
+            electric: ""
         };
-    } else if (table === employeesTable) {
-        // Employees table structure
+    } else if (table === propertyFinancialsTable) {
         newRow = {
-            role: "",
-            number: 0,
-            wage: 0,
-            wage_type: "hourly",
-            monthly_hours: 0,
-            notes: "",
-            source_link: "",
-            source_string: ""
-        };
-    } else if (table === purchasesTable) {
-        // Cost of sales table structure
-        newRow = {
-            cost_item_name: "",
-            cost_per_unit: 0,
-            cost_source: "",
-            cost_source_link: "",
-            frequency: 0,
-            frequency_notes: "",
-            frequency_source: "",
-            frequency_source_link: ""
-        };
-    } else if (table === revenueTable) {
-        // Revenue table structure
-        newRow = {
-            revenue_source_name: "",
-            revenue_source_price: 0,
-            price_source: "",
-            price_source_link: "",
-            frequency: 0,
-            frequency_notes: "",
-            frequency_source: "",
-            frequency_source_link: ""
-        };
-    } else if (table === historicalISTable) {
-        // Historical Income Statement table structure
-        newRow = {
-            year: new Date().getFullYear(),
-            revenue: 0,
-            cost_of_sales: 0,
-            operating_expenses: 0,
-            ebitda: 0,
-            depreciation: 0,
-            ebit: 0,
-            interest_expense: 0,
-            income_taxes: 0,
-            net_income: 0
-        };
-    
-    } else if (table === comparablesTable) {
-        // Comparables table structure
-        newRow = {
-            company_name: "",
-            enterprise_value: 0,
-            market_cap: 0,
-            ebitda: 0,
-            equity_beta: 0,
-            asset_beta: 0,
-            ev_ebitda_multiple: 0,
-            source: "",
-            source_date: ""
+            noi: 0,
+            rent_monthly: 0,
+            rentable_sqft: 0,
+            land_area: 0,
+            tenant_name: "",
+            website: "",
+            guarantor: "",
+            ownership_type: "",
+            lease_type: "",
+            landlord_responsibilities: "",
+            store_open_date: "",
+            lease_term_remaining: 0,
+            rent_commencement: "",
+            lease_expiration: "",
+            rent_increases: "",
+            options: ""
         };
     } else {
         console.error("addRow: Unknown table type. Unable to add row.");
@@ -557,20 +350,16 @@ function sendToBackend(payload) {
 
 
 // For individual table buttons
-document.getElementById('capexAIButton').addEventListener('click', function() {
-    preparePayload('capexTable');
+document.getElementById('propertyAIButton').addEventListener('click', function() {
+    preparePayload('propertyTable');
 });
 
-document.getElementById('opexAIButton').addEventListener('click', function() {
-    preparePayload('opexTable');
+document.getElementById('zoningAIButton').addEventListener('click', function() {
+    preparePayload('zoningTable');
 });
 
-document.getElementById('revenueAIButton').addEventListener('click', function() {
-    preparePayload('revenueTable');
-});
-
-document.getElementById('purchasesAIButton').addEventListener('click', function() {
-    preparePayload('purchasesTable');
+document.getElementById('propertyFinancialsAIButton').addEventListener('click', function() {
+    preparePayload('propertyFinancialsTable');
 });
 
 // Call this function after uploading a PDF successfully
@@ -584,38 +373,6 @@ function initializePdfAIButtonListener() {
         console.error("initializePdfAIButtonListener: pdfAIButton not found.");
     }
 }
-
-
-//Actions following click on excel button
-document.getElementById('downloadExcelButton').addEventListener('click', function() {
-    fetch(`/download_excel?project_name=${PROJECT_NAME}`, {
-        method: 'GET',
-    })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error('Error downloading Excel file: ' + response.statusText);
-        }
-        // Get filename from Content-Disposition header
-        const filename = response.headers.get('Content-Disposition')
-            ?.split(';')
-            ?.find(n => n.includes('filename='))
-            ?.replace('filename=', '')
-            ?.trim() || 'model.xlsx';
-            
-        return Promise.all([response.blob(), Promise.resolve(filename)]);
-    })
-    .then(([blob, filename]) => {
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = filename;
-        document.body.appendChild(a);
-        a.click();  // Programmatically click the anchor to trigger download
-        a.remove();
-        window.URL.revokeObjectURL(url); // Clean up the URL object
-    })
-    .catch(error => console.error('downloadExcelButton click handler: Error:', error));
-});
 
 //Actions following click on powerpoint button
 document.getElementById('downloadPPTButton').addEventListener('click', function() {
@@ -757,10 +514,11 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 
-
-
 // Attach the clearAllData function to the button
-document.getElementById('clearDataButton').addEventListener('click', clearAllData);
+document.getElementById('clearDataButton').addEventListener('click', () => {
+    clearAllData(PROJECT_NAME);
+});
+
 
 
 // Function to handle uploading the file to AI and update checkmark

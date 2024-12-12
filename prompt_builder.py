@@ -20,6 +20,8 @@ class PromptBuilder:
             prompt_file = os.path.join(PROMPT_DIR, "prompt.txt")
         elif project_name == "catalyst":
             prompt_file = os.path.join(PROMPT_DIR, "catalyst_prompt.txt")
+        elif project_name == "real_estate":
+            prompt_file = os.path.join(PROMPT_DIR, "real_estate_prompt.txt")
         else:
             logging.debug(f"Error: project name incorrect. Project name gien was :{project_name}")
         with open(prompt_file, 'r') as file:
@@ -58,7 +60,6 @@ class PromptBuilder:
         
         # Step 2: Add table structure info and data for update tables
         for table_name, data in update_tables.items():
-            print(self.project_name)
             json_explanation = self.json_manager.load_json_explanation(table_name, self.project_name)
             self.table_data += f"\n\n--- {table_name} Structure Information ---\n{json_explanation}"
             formatted_table_data = json.dumps(data, indent=2)

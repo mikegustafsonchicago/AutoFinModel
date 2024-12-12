@@ -1,0 +1,19 @@
+Structure Explanation:
+
+The property_details object stores fundamental information about a real estate property. The data must be structured exactly as follows to match the system configuration:
+
+Structure:
+- property_details (Object): Contains the following required fields:
+  - address (String): Street address of the property
+  - municipality (String): City and state location
+  - parcel_id (String): Property parcel identification number
+  - approximate_acreage (String): Approximate size of property in acres
+  - current_use (String): Current property usage designation
+  - zoning (String): Property zoning classification
+  - water_sewer (String): Water and sewer service provider
+  - electricity (String): Electrical service provider
+  - availability (String): Property availability status
+
+All fields are required and must be provided as strings. The data should accurately reflect the current state and characteristics of the property.
+
+Please structure this file exactly the same way as the sample file given, including the root key. Root Key: "property_details" (This exact root key must be used)
