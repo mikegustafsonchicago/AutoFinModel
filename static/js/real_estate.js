@@ -1,5 +1,5 @@
-import { clearAllData, uploadPDF, dollarFormatter } from './shared-modules.js';
-const PROJECT_NAME = "real_estate";
+import { clearAllData, uploadFile, dollarFormatter } from './shared-modules.js';
+const project_type = "real_estate";
 
 
 
@@ -171,7 +171,7 @@ function refreshTables(){
 
 // Function to load table data from the backend with conditional logic based on tableIdentifier
 function loadTableData(tableIdentifier, table) {
-    fetch(`/api/table_data/${PROJECT_NAME}/${tableIdentifier}`)
+    fetch(`/api/table_data/${project_type}/${tableIdentifier}`)
         .then(response => response.json())
         .then(responseData => {
             if (!responseData || !responseData.data) {
@@ -297,7 +297,7 @@ function addRow(table) {
 function preparePayload(updateScope) {
     const payload = {
         updateScope: updateScope, // Either specific table name or "all"
-		project_name: PROJECT_NAME, //This variable tells the backend whether it's a financial model or catalyst partners project
+		project_type: project_type, //This variable tells the backend whether it's a financial model or catalyst partners project
         businessDescription: document.getElementById("businessDescription").value,
         userPrompt: document.getElementById("chatgptPrompt").value,
         pdfFileName: updateScope === 'all' ? document.getElementById('uploadedPDFName').value : null // Only include PDF if updating all
@@ -376,7 +376,7 @@ function initializePdfAIButtonListener() {
 
 //Actions following click on powerpoint button
 document.getElementById('downloadPPTButton').addEventListener('click', function() {
-    fetch(`/download_ppt?project_name=${PROJECT_NAME}`, {
+    fetch(`/download_ppt?project_type=${project_type}`, {
         method: 'GET',
     })
     .then(response => {
@@ -450,8 +450,8 @@ function handleFiles(event) {
             // Append the row to the table body
             tableBody.appendChild(row);
 			
-			// Call uploadPDF to upload the selected PDF file
-            uploadPDF(file);
+			// Call uploadFile to upload the selected PDF file
+            uploadFile(file, project_type);
         }
     });
 }
@@ -516,7 +516,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Attach the clearAllData function to the button
 document.getElementById('clearDataButton').addEventListener('click', () => {
-    clearAllData(PROJECT_NAME);
+    clearAllData(project_type);
 });
 
 
@@ -532,7 +532,7 @@ function uploadToAI(fileName, row) {
     // Prepare the payload for the backend API
     const payload = {
         pdfFileName: fileName,
-		projectName: PROJECT_NAME,
+		projectName: project_type,
         userPrompt: document.getElementById("chatgptPrompt").value, // Add user prompt to payload
         updateScope: 'all' // Explicitly set the update scope to 'all' for full context processing
     };

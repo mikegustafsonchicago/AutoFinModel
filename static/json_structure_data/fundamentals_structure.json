@@ -1,24 +1,94 @@
 {
-     "fundamentals": {
-                "filename": "fundamentals.json",
-                "root_key": "fundamentals",
-                "description": "Stores basic firm information",
-                "version": "1.0",
-                "explanation_file": "fundamentals_explanation.txt",
-                "default_content": {
-                    "fundamentals": [
-                        {
-                            "firm_name": "Placeholder Firm",
-                            "founded_year": 2020,
-                            "primary_office": "Placeholder City",
-                            "ownership_structure": "Placeholder Structure", 
-                            "total_employees": 0,
-                            "diversity_status": "Placeholder Status",
-                            "website": "www.placeholder.com",
-                            "source_string": "Placeholder Source",
-                            "source_link": "https://example.com"
+    "fundamentals": {
+        "filename": "fundamentals.json",
+        "root_key": "fundamentals",
+        "description": "The Fundamentals table provides essential information about a private equity firm, including its founding year, structure, office location, and key attributes like diversity status and total assets under management",
+        "version": "1.0",
+        "explanation_file": "fundamentals_explanation.txt",
+        "structure": {
+            "fundamentals": {
+                "type": "array",
+                "description": "Array of fundamental firm information entries",
+                "items": {
+                    "type": "object",
+                    "required": [
+                        "firm_name",
+                        "founded_year", 
+                        "primary_office",
+                        "ownership_structure",
+                        "total_employees",
+                        "diversity_status",
+                        "website",
+                        "source_string",
+                        "source_link"
+                    ],
+                    "properties": {
+                        "firm_name": {
+                            "type": "string",
+                            "description": "The name of the private equity firm, identifying it clearly",
+                            "order": 1
+                        },
+                        "founded_year": {
+                            "type": "integer",
+                            "description": "The year the firm was established",
+                            "order": 2
+                        },
+                        "primary_office": {
+                            "type": "string",
+                            "description": "Location of the firm's main office, typically a city and state or country",
+                            "order": 3
+                        },
+                        "ownership_structure": {
+                            "type": "string",
+                            "description": "Indicates whether the firm is privately or publicly owned",
+                            "order": 4
+                        },
+                        "total_employees": {
+                            "type": "integer",
+                            "description": "Number of employees working at the firm",
+                            "minimum": 0,
+                            "order": 5
+                        },
+                        "diversity_status": {
+                            "type": "string",
+                            "description": "Diversity designation, if applicable (e.g., 'Minority-Owned' or 'Diverse Leadership')",
+                            "order": 6
+                        },
+                        "website": {
+                            "type": "string",
+                            "description": "URL to the firm's official website, providing more information",
+                            "format": "uri",
+                            "order": 7
+                        },
+                        "source_string": {
+                            "type": "string",
+                            "description": "Description or source title if additional context is needed",
+                            "order": 8
+                        },
+                        "source_link": {
+                            "type": "string",
+                            "description": "URL linking to source documentation for validation or further reading",
+                            "format": "uri",
+                            "order": 9
                         }
-                    ]
+                    }
                 }
             }
+        },
+        "default_content": {
+            "fundamentals": [
+                {
+                    "firm_name": "Placeholder Firm",
+                    "founded_year": 2020,
+                    "primary_office": "Placeholder City",
+                    "ownership_structure": "Placeholder Structure", 
+                    "total_employees": 0,
+                    "diversity_status": "Placeholder Status",
+                    "website": "www.placeholder.com",
+                    "source_string": "Placeholder Source",
+                    "source_link": "https://example.com"
+                }
+            ]
+        }
+    }
 }

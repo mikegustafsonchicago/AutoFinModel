@@ -53,7 +53,7 @@ python app.py
 Access the application via localhost:5000.
 Features
 Multi-Project Support:
-Handles projects dynamically using the project_name parameter (financial or catalyst).
+Handles projects dynamically using the project_type parameter (financial or catalyst).
 Each project uses a specific prompt and JSON structure.
 Dynamic JSON Management:
 JSON files are initialized, updated, and validated dynamically for each project.
@@ -73,7 +73,7 @@ Purpose: The main Flask application handling API routes for:
 /api/upload_pdf: Upload PDFs.
 /api/openai: Process PDFs and generate JSON data.
 /download_excel: Download the generated Excel file.
-Key Updates: Supports project_name to differentiate between financial and catalyst projects.
+Key Updates: Supports project_type to differentiate between financial and catalyst projects.
 api_processing.py
 Purpose: Manages OpenAI API calls, including payload preparation, token management, and JSON updates.
 Key Features:
@@ -107,7 +107,7 @@ python app.py
 Access the application at http://localhost:5000.
 
 Project Selection
-The project_name parameter (financial or catalyst) determines which templates, JSON files, and prompts are used:
+The project_type parameter (financial or catalyst) determines which templates, JSON files, and prompts are used:
 
 financial: Business financial model with CAPEX, OPEX, and other tables.
 catalyst: Private equity evaluation focusing on team, fees, and terms.
@@ -118,7 +118,7 @@ Key Endpoints
 Troubleshooting
 ValueError: prompt_manager must be initialized:
 
-Ensure project_name is passed correctly in API calls.
+Ensure project_type is passed correctly in API calls.
 Verify that the PromptBuilder is initialized for the project.
 DuplicateWorksheetName:
 

@@ -12,45 +12,46 @@ OPENAI_MODEL = 'gpt-4o'
 OPENAI_COST_PER_INPUT_TOKEN = 2.5/1000000
 OPENAI_COST_PER_OUTPUT_TOKEN = 10/1000000
 
-DEFAULT_PROJECT_NAME = "financials"
+DEFAULT_project_type = "financials"
 
-# Folder where your PDF files are located
+# Top-level folder for the data
+USER_DATA_FOLDER = os.path.join(os.getcwd(), 'users')
 UPLOAD_FOLDER = "uploads"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)  # Create the folder if it doesn't exist
 
-JSON_FOLDER = os.path.join(os.getcwd(), 'temp_business_data')
 SESSION_LOG_FOLDER = os.path.join(os.getcwd(), 'session_logs')
 
+ALLOWED_EXTENSIONS = {'.pdf', '.txt'}
 
-STRUCTURE_FILES_DIR = os.path.join(os.getcwd(), "static", "json_structure_data")
 RUNNING_SUMMARY_DIR = os.path.join(os.getcwd(), "temp_business_data")
-PROMPT_DIR = os.path.join(os.getcwd(), "static", "prompts")
+BASE_PROMPT_DIR = os.path.join(os.getcwd(), "static", "prompts")
+STRUCTURE_FILES_DIR = os.path.join(os.getcwd(), "static", "json_structure_data")
 
 # Dictionary mapping table names to their structure files for financial project
-FINANCIALS_TABLE = {
-    "capital_expenditures": "capital_expenses_structure.json",
-    "comparables": "comparable_companies_structure.json",
-    "cost_of_sales": "cost_of_sales_structure.json", 
-    "employees": "employees_structure.json",
-    "historical_financials": "historical_financials_structure.json",
-    "operating_expenses": "operating_expenses_structure.json",
-    "revenue": "revenue_structure.json"
-}
+FINANCIALS_TABLE = [
+    "capital_expenses_structure.json",
+    "comparable_companies_structure.json",
+    "cost_of_sales_structure.json",
+    "employees_structure.json", 
+    "historical_financials_structure.json",
+    "operating_expenses_structure.json",
+    "revenue_structure.json"
+]
 
-CATALYST_TABLE = {
-    "deal_history": "deal_history_structure.json",
-    "fees_key_terms": "fees_key_terms_structure.json", 
-    "fundamentals": "fundamentals_structure.json",
-    "investment_team": "investment_team_structure.json",
-    "seed_terms": "seed_terms_structure.json",
-    "service_providers": "service_providers_structure.json"
-}
+CATALYST_TABLE = [
+    "deal_history_structure.json",
+    "fees_key_terms_structure.json",
+    "fundamentals_structure.json", 
+    "investment_team_structure.json",
+    "seed_terms_structure.json",
+    "service_providers_structure.json"
+]
 
-REAL_ESTATE_TABLE = {
-    "property_zoning": "property_zoning_structure.json",
-    "property_financials": "property_financials_structure.json",
-    "property_fundamentals": "property_fundamentals_structure.json"
-}
+REAL_ESTATE_TABLE = [
+    "property_zoning_structure.json",
+    "property_financials_structure.json",
+    "property_fundamentals_structure.json"
+]
 
 
 RUNNING_SUMMARY_FILE = os.path.join(RUNNING_SUMMARY_DIR,'running_summary.txt')

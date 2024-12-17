@@ -8,58 +8,70 @@ import os
 import json
 import requests
 import logging
-from config import MAX_TOKENS_PER_CALL, RUNNING_SUMMARY_FILE, OPENAI_MODEL, DEFAULT_PROJECT_NAME, CATALYST_TABLE, FINANCIALS_TABLE, REAL_ESTATE_TABLE
+from config import MAX_TOKENS_PER_CALL, RUNNING_SUMMARY_FILE, OPENAI_MODEL, DEFAULT_project_type, CATALYST_TABLE, FINANCIALS_TABLE, REAL_ESTATE_TABLE
 from pdf_processing import get_page_token_counts, get_pdf_content_by_page_indices
-from running_summary_manager import RunningSummaryManager #Import the running summary manager
 from prompt_builder import PromptBuilder
 from os import getenv
 from dotenv import load_dotenv
-
+from context_manager import get_user_context
+from file_manager import get_project_data_path, get_project_structures_path
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
 logging.getLogger("pdfminer").setLevel(logging.WARNING)
 logging.getLogger("pdfplumber").setLevel(logging.WARNING)
 
-
-summary_manager = RunningSummaryManager(RUNNING_SUMMARY_FILE)
-
-def manage_api_calls(business_description, project_name, user_input, update_scope="all", pdf_name=None, prompt_manager=None, json_manager=None):
+def manage_api_calls(business_description, user_input, update_scope="all", file_name=None, prompt_manager=None, json_manager=None):
     
     """
     Manages API calls to OpenAI, dynamically selecting pages based on token count.
     """
+    context = get_user_context()
+    project_type = context.project_type
+    project_name = context.current_project
+    username = context.username
     
     # Ensure prompt_manager is passed and used within this function
     if prompt_manager is None:
        raise ValueError("prompt_manager must be initialized and passed to manage_api_calls.")
+    
+    # Load the base prompt first
+    prompt_manager.load_prompt_file()
     prompt_manager.reset_prompts()   
     #Initialize the output variable
     openAI_output = {"text": "", "json_data": {}}
     
 
-    # Load tables and determine update/context scope
-    if project_name == "catalyst":
-        all_tables = list(CATALYST_TABLE.keys())
-    elif project_name == "real_estate":
-        all_tables = list(REAL_ESTATE_TABLE.keys())
-    elif project_name == "financial":
-        all_tables = list(FINANCIALS_TABLE.keys())
-    else:
-        # Use default project name if provided name doesn't match expected values
-        if DEFAULT_PROJECT_NAME == "catalyst":
-            all_tables = list(CATALYST_TABLE.keys())
-        elif DEFAULT_PROJECT_NAME == "real_estate":
-            all_tables = list(REAL_ESTATE_TABLE.keys())
-        else:
-            all_tables = list(FINANCIALS_TABLE.keys())
+    # Get list of available tables from project data directory
+    data_path = get_project_data_path()
+    if not data_path:
+        logging.error("Could not get project data path")
+        return {"error": "Project data path not found"}, 404
+        
+    # Get list of table files and strip .json suffix
+    all_tables = []
+    if os.path.exists(data_path):
+        all_tables = [f.replace('.json', '') for f in os.listdir(data_path)
+                     if os.path.isfile(os.path.join(data_path, f)) and f.endswith('.json')]
+    
+    if not all_tables:
+        logging.error("No table data files found")
+        return {"error": "No table data available"}, 404
+
+    # Determine which tables to update vs use as context
     update_tables = all_tables if update_scope == "all" else [update_scope]
     logging.debug(f"Update tables are {update_tables}")
     context_tables = [table for table in all_tables if table not in update_tables]
-    tables_data = {table: json_manager.load_json_data(table, project_name) for table in update_tables}
-    context_data = {table: json_manager.load_json_data(table, project_name) for table in context_tables}
+
+    # Load data for tables being updated and context tables
+    tables_data = {
+        table: json_manager.load_json_data(table) for table in update_tables
+    }
+    context_data = {
+        table: json_manager.load_json_data(table) for table in context_tables
+    }
     
     #Get the running summary to feed into the prompt
-    running_summary = summary_manager.get_summary()
+    running_summary = prompt_manager.get_summary()
     # Initialize the prompt manager and add basic components
     prompt_manager.update_system_prompt_info(
                                             update_tables=tables_data, 
@@ -84,7 +96,7 @@ def manage_api_calls(business_description, project_name, user_input, update_scop
 
 
     # Get token counts for each page if PDF is provided
-    page_token_counts = get_page_token_counts(pdf_name) if pdf_name else []
+    page_token_counts = get_page_token_counts(file_name) if file_name else []
     page_index = 0  # Start from the first page
 
     #Use the list of pdf page token counts to bundle the pages into chunks
@@ -109,29 +121,37 @@ def manage_api_calls(business_description, project_name, user_input, update_scop
     
     
     for chunk_dict in chunk_list:
+        # Get PDF content for this chunk using updated function signature
+        chunk_text = get_pdf_content_by_page_indices(
+            file_name=file_name,
+            start_page=chunk_dict['start_page'],
+            end_page=chunk_dict['end_page']
+        ) if file_name else None
         
-        chunk_text = get_pdf_content_by_page_indices(pdf_name, chunk_dict['start_page'], chunk_dict['end_page']) if pdf_name else None
         prompt_manager.add_pdf_chunk(chunk_text)
 
         # Make the API call and process the response
-        response, status_code = manage_call_for_payload(chunk_text, chunk_dict['start_page'], chunk_dict['end_page'],json_manager, project_name=project_name, prompt_manager=prompt_manager )
+        response, status_code = manage_call_for_payload(chunk_text, chunk_dict['start_page'], chunk_dict['end_page'], json_manager, prompt_manager=prompt_manager)
         if status_code != 200:
             return response, status_code
-        
+
+    #This is for debugging
+    prompt_manager.write_system_prompt()
+
     # Update the final summary and JSON data
     openAI_output["text"] += response.get("text", "")
     openAI_output["json_data"].update(response.get("JSONData", {}))
     prompt_manager.display_tokens_and_cost(openAI_output)
 
     # Update JSON files with the aggregated data
-    json_manager.update_json_files(openAI_output["json_data"], project_name)
+    json_manager.update_json_files(openAI_output["json_data"])
     return openAI_output, 200
 
 
 
 
 
-def manage_call_for_payload(pdf_chunk, page_start, page_end, json_manager, project_name=None, prompt_manager=None):
+def manage_call_for_payload(pdf_chunk, page_start, page_end, json_manager, prompt_manager, project_type=None):
     """
     Processes each chunk of data with OpenAI API
     """
@@ -142,17 +162,16 @@ def manage_call_for_payload(pdf_chunk, page_start, page_end, json_manager, proje
     user_prompt = prompt_manager.get_user_prompt()
 
     raw_response, status_code = make_openai_api_call(system_prompt=system_prompt, user_prompt=user_prompt)
-      
+    logging.debug(f"manage_call_for_payload: raw_response: {raw_response}")
     
     if status_code != 200:
         logging.error(f"API call failed: {raw_response}")
         return {"error": "API call failed"}, status_code
 
-    processed_response, _ =  handle_openai_response(raw_response, json_manager)
+    processed_response, _ =  handle_openai_response(raw_response, json_manager, prompt_manager)
     json_data = processed_response.get("JSONData", {})
-    
     #Update the JSON Files
-    json_manager.update_json_files(json_data, project_name)
+    json_manager.update_json_files(json_data)
     
     logging.info(f"---------- END PAGES {page_start} THROUGH {page_end} -----------\n\n")
     return processed_response, status_code
@@ -197,7 +216,7 @@ def make_openai_api_call(system_prompt, user_prompt):
 
 
 # Function to handle the OpenAI API response
-def handle_openai_response(response, json_manager):
+def handle_openai_response(response, json_manager, prompt_manager):
     response_json = response
 
     # Extract the AI response content
@@ -207,7 +226,7 @@ def handle_openai_response(response, json_manager):
         #Debug feature. Write response to txt
         save_directory = os.path.join(os.getcwd())
         txt_file_path = os.path.join(save_directory, 'DEBUG_FILE_openai_response.txt')
-        with open(txt_file_path, 'w') as f:
+        with open(txt_file_path, 'w', encoding='utf-8') as f:
             f.write(ai_content)
 
         
@@ -215,7 +234,7 @@ def handle_openai_response(response, json_manager):
         text_part = ai_content.split('### TEXT END ###')[0].replace('### TEXT START ###', '').strip()
         json_part = ai_content.split('---JSON END---')[0].split('---JSON START---')[1].strip()
         running_summary = ai_content.split('### SUMMARY END ###')[0].split('### SUMMARY START ###')[1].strip()
-        summary_manager.update_summary(running_summary)
+        prompt_manager.update_summary(running_summary)
         
         # Fix incomplete JSON by adding missing brackets if necessary
         json_part = json_manager.fix_incomplete_json(json_part)

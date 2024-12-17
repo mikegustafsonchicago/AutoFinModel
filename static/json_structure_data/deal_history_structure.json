@@ -1,23 +1,78 @@
 {
     "deal_history": {
-                "filename": "deal_history.json",
-                "root_key": "deals",
-                "description": "Stores historical deal information",
-                "version": "1.0",
-                "explanation_file": "deal_history_explanation.txt",
-                "default_content": {
-                    "deals": [
-                        {
-                            "date": "Placeholder Date",
-                            "firm": "Placeholder Firm",
-                            "amount": "$0",
-                            "realized": "No",
-                            "syndicate_partners": "Placeholder Partners",
-                            "source_string": "Placeholder Source",
-                            "source_link": "https://example.com"
+        "filename": "deal_history.json",
+        "root_key": "deals",
+        "description": "The Deal History table tracks the firm's investment history, including details about portfolio companies, investment amounts, realization status, and co-investment partners",
+        "version": "1.0",
+        "explanation_file": "deal_history_explanation.txt",
+        "structure": {
+            "deals": {
+                "type": "array",
+                "description": "Array of deal history entries. The data must be returned as a flat list of deals.",
+                "items": {
+                    "type": "object",
+                    "required": [
+                        "date",
+                        "firm", 
+                        "amount",
+                        "realized",
+                        "syndicate_partners",
+                        "source_string",
+                        "source_link"
+                    ],
+                    "properties": {
+                        "date": {
+                            "type": "string",
+                            "description": "The date when the investment was made",
+                            "order": 1
+                        },
+                        "firm": {
+                            "type": "string",
+                            "description": "Name of the portfolio company or investment target",
+                            "order": 2
+                        },
+                        "amount": {
+                            "type": "string",
+                            "description": "Investment amount deployed by the firm",
+                            "order": 3
+                        },
+                        "realized": {
+                            "type": "string",
+                            "description": "Whether the investment has been realized/exited ('Yes'/'No')",
+                            "order": 4
+                        },
+                        "syndicate_partners": {
+                            "type": "string",
+                            "description": "Names of co-investors or syndicate partners in the deal",
+                            "order": 5
+                        },
+                        "source_string": {
+                            "type": "string",
+                            "description": "Source of the deal information. If the source was part of this api call, you must provide detail about what page this information was found on.",
+                            "order": 6
+                        },
+                        "source_link": {
+                            "type": "string",
+                            "description": "URL link to source of deal data. Must be provided as \"No source\" if the source was part of this api call or is not a website.",
+                            "format": "uri",
+                            "order": 7
                         }
-                    ]
+                    }
                 }
             }
-            
+        },
+        "default_content": {
+            "deals": [
+                {
+                    "date": "Placeholder Date",
+                    "firm": "Placeholder Firm", 
+                    "amount": "$0",
+                    "realized": "No",
+                    "syndicate_partners": "Placeholder Partners",
+                    "source_string": "Placeholder Source",
+                    "source_link": "https://example.com"
+                }
+            ]
         }
+    }
+}

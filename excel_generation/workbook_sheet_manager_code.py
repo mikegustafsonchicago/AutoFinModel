@@ -13,16 +13,16 @@ from helper_functions import FormatManager, number_to_column_letter, get_cell_id
 # - Validating and writing data, formulas, and URLs to cells
 # - Closing and saving workbooks properly
 class WorkbookManager:
-    def __init__(self, project_name, cell_manager):
+    def __init__(self, project_type, cell_manager):
         self.cell_manager = cell_manager
 
         #Name the workbook based on the project name
-        if project_name == "financials":
+        if project_type == "financials":
             self.name = 'Financial_Model.xlsx'
-        elif project_name == "catalyst_partners":
+        elif project_type == "catalyst_partners":
             self.name = 'Catalyst_Partners_Summary.xlsx'
         else:
-            raise ValueError(f"Invalid project name: {project_name}")
+            raise ValueError(f"Invalid project name: {project_type}")
         
         
         # Get absolute path to project root directory
@@ -43,9 +43,9 @@ class WorkbookManager:
         self.cell_info={}
         self.sheets = {}  # Dictionary to store worksheet references
 
-        if project_name == "financials":    
+        if project_type == "financials":    
             self.format_manager = FormatManager(self.workbook)  # Initialize formats once
-        elif project_name == "catalyst_partners":
+        elif project_type == "catalyst_partners":
             self.format_manager = FormatManager(self.workbook, config_file='catalystPartners.yaml')  # Initialize formats once
         
     def add_sheet(self, sheet_name):

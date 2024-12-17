@@ -15,7 +15,7 @@ sys.path.append(str(Path(__file__).parent.parent))
 from json_manager import JsonManager
 
 class BusinessEntity:
-    def __init__(self, project_name):
+    def __init__(self, project_type):
         self.sales_recipes={}
         self.ingredients_list = []
         self.store_hours = 8 #Hours open per day
@@ -33,7 +33,7 @@ class BusinessEntity:
         self.json_manager = JsonManager()
         
         # Load "financials" project data from JSON files
-        if project_name == "financials":
+        if project_type == "financials":
             self.revenue_sources = self.json_manager.load_json_data("revenue")
             self.revenue_sources = self.revenue_sources if self.revenue_sources else []
             self.cost_of_sales_items = self.json_manager.load_json_data("cost_of_sales") 
@@ -57,22 +57,22 @@ class BusinessEntity:
                 self.start_year = datetime.now().year
                
         #CATALYST Loads
-        elif project_name == "catalyst":
-            self.fundamentals = self.json_manager.load_json_data("fundamentals", project_name="catalyst")
+        elif project_type == "catalyst":
+            self.fundamentals = self.json_manager.load_json_data("fundamentals", project_type="catalyst")
             self.fundamentals = self.fundamentals if self.fundamentals else []
-            self.investment_team = self.json_manager.load_json_data("investment_team", project_name="catalyst")
+            self.investment_team = self.json_manager.load_json_data("investment_team", project_type="catalyst")
             self.investment_team = self.investment_team if self.investment_team else []
-            self.seed_terms = self.json_manager.load_json_data("seed_terms", project_name="catalyst")
+            self.seed_terms = self.json_manager.load_json_data("seed_terms", project_type="catalyst")
             self.seed_terms = self.seed_terms if self.seed_terms else []
-            self.fees_key_terms = self.json_manager.load_json_data("fees_key_terms", project_name="catalyst")
+            self.fees_key_terms = self.json_manager.load_json_data("fees_key_terms", project_type="catalyst")
             self.fees_key_terms = self.fees_key_terms if self.fees_key_terms else []
-            self.deal_history = self.json_manager.load_json_data("deal_history", project_name="catalyst")
+            self.deal_history = self.json_manager.load_json_data("deal_history", project_type="catalyst")
             self.deal_history = self.deal_history if self.deal_history else []
-            self.service_providers = self.json_manager.load_json_data("service_providers", project_name="catalyst")
+            self.service_providers = self.json_manager.load_json_data("service_providers", project_type="catalyst")
             self.service_providers = self.service_providers if self.service_providers else []
         
         else:
-            logging.error(f"BusinessEntity: Invalid project name: {project_name}")
+            logging.error(f"BusinessEntity: Invalid project name: {project_type}")
 
 
     def create_missing_ingredient(self, ingredient_id):

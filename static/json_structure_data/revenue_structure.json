@@ -1,10 +1,9 @@
 {
     "revenue": {
         "filename": "revenue_build.json",
-        "root_key": "revenue_sources",
+        "root_key": "revenue_sources", 
         "description": "Stores revenue sources and pricing information",
         "version": "1.0",
-        "explanation_file": "revenue_build_explanation.txt",
         "structure": {
             "revenue_sources": {
                 "type": "array",
@@ -12,8 +11,8 @@
                     "type": "object",
                     "required": [
                         "revenue_source_name",
-                        "revenue_source_price", 
-                        "price_source",
+                        "revenue_source_price",
+                        "price_source", 
                         "price_source_link",
                         "price_notes",
                         "monthly_transactions",
@@ -24,52 +23,52 @@
                     "properties": {
                         "revenue_source_name": {
                             "type": "string",
-                            "description": "Name of the revenue stream",
+                            "description": "Name of the revenue stream or service being offered",
                             "min_length": 1,
                             "max_length": 100,
                             "order": 1
                         },
                         "revenue_source_price": {
                             "type": "number",
-                            "description": "Price per unit/service",
+                            "description": "Price charged per unit/service",
                             "minimum": 0,
                             "order": 2
                         },
                         "price_source": {
                             "type": "string",
-                            "description": "Source of the pricing information",
+                            "description": "Source of the pricing information. If the source was part of this api call, you must provide detail about what page this information was found on.",
                             "order": 3
                         },
                         "price_source_link": {
-                            "type": "string",
-                            "description": "URL to pricing source",
+                            "type": "string", 
+                            "description": "URL link to source of pricing data. Must be provided as \"No source\" if the source was part of this api call or is not a website.",
                             "format": "uri",
                             "order": 4
                         },
                         "price_notes": {
                             "type": "string",
-                            "description": "Additional context about pricing",
+                            "description": "Additional context and explanation about how the price was determined or calculated",
                             "order": 5
                         },
                         "monthly_transactions": {
                             "type": "number",
-                            "description": "Number of transactions per month",
+                            "description": "Number of transactions expected per month",
                             "minimum": 0,
                             "order": 6
                         },
                         "frequency_notes": {
                             "type": "string",
-                            "description": "Additional context about frequency",
+                            "description": "This note should precisely explain why the number of monthly transactions was chosen.",
                             "order": 7
                         },
                         "frequency_source": {
                             "type": "string",
-                            "description": "Source of frequency data",
+                            "description": "Source of the transaction frequency data. If the source was part of this api call, make sure to explain what page in the pdf the transaction frequency information was found on.",
                             "order": 8
                         },
                         "frequency_source_link": {
                             "type": "string",
-                            "description": "URL to frequency source",
+                            "description": "URL link to source of frequency data. Must be provided as \"No source\" if the source was part of this api call or is not a website.",
                             "format": "uri",
                             "order": 9
                         }
@@ -81,9 +80,9 @@
             "revenue_sources": [
                 {
                     "revenue_source_name": "Sample Revenue Stream",
-                    "price": 25.00,
-                    "price_source": "Industry Average", 
-                    "price_source_link": "https://example.com/pricing",
+                    "revenue_source_price": 25.00,
+                    "price_source": "Industry Average",
+                    "price_source_link": "https://example.com/pricing", 
                     "price_notes": "Price selected from historical data, page 3 of CIM",
                     "monthly_transactions": 100,
                     "frequency_notes": "Frequency set to produce acceptable monthly revenue",
@@ -94,3 +93,5 @@
         }
     }
 }
+
+

@@ -1,86 +1,91 @@
 {
-  "property_zoning": {
-    "filename": "property_zoning.json",
-    "root_key": "property_details",
-    "description": "Stores property zoning and development information",
-    "version": "1.0",
-    "explanation_file": "property_zoning_explanation.txt", 
-    "default_content": {
-      "property_details": {
-        "property_description": "Sample property description",
-        "jurisdiction": "Sample County",
-        "site_conditions": "Sample site conditions description",
-        "current_zoning": "Sample zoning classification",
-        "density_detail": "Sample density/development restrictions",
-        "access": "Sample property access description",
-        "flood_zone": "Sample flood zone designation",
-        "water_sewer": "Sample water/sewer service details",
-        "electric": "Sample electric utility provider"
-      }
-    },
-    "structure": {
-      "property_details": {
-        "type": "object",
-        "required": [
-          "property_description",
-          "jurisdiction",
-          "site_conditions", 
-          "current_zoning",
-          "density_detail",
-          "access",
-          "flood_zone",
-          "water_sewer",
-          "electricity",
-          "availability"
-        ],
-        "properties": {
-          "address": {
-            "type": "string",
-            "description": "Street address of the property",
-            "order": 1
-          },
-          "municipality": {
-            "type": "string", 
-            "description": "City and state location",
-            "order": 2
-          },
-          "parcel_id": {
-            "type": "string",
-            "description": "Property parcel identification number",
-            "order": 3
-          },
-          "approximate_acreage": {
-            "type": "string",
-            "description": "Approximate size of property in acres",
-            "order": 4
-          },
-          "current_use": {
-            "type": "string",
-            "description": "Current property usage designation",
-            "order": 5
-          },
-          "zoning": {
-            "type": "string",
-            "description": "Property zoning classification",
-            "order": 6
-          },
-          "water_sewer": {
-            "type": "string",
-            "description": "Water and sewer service provider",
-            "order": 7
-          },
-          "electricity": {
-            "type": "string",
-            "description": "Electrical service provider",
-            "order": 8
-          },
-          "availability": {
-            "type": "string",
-            "description": "Property availability status",
-            "order": 9
-          }
+    "property_zoning": {
+        "filename": "property_zoning.json",
+        "root_key": "property_details",
+        "description": "Stores property zoning and development information", 
+        "version": "1.0",
+        "structure": {
+            "property_details": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "required": [
+                        "address",
+                        "municipality",
+                        "parcel_id", 
+                        "approximate_acreage",
+                        "current_use",
+                        "zoning",
+                        "water_sewer",
+                        "electricity",
+                        "availability"
+                    ],
+                    "properties": {
+                        "address": {
+                            "type": "string",
+                            "description": "Street address of the property",
+                            "min_length": 1,
+                            "max_length": 100,
+                            "order": 1
+                        },
+                        "municipality": {
+                            "type": "string", 
+                            "description": "City and state location",
+                            "order": 2
+                        },
+                        "parcel_id": {
+                            "type": "string",
+                            "description": "Property parcel identification number",
+                            "order": 3
+                        },
+                        "approximate_acreage": {
+                            "type": "string",
+                            "description": "Approximate size of property in acres",
+                            "order": 4
+                        },
+                        "current_use": {
+                            "type": "string",
+                            "description": "Current property usage designation",
+                            "order": 5
+                        },
+                        "zoning": {
+                            "type": "string",
+                            "description": "Property zoning classification",
+                            "order": 6
+                        },
+                        "water_sewer": {
+                            "type": "string",
+                            "description": "Water and sewer service provider",
+                            "order": 7
+                        },
+                        "electricity": {
+                            "type": "string",
+                            "description": "Electrical service provider",
+                            "order": 8
+                        },
+                        "availability": {
+                            "type": "string",
+                            "description": "Property availability status",
+                            "order": 9
+                        }
+                    }
+                }
+            }
+        },
+        "default_content": {
+            "property_details": [
+                {
+                    "address": "123 Sample Street",
+                    "municipality": "Sample City, ST",
+                    "parcel_id": "12-345-678",
+                    "approximate_acreage": "5.2",
+                    "current_use": "Vacant",
+                    "zoning": "Commercial",
+                    "water_sewer": "Municipal",
+                    "electricity": "Sample Electric Co",
+                    "availability": "For Sale"
+                }
+            ]
         }
-      }
     }
-  }
 }

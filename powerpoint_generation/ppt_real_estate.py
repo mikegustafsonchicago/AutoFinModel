@@ -365,7 +365,7 @@ def generate_ppt():
 
     current_directory = os.getcwd()
     file_name = "property_presentation.pptx"
-    data_path = "projects/commercial_real_estate"
+    data_path = "users/projects/commercial_real_estate"
     template_name = os.path.join(os.path.dirname(__file__), "hucks_template.pptx")
     output_path = os.path.join(current_directory, "outputs", file_name)
     data_path = os.path.join(current_directory, data_path)
@@ -691,7 +691,8 @@ def generate_ppt():
     #--------------------------------------------------------------------------
     # SLIDE Last: Legal Disclaimer
     #--------------------------------------------------------------------------
-    slide = presentation.slides.add_slide(presentation.slide_layouts[10])
+    slide = presentation.slides.add_slide(presentation.slide_layouts[11])
+    '''
     title = slide.shapes.title
     title.text = "Legal Disclaimer"
 
@@ -716,7 +717,7 @@ def generate_ppt():
             p.font.size = Pt(10)
             p.font.name = 'Calibri'
             p.space_after = Pt(12)  # Add spacing between paragraphs
-
+'''
     # Add theme colors slide
     add_diagnostics_slide(presentation)
 

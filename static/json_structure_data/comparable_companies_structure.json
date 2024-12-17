@@ -1,34 +1,18 @@
 {
-    "comparables": {
-        "filename": "comparables.json",
-        "root_key": "comparables",
+    "comparable_companies": {
+        "filename": "comparable_companies.json",
+        "root_key": "comparable_companies", 
         "description": "Stores comparable company metrics and multiples",
         "version": "1.0",
-        "explanation_file": "comparables_explanation.txt",
-        "default_content": {
-            "comparables": [
-                {
-                    "company_name": "Sample Company",
-                    "enterprise_value": 100.0,
-                    "market_cap": 80.0,
-                    "ebitda": 10.0,
-                    "equity_beta": 1.0,
-                    "asset_beta": 0.8,
-                    "ev_ebitda_multiple": 10.0,
-                    "source": "Sample Source",
-                    "source_date": "2024-01-01"
-                }
-            ]
-        },
         "structure": {
-            "comparables": {
+            "comparable_companies": {
                 "type": "array",
                 "items": {
                     "type": "object",
                     "required": [
                         "company_name",
-                        "enterprise_value", 
-                        "market_cap",
+                        "enterprise_value",
+                        "market_cap", 
                         "ebitda",
                         "equity_beta",
                         "asset_beta",
@@ -39,46 +23,46 @@
                     "properties": {
                         "company_name": {
                             "type": "string",
-                            "description": "Name of the comparable company",
+                            "description": "The name of the comparable company. This is not optional. If there is no company name, there is no comparable.",
                             "min_length": 1,
                             "max_length": 100,
                             "order": 1
                         },
                         "enterprise_value": {
-                            "type": "number",
-                            "description": "Enterprise value in millions",
+                            "type": ["number", "string"],
+                            "description": "Total company value in millions (minimum 0). Optional. If no information is provided, write '-'",
                             "minimum": 0,
                             "order": 2
                         },
                         "market_cap": {
-                            "type": "number",
-                            "description": "Market capitalization in millions", 
+                            "type": ["number", "string"],
+                            "description": "The market capitalization of the company in millions (minimum 0). Optional. If no information is provided, write '-'",
                             "minimum": 0,
                             "order": 3
                         },
                         "ebitda": {
-                            "type": "number",
-                            "description": "EBITDA in millions",
+                            "type": ["number", "string"],
+                            "description": "Earnings before interest, taxes, depreciation and amortization in millions. Optional. If no information is provided, write '-'",
                             "order": 4
                         },
                         "equity_beta": {
-                            "type": "number",
-                            "description": "Equity beta",
+                            "type": ["number", "string"],
+                            "description": "Stock volatility relative to market. Optional. If no information is provided, write '-'",
                             "order": 5
                         },
                         "asset_beta": {
-                            "type": "number",
-                            "description": "Asset/unlevered beta",
+                            "type": ["number", "string"],
+                            "description": "Asset volatility measure. Optional. If no information is provided, write '-'",
                             "order": 6
                         },
                         "ev_ebitda_multiple": {
-                            "type": "number",
-                            "description": "EV/EBITDA multiple",
+                            "type": ["number", "string"],
+                            "description": "Enterprise value to EBITDA multiple. Optional. If no information is provided, write '-'",
                             "order": 7
                         },
                         "source": {
                             "type": "string",
-                            "description": "Source of the comparable data",
+                            "description": "Source of the comparable data. Be extremely precise, ideally, explain the paragraph or page number from the uploaded document. This is never optional, but if you can't provide a referencable source, write 'No Source'",
                             "order": 8
                         },
                         "source_date": {
@@ -90,6 +74,21 @@
                     }
                 }
             }
+        },
+        "default_content": {
+            "comparable_companies": [
+                {
+                    "company_name": "Sample Company",
+                    "enterprise_value": "-",
+                    "market_cap": "-", 
+                    "ebitda": "-",
+                    "equity_beta": "-",
+                    "asset_beta": "-",
+                    "ev_ebitda_multiple": "-",
+                    "source": "No Source",
+                    "source_date": "2024-01-01"
+                }
+            ]
         }
     }
 }

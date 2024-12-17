@@ -1,20 +1,71 @@
 {
-                "investment_team": {
-                "filename": "investment_team.json",
-                "root_key": "team_members",
-                "description": "Stores investment team information",
-                "version": "1.0",
-                "explanation_file": "investment_team_explanation.txt",
-                "default_content": {
-                    "team_members": [
-                        {
-                            "investment_team_member_name": "Placeholder Name",
-                            "investment_team_member_title": "Placeholder Title",
-                            "investment_team_member_join_date": 2020,
-                            "source_string": "Placeholder Source",
-                            "source_link": "https://example.com"
+    "investment_team": {
+        "filename": "investment_team.json",
+        "root_key": "team_members", 
+        "description": "The Investment Team table details the key members of a private equity firm's investment team, including their roles, experience, and background",
+        "version": "1.0",
+        "explanation_file": "investment_team_explanation.txt",
+        "structure": {
+            "team_members": {
+                "type": "array",
+                "description": "Array of investment team members. The data must be returned as a flat list of team members.",
+                "items": {
+                    "type": "object",
+                    "required": [
+                        "investment_team_member_name",
+                        "investment_team_member_title",
+                        "investment_team_member_join_date", 
+                        "source_string",
+                        "source_link"
+                    ],
+                    "properties": {
+                        "investment_team_member_name": {
+                            "type": "string",
+                            "description": "Full name of the team member",
+                            "order": 1
+                        },
+                        "investment_team_member_title": {
+                            "type": "string",
+                            "description": "Their title or role within the firm",
+                            "order": 2
+                        },
+                        "investment_team_member_join_date": {
+                            "type": ["integer", "null"],
+                            "description": "Year the team member joined the firm. If unknown, this can be null",
+                            "order": 3
+                        },
+                        "source_string": {
+                            "type": "string", 
+                            "description": "Title or summary of the information source",
+                            "order": 4
+                        },
+                        "source_link": {
+                            "type": "string",
+                            "description": "URL linking to the source document",
+                            "format": "uri",
+                            "order": 5
                         }
-                    ]
+                    }
                 }
             }
+        },
+        "default_content": {
+            "team_members": [
+                {
+                    "investment_team_member_name": "Placeholder Name",
+                    "investment_team_member_title": "Placeholder Title",
+                    "investment_team_member_join_date": 2020,
+                    "source_string": "Placeholder Source", 
+                    "source_link": "https://example.com"
+                },
+                {
+                    "investment_team_member_name": "Another Name",
+                    "investment_team_member_title": "Another Title",
+                    "investment_team_member_join_date": null,
+                    "source_string": "Another Source",
+                    "source_link": "https://example.com"
+                }
+            ]
+        }
+    }
 }

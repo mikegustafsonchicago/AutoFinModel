@@ -1,26 +1,106 @@
 {
-                "fees_key_terms": {
-                "filename": "fees_key_terms.json",
-                "root_key": "terms",
-                "description": "Stores fund terms and fee structures",
-                "version": "1.0",
-                "explanation_file": "fees_key_terms_explanation.txt",
-                "default_content": {
-                    "terms": [
-                        {
-                            "currency": "USD",
-                            "target_fundraise": "$0 million",
-                            "management_fee": "0%",
-                            "carried_interest": "0%",
-                            "preferred_return": "0%",
-                            "investment_period": "0 years",
-                            "fund_term": "0 years",
-                            "GP_commitment": "0%",
-                            "GP_commitment_funding_source": "Placeholder Source",
-                            "source_string": "Placeholder Source",
-                            "source_link": "https://example.com"
+    "fees_key_terms": {
+        "filename": "fees_key_terms.json",
+        "root_key": "terms",
+        "description": "The Fees and Key Terms table outlines the fee structure and key terms associated with the firm's fund or investment program, providing critical information for potential investors",
+        "version": "1.0",
+        "explanation_file": "fees_key_terms_explanation.txt",
+        "structure": {
+            "terms": {
+                "type": "array",
+                "description": "Array of fee structures and key terms for funds",
+                "items": {
+                    "type": "object",
+                    "required": [
+                        "currency",
+                        "target_fundraise",
+                        "management_fee",
+                        "carried_interest", 
+                        "preferred_return",
+                        "investment_period",
+                        "fund_term",
+                        "GP_commitment",
+                        "GP_commitment_source",
+                        "source_string",
+                        "source_link"
+                    ],
+                    "properties": {
+                        "currency": {
+                            "type": "string",
+                            "description": "The currency in which the firm operates or raises funds (e.g., 'USD')",
+                            "order": 1
+                        },
+                        "target_fundraise": {
+                            "type": "string", 
+                            "description": "The target amount the firm aims to raise for its fund",
+                            "order": 2
+                        },
+                        "management_fee": {
+                            "type": "string",
+                            "description": "The percentage charged as a management fee by the firm (e.g., '2%')",
+                            "order": 3
+                        },
+                        "carried_interest": {
+                            "type": "string",
+                            "description": "The percentage of profits shared with the firm as carried interest (e.g., '20%')",
+                            "order": 4
+                        },
+                        "preferred_return": {
+                            "type": "string",
+                            "description": "The minimum return rate offered to investors before the firm receives carried interest",
+                            "order": 5
+                        },
+                        "investment_period": {
+                            "type": "string",
+                            "description": "Duration of the firm's investment period, typically in years",
+                            "order": 6
+                        },
+                        "fund_term": {
+                            "type": "string",
+                            "description": "Total term of the fund, usually including investment and divestment phases",
+                            "order": 7
+                        },
+                        "GP_commitment": {
+                            "type": "string",
+                            "description": "The percentage committed by the General Partner in the fund (e.g., '5%')",
+                            "order": 8
+                        },
+                        "GP_commitment_source": {
+                            "type": "string",
+                            "description": "Source of the General Partner's commitment (e.g., 'Capital reserves')",
+                            "order": 9
+                        },
+                        "source_string": {
+                            "type": "string",
+                            "description": "Summary of the information source",
+                            "order": 10
+                        },
+                        "source_link": {
+                            "type": "string",
+                            "description": "URL linking to the source document",
+                            "format": "uri",
+                            "order": 11
                         }
-                    ]
+                    }
                 }
             }
+        },
+        "default_content": {
+            "terms": [
+                {
+                    "currency": "USD",
+                    "target_fundraise": "100M",
+                    "management_fee": "2%",
+                    "carried_interest": "20%",
+                    "preferred_return": "8%", 
+                    "investment_period": "5 years",
+                    "fund_term": "10 years",
+                    "GP_commitment": "5%",
+                    "GP_commitment_source": "Capital reserves",
+                    "source_string": "Placeholder Source",
+                    "source_link": "https://example.com"
+                }
+            ]
+        }
+    }
 }

@@ -1,10 +1,48 @@
 {
     "service_providers": {
         "filename": "service_providers.json",
-        "root_key": "providers", 
-        "description": "Stores service provider information",
+        "root_key": "providers",
+        "description": "Tracks key service providers and vendors that support the firm's operations, including legal counsel, auditors, fund administrators, and other professional service firms",
         "version": "1.0",
         "explanation_file": "service_providers_explanation.txt",
+        "structure": {
+            "providers": {
+                "type": "array",
+                "description": "Array of service provider entries. The AI should return data in exactly this structure, with all fields populated according to the specifications.",
+                "items": {
+                    "type": "object",
+                    "required": [
+                        "service_type",
+                        "firm_name", 
+                        "source_string",
+                        "source_link"
+                    ],
+                    "properties": {
+                        "service_type": {
+                            "type": "string",
+                            "description": "The type of service provided (e.g., 'Legal Counsel', 'Fund Administrator', 'Auditor')",
+                            "order": 1
+                        },
+                        "firm_name": {
+                            "type": "string",
+                            "description": "Name of the service provider firm",
+                            "order": 2
+                        },
+                        "source_string": {
+                            "type": "string",
+                            "description": "Description or source title for validation",
+                            "order": 3
+                        },
+                        "source_link": {
+                            "type": "string",
+                            "description": "URL linking to source documentation",
+                            "format": "uri",
+                            "order": 4
+                        }
+                    }
+                }
+            }
+        },
         "default_content": {
             "providers": [
                 {

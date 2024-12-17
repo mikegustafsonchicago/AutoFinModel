@@ -34,11 +34,11 @@ from excel_generation.workbook_sheet_manager_code import WorkbookManager
 def generate_excel_model(debug_mode=False):
    
     debug_mode=True
-    project_name = "financials"
+    project_type = "financials"
     
     #Main 
     cell_manager = CellManager()
-    workbook_manager1=WorkbookManager(project_name, cell_manager)
+    workbook_manager1=WorkbookManager(project_type, cell_manager)
 
     
     business_entity = BusinessEntity("financials")

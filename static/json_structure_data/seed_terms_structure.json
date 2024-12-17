@@ -1,22 +1,85 @@
-{            "seed_terms": {
-                "filename": "seed_terms.json",
-                "root_key": "investments",
-                "description": "Stores seed investment terms",
-                "version": "1.0",
-                "explanation_file": "seed_terms_explanation.txt",
-                "default_content": {
-                    "investments": [
-                        {
-                            "expense_name": "Target Seed Investment Placeholder",
-                            "initial_investment": "Initial Seed Investment Placeholder",
-                            "fundraising_date": "Placeholder Date",
-                            "revenue_share": "0%",
-                            "revenue_share_cap": "0.0x",
-                            "revenue_share_tail": "0%",
-                            "source_string": "Placeholder Source",
-                            "source_link": "https://example.com"
+{
+    "seed_terms": {
+        "filename": "seed_terms.json",
+        "root_key": "investments",
+        "description": "The Seed Terms table captures key information about a firm's seed investment strategy, including target investment sizes, revenue sharing terms, and fundraising timelines",
+        "version": "1.0",
+        "explanation_file": "seed_terms_explanation.txt",
+        "structure": {
+            "investments": {
+                "type": "array",
+                "description": "Array of seed investment terms. The AI should return data in exactly this structure, with all fields populated according to the specifications.",
+                "items": {
+                    "type": "object",
+                    "required": [
+                        "target_seed_investment",
+                        "initial_seed_investment",
+                        "fundraising_date",
+                        "revenue_share",
+                        "revenue_share_cap", 
+                        "revenue_share_tail",
+                        "source_string",
+                        "source_link"
+                    ],
+                    "properties": {
+                        "target_seed_investment": {
+                            "type": "string",
+                            "description": "Target seed investment amount or range that the firm typically deploys",
+                            "order": 1
+                        },
+                        "initial_seed_investment": {
+                            "type": "string", 
+                            "description": "Initial seed investment amount that the firm provides upfront",
+                            "order": 2
+                        },
+                        "fundraising_date": {
+                            "type": "string",
+                            "description": "Expected timeline or date for the seed fundraising round",
+                            "order": 3
+                        },
+                        "revenue_share": {
+                            "type": "string",
+                            "description": "Percentage of revenue shared with the firm, if applicable",
+                            "order": 4
+                        },
+                        "revenue_share_cap": {
+                            "type": "string",
+                            "description": "Maximum cap on revenue sharing, expressed as a multiple",
+                            "order": 5
+                        },
+                        "revenue_share_tail": {
+                            "type": "string",
+                            "description": "Residual revenue share percentage after reaching the cap",
+                            "order": 6
+                        },
+                        "source_string": {
+                            "type": "string",
+                            "description": "Description or source title for validation",
+                            "order": 7
+                        },
+                        "source_link": {
+                            "type": "string",
+                            "description": "URL linking to source documentation",
+                            "format": "uri",
+                            "order": 8
                         }
-                    ]
+                    }
                 }
             }
+        },
+        "default_content": {
+            "investments": [
+                {
+                    "target_seed_investment": "Target Seed Investment Placeholder",
+                    "initial_seed_investment": "Initial Seed Investment Placeholder",
+                    "fundraising_date": "Placeholder Date", 
+                    "revenue_share": "0%",
+                    "revenue_share_cap": "0.0x",
+                    "revenue_share_tail": "0%",
+                    "source_string": "Placeholder Source",
+                    "source_link": "https://example.com"
+                }
+            ]
         }
+    }
+}

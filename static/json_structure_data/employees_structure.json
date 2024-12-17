@@ -13,9 +13,9 @@
                     "wage": 15.0,
                     "wage_type": "hourly", 
                     "monthly_hours": 160,
-                    "notes": "Sample employee role",
-                    "source_link": "https://example.com",
-                    "source_string": "Sample Source"
+                    "notes": "Sample employee role - justify the chosen values for role, wage, quantity, or monthly hours",
+                    "source_link": "",
+                    "source_string": "No source"
                 }
             ]
         },
@@ -37,49 +37,48 @@
                     "properties": {
                         "role": {
                             "type": "string",
-                            "description": "Job title or role of employee",
+                            "description": "Job title or role, 1-100 characters",
                             "min_length": 1,
                             "max_length": 100,
                             "order": 1
                         },
                         "number": {
                             "type": "number",
-                            "description": "Number of employees in this role",
+                            "description": "Number of employees in this role (minimum 0)",
                             "minimum": 0,
                             "order": 2
                         },
                         "wage": {
                             "type": "number",
-                            "description": "Wage amount (hourly or salary)",
+                            "description": "Wage amount in dollars (minimum 0)",
                             "minimum": 0,
                             "order": 3
                         },
                         "wage_type": {
                             "type": "string",
-                            "description": "Type of wage - hourly or salary",
+                            "description": "Must be either 'hourly' or 'salary'",
                             "enum": ["hourly", "salary"],
                             "order": 4
                         },
                         "monthly_hours": {
                             "type": "number",
-                            "description": "Expected monthly hours if hourly wage",
+                            "description": "Expected work hours per month (minimum 0)",
                             "minimum": 0,
                             "order": 5
                         },
                         "notes": {
                             "type": "string",
-                            "description": "Additional notes about the role",
+                            "description": "These notes should be to justify the chosen value for role, wage, quantity, or monthly hours. Don't describe the role further.",
                             "order": 6
                         },
                         "source_link": {
                             "type": "string",
-                            "description": "URL to wage/role source",
-                            "format": "uri",
+                            "description": "URL to wage/role source information. This is optional. If the source was part of this api call, or is not a website, leave this blank.",
                             "order": 7
                         },
                         "source_string": {
-                            "type": "string",
-                            "description": "Source of wage/role information",
+                            "type": "string", 
+                            "description": "Description of wage/role source. This is not optional. If you don't have a source, write 'No source'",
                             "order": 8
                         }
                     }

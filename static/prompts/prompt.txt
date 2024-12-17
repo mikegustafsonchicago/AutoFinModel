@@ -8,22 +8,39 @@ Here are your instructions:
 For example:
 ---JSON START---
 {
-  "revenueTable": {
-    "name": "Sample Item",
-    "price": 25,
-    "ingredients": [
-      {"ingredient_id": 1, "ingredient_name": "Ingredient A", "amount": 1, "price": 5}
+    "revenue_sources": [
+      {
+        "revenue_source_name": "Sample Service",
+        "revenue_source_price": 25.00,
+        "price_source": "CIM - Page 12",
+        "price_source_link": "No source",
+        "price_notes": "Price based on industry benchmarks",
+        "monthly_transactions": 100,
+        "frequency_notes": "Transaction volume derived from historical data",
+        "frequency_source": "CIM - Page 15",
+        "frequency_source_link": "No source"
+      }
     ]
-  },
-  "capexTable": {
-    "expenses": [
-      {"expense_name": "Equipment", "amount": 1000, "purchase_year": 2024, "depreciation_life": 5}
+}
+--or--
+
+{
+  "deal_history": {
+    "deals": [
+      {
+        "date": "2023-01-15",
+        "firm": "Example Corp", 
+        "amount": "$1,000,000",
+        "realized": "No",
+        "syndicate_partners": "Partner A, Partner B",
+        "source_string": "CIM - Page 8",
+        "source_link": "No source"
+      }
     ]
   }
 }
 ---JSON END---
 
-The above examples are provided only to illustrate the structure of each table type. Reproduce only the tables specifically included in the input JSON data.
-**Ensure each table name is used as a key, and all values are properly structured according to the specified format.**
+Always return the JSON object formatted as {[root_key]: [array of items]}
 
-Your primary function is to assist with providing sourcing for the data. For any given uploaded file, please keep source naming consistent. For example "CIM - Page 12" or "CIM - Paragraph 3". For all data, either provide a direct reference, or "No Source".
+Your primary function is to assist with providing sourcing for the data. For any given uploaded file, please keep source naming consistent. For example "CIM - Page 12" or "CIM - Paragraph 3". For all data, either provide a direct reference, or "No source" for the source_link field if the source is not a website.

@@ -10,10 +10,10 @@
                 {
                     "expense_name": "Sample Operating Expense",
                     "amount": 1000.0,
-                    "frequency": "Monthly",
-                    "source_string": "Sample Source",
-                    "source_link": "https://example.com",
-                    "notes": "Sample operating expense"
+                    "frequency": "Monthly", 
+                    "notes": "Sample operating expense - explain why this expense was chosen and justify the amount",
+                    "source_link": "",
+                    "source_string": "No source"
                 }
             ]
         },
@@ -24,45 +24,44 @@
                     "type": "object",
                     "required": [
                         "expense_name",
-                        "amount", 
-                        "frequency",
-                        "source_string",
+                        "amount",
+                        "frequency", 
+                        "notes",
                         "source_link",
-                        "notes"
+                        "source_string"
                     ],
                     "properties": {
                         "expense_name": {
                             "type": "string",
-                            "description": "Name of the operating expense",
+                            "description": "Name or description of the operating expense",
                             "min_length": 1,
                             "max_length": 100,
                             "order": 1
                         },
                         "amount": {
-                            "type": "number", 
-                            "description": "Cost amount per occurrence",
+                            "type": "number",
+                            "description": "Cost of the expense in dollars",
                             "minimum": 0,
                             "order": 2
                         },
                         "frequency": {
-                            "type": "string",
-                            "description": "How often the expense occurs",
+                            "type": "string", 
+                            "description": "How often the expense occurs (e.g. monthly, annually)",
                             "order": 3
                         },
-                        "source_string": {
+                        "notes": {
                             "type": "string",
-                            "description": "Source of the cost information",
+                            "description": "These notes should clarify why the expense was chosen to be included in the operating expenses, or justify the amount",
                             "order": 4
                         },
                         "source_link": {
                             "type": "string",
-                            "description": "URL to cost source",
-                            "format": "uri",
+                            "description": "URL to expense source information. If the source was part of this api call, or is not a website, leave this blank",
                             "order": 5
                         },
-                        "notes": {
+                        "source_string": {
                             "type": "string",
-                            "description": "Additional notes about the expense",
+                            "description": "Description of expense source. Be precise, ideally down to the page or paragraph. If you don't have a source, write \"No source\"",
                             "order": 6
                         }
                     }

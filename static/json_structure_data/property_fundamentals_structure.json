@@ -1,85 +1,91 @@
 {
-  "property_fundamentals": {
-    "filename": "property_fundamentals.json",
-    "root_key": "property_details",
-    "description": "Stores fundamental property information",
-    "version": "1.0", 
-    "explanation_file": "property_fundamentals_explanation.txt",
-    "default_content": {
-      "property_details": {
-        "address": "123 Sample Street",
-        "municipality": "Sample City, State",
-        "parcel_id": "12345678",
-        "approximate_acreage": "10± ACRES",
-        "current_use": "VACANT",
-        "zoning": "RESIDENTIAL",
-        "water_sewer": "MUNICIPAL",
-        "electricity": "LOCAL UTILITY",
-        "availability": "IMMEDIATELY"
-      }
-    },
-    "structure": {
-      "property_details": {
-        "type": "object",
-        "required": [
-          "address",
-          "municipality", 
-          "parcel_id",
-          "approximate_acreage",
-          "current_use",
-          "zoning",
-          "water_sewer",
-          "electricity",
-          "availability"
-        ],
-        "properties": {
-          "address": {
-            "type": "string",
-            "description": "Street address of the property",
-            "order": 1
-          },
-          "municipality": {
-            "type": "string", 
-            "description": "City and state location",
-            "order": 2
-          },
-          "parcel_id": {
-            "type": "string",
-            "description": "Property parcel identification number",
-            "order": 3
-          },
-          "approximate_acreage": {
-            "type": "string",
-            "description": "Approximate size of property in acres",
-            "order": 4
-          },
-          "current_use": {
-            "type": "string",
-            "description": "Current property usage designation",
-            "order": 5
-          },
-          "zoning": {
-            "type": "string",
-            "description": "Property zoning classification",
-            "order": 6
-          },
-          "water_sewer": {
-            "type": "string",
-            "description": "Water and sewer service provider",
-            "order": 7
-          },
-          "electricity": {
-            "type": "string",
-            "description": "Electrical service provider",
-            "order": 8
-          },
-          "availability": {
-            "type": "string",
-            "description": "Property availability status",
-            "order": 9
-          }
+    "property_fundamentals": {
+        "filename": "property_fundamentals.json",
+        "root_key": "property_details", 
+        "description": "Stores fundamental property information",
+        "version": "1.0",
+        "structure": {
+            "property_details": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "required": [
+                        "address",
+                        "municipality", 
+                        "parcel_id",
+                        "approximate_acreage",
+                        "current_use",
+                        "zoning",
+                        "water_sewer",
+                        "electricity",
+                        "availability"
+                    ],
+                    "properties": {
+                        "address": {
+                            "type": "string",
+                            "description": "Street address of the property",
+                            "min_length": 1,
+                            "max_length": 100,
+                            "order": 1
+                        },
+                        "municipality": {
+                            "type": "string",
+                            "description": "City and state location",
+                            "order": 2
+                        },
+                        "parcel_id": {
+                            "type": "string",
+                            "description": "Property parcel identification number",
+                            "order": 3
+                        },
+                        "approximate_acreage": {
+                            "type": "string",
+                            "description": "Approximate size of property in acres",
+                            "order": 4
+                        },
+                        "current_use": {
+                            "type": "string",
+                            "description": "Current property usage designation",
+                            "order": 5
+                        },
+                        "zoning": {
+                            "type": "string",
+                            "description": "Property zoning classification",
+                            "order": 6
+                        },
+                        "water_sewer": {
+                            "type": "string",
+                            "description": "Water and sewer service provider",
+                            "order": 7
+                        },
+                        "electricity": {
+                            "type": "string",
+                            "description": "Electrical service provider",
+                            "order": 8
+                        },
+                        "availability": {
+                            "type": "string",
+                            "description": "Property availability status",
+                            "order": 9
+                        }
+                    }
+                }
+            }
+        },
+        "default_content": {
+            "property_details": [
+                {
+                    "address": "123 Sample Street",
+                    "municipality": "Sample City, State",
+                    "parcel_id": "12345678",
+                    "approximate_acreage": "10± ACRES",
+                    "current_use": "VACANT",
+                    "zoning": "RESIDENTIAL",
+                    "water_sewer": "MUNICIPAL",
+                    "electricity": "LOCAL UTILITY",
+                    "availability": "IMMEDIATELY"
+                }
+            ]
         }
-      }
     }
-  }
 }

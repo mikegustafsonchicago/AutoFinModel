@@ -10,26 +10,27 @@
                 {
                     "cost_item_name": "Sample Direct Cost",
                     "cost_per_unit": 10.0,
-                    "cost_source": "Sample Source", 
-                    "cost_source_link": "https://example.com",
+                    "cost_source": "No Source",
+                    "cost_source_link": "",
                     "cost_notes": "Sample cost notes",
                     "monthly_transactions": 100,
                     "frequency_notes": "Units per month",
-                    "frequency_source": "Sample Source",
-                    "frequency_source_link": "https://example.com"
+                    "frequency_source": "No Source", 
+                    "frequency_source_link": ""
                 }
             ]
         },
         "structure": {
             "cost_items": {
                 "type": "array",
+                "description": "Contains cost entries for direct costs and COGS",
                 "items": {
                     "type": "object",
                     "required": [
                         "cost_item_name",
                         "cost_per_unit",
                         "cost_source",
-                        "cost_source_link",
+                        "cost_source_link", 
                         "cost_notes",
                         "monthly_transactions",
                         "frequency_notes",
@@ -52,18 +53,18 @@
                         },
                         "cost_source": {
                             "type": "string",
-                            "description": "Source of the cost information",
+                            "description": "Description of cost information source. Be extremely precise, ideally, explain the paragraph or page number from the uploaded document. This is never optional, but if you can't provide a referencable source, write \"No Source\"",
                             "order": 3
                         },
                         "cost_source_link": {
                             "type": "string",
-                            "description": "URL to cost source",
+                            "description": "URL to cost source documentation. If there is no source, leave this blank",
                             "format": "uri",
                             "order": 4
                         },
                         "cost_notes": {
                             "type": "string",
-                            "description": "Additional notes about the cost",
+                            "description": "Additional context and explanation about how the cost was determined or calculated",
                             "order": 5
                         },
                         "monthly_transactions": {
@@ -74,17 +75,17 @@
                         },
                         "frequency_notes": {
                             "type": "string",
-                            "description": "Additional notes about frequency",
+                            "description": "Additional context about transaction frequency",
                             "order": 7
                         },
                         "frequency_source": {
                             "type": "string",
-                            "description": "Source of frequency information",
+                            "description": "Description of frequency data source. Be extremely precise, ideally, explain the paragraph or page number from the uploaded document. This is never optional, but if you can't provide a referencable source, write \"No Source\"",
                             "order": 8
                         },
                         "frequency_source_link": {
                             "type": "string",
-                            "description": "URL to frequency source",
+                            "description": "URL to frequency source documentation. If there is no source, leave this blank",
                             "format": "uri",
                             "order": 9
                         }

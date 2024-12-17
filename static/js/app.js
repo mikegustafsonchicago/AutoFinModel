@@ -1,787 +1,336 @@
-import { clearAllData, uploadPDF, dollarFormatter } from './shared-modules.js';
-const PROJECT_NAME = "financial";
+//=============================================================
+//                     1. CONFIGURATION & CONSTANTS
+//=============================================================
+import { clearAllData, uploadFile, dollarFormatter } from './shared-modules.js';
 
+let project_name;
+let project_type;
+let USER_NAME;
+let APP_STATE = {
+    initialized: false,
+    loading: true,
+    error: null
+};
 
+// Store dynamically created tables here
+const AppTables = {};
 
-let revenueTable;
+//=============================================================
+//                     2. INITIALIZATION
+//=============================================================
 
-// Initialize Tabulator for revenue data
-revenueTable = new Tabulator("#revenueTable", {
-    layout: "fitData",
-    autoResize: true,
-    columns: [
-        {
-            title: "Revenue Source",
-            field: "revenue_source_name",
-            editor: "input"
-        },
-        {
-            title: "Price",
-            field: "revenue_source_price", 
-            editor: "number",
-            formatter: dollarFormatter
-        },
-        {
-            title: "Price Source",
-            field: "price_source",
-            formatter: function(cell) {
-                const source = cell.getValue();
-                const row = cell.getRow().getData();
-                const url = row.price_source_link;
-                return url ? `<a href="${url}" target="_blank">${source}</a>` : source;
-            },
-            editor: "input"
-        },
-        {
-            title: "# Transactions/Month",
-            field: "monthly_transactions",
-            editor: "number"
-        },
-        {
-            title: "Frequency Notes",
-            field: "frequency_notes",
-            editor: "input"
-        },
-        {
-            title: "Frequency Source",
-            field: "frequency_source",
-            formatter: function(cell) {
-                const source = cell.getValue();
-                const row = cell.getRow().getData();
-                const url = row.frequency_source_link;
-                return url ? `<a href="${url}" target="_blank">${source}</a>` : source;
-            },
-            editor: "input"
-        },
-        {
-            title: "",
-            formatter: function() {
-                return "<button class='delete-btn'>X</button>";
-            },
-            width: 80,
-            hozAlign: "center",
-            cellClick: function(e, cell) {
-                cell.getRow().delete();
-                revenueTable.redraw();
-            }
+async function initializeApp() {
+    try {
+        toggleLoading(true);
+        
+        const response = await fetch('/api/init');
+        if (!response.ok) throw new Error('Failed to get initialization data');
+        const initData = await response.json();
+        
+        USER_NAME = initData.user.username;
+        project_name = initData.project.currentProject;
+        project_type = initData.project.projectType;
+        
+        if (initData.system.hasExistingFiles) {
+            await initializeExistingSession(initData);
+        } else {
+            await initializeNewSession(initData);
         }
-    ]
-});
-
-
-
-// Initialize Tabulator table for Inventory and COGS data
-const purchasesTable = new Tabulator("#purchasesTable", {
-    layout: "fitData", // Fit columns to width of table
-    autoResize: true, // Enable auto-resize
-    columns: [
-        { title: "Cost Item Name", field: "cost_item_name", editor: "input" },
-        { title: "Cost Per Unit", field: "cost_per_unit", editor: "number", formatter: dollarFormatter },
-        {
-            title: "Cost Source",
-            field: "cost_source",
-            formatter: function(cell) {
-                const source = cell.getValue();
-                const row = cell.getRow().getData();
-                const url = row.cost_source_link;
-                return url ? `<a href="${url}" target="_blank">${source}</a>` : source;
-            },
-            editor: "input"
-        },
-        { title: "Monthly Transactions", field: "monthly_transactions", editor: "number" },
-        { title: "Frequency Notes", field: "frequency_notes", editor: "input" },
-        {
-            title: "Frequency Source",
-            field: "frequency_source",
-            formatter: function(cell) {
-                const source = cell.getValue();
-                const row = cell.getRow().getData();
-                const url = row.frequency_source_link;
-                return url ? `<a href="${url}" target="_blank">${source}</a>` : source;
-            },
-            editor: "input"
-        },
-        {
-            title: "",  // Add the delete button
-            formatter: function () {
-                return "<button class='delete-btn'>X</button>";
-            },
-            width: 80,
-            hozAlign: "center",
-            cellClick: function (e, cell) {
-                cell.getRow().delete();
-                purchasesTable.redraw();
-            },
-        }
-    ]
-});
-
-
-
-
-// Initialize Tabulator table for Employees data
-const employeesTable = new Tabulator("#employeesTable", {
-    layout: "fitData",  // Fit columns to width of table
-    columns: [
-        { title: "Role", field: "role", editor: "input" },
-        { title: "Number", field: "number", editor: "number" },
-        { title: "Wage", field: "wage", editor: "number", formatter: dollarFormatter },
-        { title: "Wage Frequency", field: "wage_type", editor: "input" },
-		{ title: "Notes/Assumptions", field: "notes", editor: "input" },
-        {
-            title: "Source", 
-            field: "source_string",  // Use source_string as the base field
-            formatter: function(cell, formatterParams) {
-                // Get the source_string and source_link from the row data
-                let sourceString = cell.getValue();  // source_string
-                let sourceLink = cell.getRow().getData().source_link;  // source_link
-                
-                // If both source_string and source_link exist, return a clickable link
-                if (sourceLink) {
-                    return `<a href="${sourceLink}" target="_blank">${sourceString}</a>`;
-                } else {
-                    return sourceString;  // Return just the source_string if no link is provided
-                }
-            },
-            editor: "input"  // Allow editing if needed
-        },
-        {
-            title: "", 
-            formatter: function() {
-                return "<button class='delete-btn'>X</button>";  // Apply the custom class
-            },
-            width: 80,  // Adjust width to make it proportional
-            hozAlign: "center",  // Center the button in the cell
-            cellClick: function(e, cell) {
-                cell.getRow().delete();  // Delete the row when clicked
-                employeesTable.redraw();  // Force redraw in case of layout issues
-            }
-        }
-    ]
-});
-
-
-// Initialize Tabulator table for CAPEX data
-const capexTable = new Tabulator("#capexTable", {
-    layout: "fitData",  // Fit columns to width of table
-    columns: [
-        { title: "Expense Name", field: "expense_name", editor: "input" },
-        { title: "Amount", field: "amount", editor: "number", formatter: dollarFormatter },
-        { title: "Purchase Year", field: "purchase_year", editor: "number" },
-        { title: "Depreciation Life (years)", field: "depreciation_life", editor: "number" },
-		{ title: "Notes", field: "notes", editor: "input" },
-        {
-            title: "Source", 
-            field: "source_string",  // Use source_string as the base field
-            formatter: function(cell, formatterParams) {
-                // Get the source_string and source_link from the row data
-                let sourceString = cell.getValue();  // source_string
-                let sourceLink = cell.getRow().getData().source_link;  // source_link
-                
-                // If both source_string and source_link exist, return a clickable link
-                if (sourceLink) {
-                    return `<a href="${sourceLink}" target="_blank">${sourceString}</a>`;
-                } else {
-                    return sourceString;  // Return just the source_string if no link is provided
-                }
-            },
-            editor: "input"  // Allow editing if needed
-        },
-        {
-            title: "", 
-            formatter: function() {
-                return "<button class='delete-btn'>X</button>";  // Apply the custom class
-            },
-            width: 80,  // Adjust width to make it proportional
-            hozAlign: "center",  // Center the button in the cell
-            cellClick: function(e, cell) {
-                cell.getRow().delete();  // Delete the row when clicked
-                capexTable.redraw();  // Force redraw in case of layout issues
-            }
-        }
-    ]
-});
-
-
-// Initialize Tabulator table for OPEX data
-const opexTable = new Tabulator("#opexTable", {
-    layout: "fitData",  // Fit columns to width of table
-    columns: [
-        { title: "Expense Name", field: "expense_name", editor: "input" },
-        { title: "Amount", field: "amount", editor: "number", formatter: dollarFormatter },
-        { title: "Frequency", field: "frequency", editor: "input" },
-        { title: "Notes", field: "notes", editor: "input" },
-        {
-            title: "Source", 
-            field: "source_string",  // Use source_string as the base field
-            formatter: function(cell, formatterParams) {
-                // Get the source_string and source_link from the row data
-                let sourceString = cell.getValue();  // source_string
-                let sourceLink = cell.getRow().getData().source_link;  // source_link
-                
-                // If both source_string and source_link exist, return a clickable link
-                if (sourceLink) {
-                    return `<a href="${sourceLink}" target="_blank">${sourceString}</a>`;
-                } else {
-                    return sourceString;  // Return just the source_string if no link is provided
-                }
-            },
-            editor: "input"  // Allow editing if needed
-        },
-        {
-            title: "", 
-            formatter: function() {
-                return "<button class='delete-btn'>X</button>";  // Apply the custom class
-            },
-            width: 80,  // Adjust width to make it proportional
-            hozAlign: "center",  // Center the button in the cell
-            cellClick: function(e, cell) {
-                cell.getRow().delete();  // Delete the row when clicked
-                opexTable.redraw();  // Force redraw in case of layout issues
-            }
-        }
-    ]
-});
-
-
-// Initialize Tabulator table for Historical Financial Data
-const historicalISTable = new Tabulator("#historicalISTable", {
-    layout: "fitData",
-    columns: [
-        { title: "Year", field: "year", editor: "number" },
-        { title: "Revenue", field: "revenue", editor: "number", formatter: dollarFormatter },
-        { title: "Cost of Sales", field: "cost_of_sales", editor: "number", formatter: dollarFormatter },
-        { title: "Operating Expenses", field: "operating_expenses", editor: "number", formatter: dollarFormatter },
-        { title: "EBITDA", field: "ebitda", editor: "number", formatter: dollarFormatter },
-        { title: "Depreciation", field: "depreciation", editor: "number", formatter: dollarFormatter },
-        { title: "EBIT", field: "ebit", editor: "number", formatter: dollarFormatter },
-        { title: "Interest Expense", field: "interest_expense", editor: "number", formatter: dollarFormatter },
-        { title: "Income Taxes", field: "income_taxes", editor: "number", formatter: dollarFormatter },
-        { title: "Net Income", field: "net_income", editor: "number", formatter: dollarFormatter },
-        {
-            title: "",
-            formatter: function () {
-                return "<button class='delete-btn'>X</button>";
-            },
-            width: 80,
-            hozAlign: "center",
-            cellClick: function (e, cell) {
-                cell.getRow().delete();
-                historicalISTable.redraw();
-            }
-        }
-    ]
-});
-
-
-
-// Initialize Tabulator table for Comparable Companies
-const comparablesTable = new Tabulator("#comparablesTable", {
-    layout: "fitData",
-    columns: [
-        { title: "Company Name", field: "company_name", editor: "input" },
-        { title: "Enterprise Value", field: "enterprise_value", editor: "number", formatter: dollarFormatter },
-        { title: "Market Cap", field: "market_cap", editor: "number", formatter: dollarFormatter },
-        { title: "EBITDA", field: "ebitda", editor: "number", formatter: dollarFormatter },
-        { title: "Equity Beta", field: "equity_beta", editor: "number" },
-        { title: "Asset Beta", field: "asset_beta", editor: "number" },
-        { title: "EV/EBITDA", field: "ev_ebitda_multiple", editor: "number" },
-        { title: "Source", field: "source", editor: "input" },
-        { title: "Source Date", field: "source_date", editor: "input" },
-        {
-            title: "",
-            formatter: function () {
-                return "<button class='delete-btn'>X</button>";
-            },
-            width: 80,
-            hozAlign: "center",
-            cellClick: function (e, cell) {
-                cell.getRow().delete();
-                comparablesTable.redraw();
-            }
-        }
-    ]
-});
-
-
-// Function to adjust table height based on visible rows
-function adjustTableHeight(table) {
-    const rowCount = table.getDataCount("active"); // Get the number of visible rows
-    const rowHeight = 35; // Approximate height per row (adjust if needed)
-    const headerHeight = 40; // Approximate header height
-
-    // Set the height of the container to fit all visible rows
-    const newHeight = Math.min(rowCount * rowHeight + headerHeight, 600); // Limit max height if desired
-    table.element.style.height = `${newHeight}px`;
-    table.redraw(); // Redraw the table to apply new height
+        
+        APP_STATE.initialized = true;
+    } catch (error) {
+        console.error('Initialization failed:', error);
+        APP_STATE.error = error.message;
+        showErrorMessage('Failed to initialize application. Please refresh the page or contact support.');
+    } finally {
+        APP_STATE.loading = false;
+        toggleLoading(false);
+    }
 }
 
-document.getElementById('historicalISAIButton').addEventListener('click', function () {
-    preparePayload('historicalISTable');
-});
-
-
-
-// Load table data from backend
-refreshTables();
-
-function refreshTables(){
-    loadTableData("revenue", revenueTable);
-    loadTableData("cost_of_sales", purchasesTable);
-    loadTableData("operating_expenses", opexTable);
-    loadTableData("capital_expenditures", capexTable);
-    loadTableData("employees", employeesTable);
-    loadTableData("historical_financials", historicalISTable);
-    loadTableData("comparables", comparablesTable);
-}
-
-// Function to load table data from the backend with conditional logic based on tableIdentifier
-function loadTableData(tableIdentifier, table) {
-    fetch(`/api/table_data/${PROJECT_NAME}/${tableIdentifier}`)
-        .then(response => response.json())
-        .then(responseData => {
-            if (!responseData || !responseData.data) {
-                console.error(`loadTableData: No data returned for tableIdentifier: ${tableIdentifier}`);
-                return;
-            }
-
-            const data = responseData.data;
-            const rootKey = responseData.root_key;
-            
-            console.log(`Table: ${tableIdentifier}`);
-            console.log('Data received:', data);
-            console.log('Root key:', rootKey);
-
-            let tableData;
-            
-            // If data has the root key, use that array
-            if (rootKey && data[rootKey]) {
-                tableData = data[rootKey];
-            }
-            // If data is already an array, use it directly
-            else if (Array.isArray(data)) {
-                tableData = data;
-            }
-            // If data is an object but not an array, wrap it
-            else if (data && typeof data === 'object') {
-                tableData = [data];
-            }
-            // Fallback to empty array
-            else {
-                tableData = [];
-            }
-
-            // Filter out any empty or null rows
-            tableData = tableData.filter(row => {
-                // Check if the row has any non-empty values
-                return Object.values(row).some(value => 
-                    value !== null && value !== undefined && value !== ''
-                );
-            });
-
-            console.log(`Processed data for ${tableIdentifier}:`, tableData);
-            
-            // Set the data to the table
-            table.setData(tableData)
-                .then(() => {
-                    adjustTableHeight(table);
-                    console.log(`Table ${tableIdentifier} updated successfully`);
-                })
-                .catch(error => {
-                    console.error(`Error setting data for ${tableIdentifier}:`, error);
-                });
-        })
-        .catch(error => {
-            console.error(`loadTableData: Error loading ${tableIdentifier} data:`, error);
-        });
-}
-
-
-// Versatile function to add a new row to any table based on its column structure
-function addRow(table) {
-    // Determine the table type and define the row structure accordingly
-    let newRow = {};
-
-    if (table === capexTable) {
-        // CAPEX table structure
-        newRow = {
-            expense_name: "",
-            amount: 0,
-            frequency: "",
-            source_link: "",
-            source_string: "",
-            notes: ""
-        };
-    } else if (table === opexTable) {
-        // OPEX table structure
-        newRow = {
-            expense_name: "",
-            amount: 0,
-            frequency: "",
-            source_string: "",
-            source_link: "",
-            notes: ""
-        };
-    } else if (table === employeesTable) {
-        // Employees table structure
-        newRow = {
-            role: "",
-            number: 0,
-            wage: 0,
-            wage_type: "hourly",
-            monthly_hours: 0,
-            notes: "",
-            source_link: "",
-            source_string: ""
-        };
-    } else if (table === purchasesTable) {
-        // Cost of sales table structure
-        newRow = {
-            cost_item_name: "",
-            cost_per_unit: 0,
-            cost_source: "",
-            cost_source_link: "",
-            frequency: 0,
-            frequency_notes: "",
-            frequency_source: "",
-            frequency_source_link: ""
-        };
-    } else if (table === revenueTable) {
-        // Revenue table structure
-        newRow = {
-            revenue_source_name: "",
-            revenue_source_price: 0,
-            price_source: "",
-            price_source_link: "",
-            frequency: 0,
-            frequency_notes: "",
-            frequency_source: "",
-            frequency_source_link: ""
-        };
-    } else if (table === historicalISTable) {
-        // Historical Income Statement table structure
-        newRow = {
-            year: new Date().getFullYear(),
-            revenue: 0,
-            cost_of_sales: 0,
-            operating_expenses: 0,
-            ebitda: 0,
-            depreciation: 0,
-            ebit: 0,
-            interest_expense: 0,
-            income_taxes: 0,
-            net_income: 0
-        };
+async function initializeExistingSession(initData) {
+    initializeModals();
+    initializeLoadProjectButton();
+    initializeUploadZone();
+    initializeAddRowButtons();
+    initializeAIButtons();
+    bindStaticEventHandlers();
     
-    } else if (table === comparablesTable) {
-        // Comparables table structure
-        newRow = {
-            company_name: "",
-            enterprise_value: 0,
-            market_cap: 0,
-            ebitda: 0,
-            equity_beta: 0,
-            asset_beta: 0,
-            ev_ebitda_multiple: 0,
-            source: "",
-            source_date: ""
-        };
-    } else {
-        console.error("addRow: Unknown table type. Unable to add row.");
-        return;
-    }
-
-    // Add the new row to the specified table
-    table.addRow(newRow)
-        .then(() => {
-            table.redraw();  // Force redraw in case of layout issues
-        });
+    await updateProjectsDropdown(initData.project.availableProjects);
+    updateProjectUI(initData.project.currentProject);
+    
+    // If you want to load dynamic tables after initialization, do it here
+    initializeDynamicTables();
 }
 
-
-
-
-function preparePayload(updateScope) {
-    const payload = {
-        updateScope: updateScope, // Either specific table name or "all"
-		project_name: PROJECT_NAME, //This variable tells the backend whether it's a financial model or catalyst partners project
-        businessDescription: document.getElementById("businessDescription").value,
-        userPrompt: document.getElementById("chatgptPrompt").value,
-        pdfFileName: updateScope === 'all' ? document.getElementById('uploadedPDFName').value : null // Only include PDF if updating all
-    };
-
-    // Automatically call sendToBackend with the constructed payload
-    sendToBackend(payload);
+async function initializeNewSession(initData) {
+    initializeModals();
+    showNewProjectModal();
+    initializeLoadProjectButton();
+    bindStaticEventHandlers();
 }
 
-
-
-
-function sendToBackend(payload) {
-    const loadingIcon = document.getElementById("loading");
-    const aiResponseDiv = document.getElementById("aiResponse");
-
-    loadingIcon.style.display = "block";  
-    aiResponseDiv.innerHTML = "";  
-
-    fetch('/api/openai', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-    })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error("Network response was not ok");
-        }
-        return response.json();
-    })
-    .then(data => {
-        loadingIcon.style.display = "none";  
-
-        // Display the AI response text
-        aiResponseDiv.innerHTML = `<p>AI Response Text: ${data.text}</p>`;
-
-        // Reload each table to fetch updated data from the backend JSON files
-        refreshTables();
-    })
-    .catch(error => {
-        loadingIcon.style.display = "none";
-        aiResponseDiv.innerHTML = `<p>Error occurred: ${error.message}</p>`;
-        console.error('sendToBackend: Error:', error);
-    });
-}
-
-
-
-
-
-
-// For individual table buttons
-document.getElementById('capexAIButton').addEventListener('click', function() {
-    preparePayload('capexTable');
-});
-
-document.getElementById('opexAIButton').addEventListener('click', function() {
-    preparePayload('opexTable');
-});
-
-document.getElementById('revenueAIButton').addEventListener('click', function() {
-    preparePayload('revenueTable');
-});
-
-document.getElementById('purchasesAIButton').addEventListener('click', function() {
-    preparePayload('purchasesTable');
-});
-
-// Call this function after uploading a PDF successfully
-function initializePdfAIButtonListener() {
-    const pdfAIButton = document.getElementById('pdfAIButton');
-    if (pdfAIButton) {
-        pdfAIButton.addEventListener('click', function() {
-            preparePayload('all');
-        });
-    } else {
-        console.error("initializePdfAIButtonListener: pdfAIButton not found.");
+// Update current project UI
+function updateProjectUI(projectName) {
+    const projectHeader = document.getElementById('currentProjectHeader');
+    if (projectHeader) {
+        projectHeader.textContent = projectName || 'No Project Selected';
     }
 }
 
-
-//Actions following click on excel button
-document.getElementById('downloadExcelButton').addEventListener('click', function() {
-    fetch(`/download_excel?project_name=${PROJECT_NAME}`, {
-        method: 'GET',
-    })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error('Error downloading Excel file: ' + response.statusText);
-        }
-        // Get filename from Content-Disposition header
-        const filename = response.headers.get('Content-Disposition')
-            ?.split(';')
-            ?.find(n => n.includes('filename='))
-            ?.replace('filename=', '')
-            ?.trim() || 'model.xlsx';
-            
-        return Promise.all([response.blob(), Promise.resolve(filename)]);
-    })
-    .then(([blob, filename]) => {
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = filename;
-        document.body.appendChild(a);
-        a.click();  // Programmatically click the anchor to trigger download
-        a.remove();
-        window.URL.revokeObjectURL(url); // Clean up the URL object
-    })
-    .catch(error => console.error('downloadExcelButton click handler: Error:', error));
-});
-
-//Actions following click on powerpoint button
-document.getElementById('downloadPPTButton').addEventListener('click', function() {
-    fetch(`/download_ppt?project_name=${PROJECT_NAME}`, {
-        method: 'GET',
-    })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error('Error downloading PowerPoint file: ' + response.statusText);
-        }
-        // Get filename from Content-Disposition header
-        const filename = response.headers.get('Content-Disposition')
-            ?.split(';')
-            ?.find(n => n.includes('filename='))
-            ?.replace('filename=', '')
-            ?.trim() || 'presentation.pptx';
-            
-        return Promise.all([response.blob(), Promise.resolve(filename)]);
-    })
-    .then(([blob, filename]) => {
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = filename;
-        document.body.appendChild(a);
-        a.click();  // Programmatically click the anchor to trigger download
-        a.remove();
-        window.URL.revokeObjectURL(url); // Clean up the URL object
-    })
-    .catch(error => console.error('downloadPPTButton click handler: Error:', error));
-});
-
-
-
-// Handle files and update the uploaded documents table
-function handleFiles(event) {
-	let uploadedFiles = [];
-    const files = event.target.files;
-    const tableBody = document.getElementById('uploadedDocsTable').querySelector('tbody');
-
-    Array.from(files).forEach(file => {
-        if (file.type === "application/pdf") {
-            // Add the file to the uploadedFiles array
-            uploadedFiles.push({ name: file.name, status: "Pending" });
-
-            // Create a new row for each file
-            const row = document.createElement('tr');
-
-            // File Name Column
-            const fileNameCell = document.createElement('td');
-            fileNameCell.textContent = file.name;
-            row.appendChild(fileNameCell);
-
-            // Upload to AI Column with Centered Button
-            const uploadCell = document.createElement('td');
-            const uploadButton = document.createElement('button');
-            uploadButton.innerHTML = '<span style="font-family: Arial, sans-serif;">&#x2728;</span>'; // AI sparkle icon
-            uploadButton.onclick = () => uploadToAI(file.name, row); // Pass file name and row for updating the check mark
-            uploadCell.appendChild(uploadButton);
-            row.appendChild(uploadCell);
-
-            // Check Column (Initially Empty, Updated on Upload)
-            const checkCell = document.createElement('td');
-            checkCell.classList.add("check-cell");  // Add class for styling if needed
-            row.appendChild(checkCell);
-
-            // Remove Column with Remove Button
-            const removeCell = document.createElement('td');
-            const removeButton = document.createElement('button');
-            removeButton.textContent = 'X';
-            removeButton.onclick = () => row.remove();  // Remove the row from the table
-            removeCell.appendChild(removeButton);
-            row.appendChild(removeCell);
-
-            // Append the row to the table body
-            tableBody.appendChild(row);
-			
-			// Call uploadPDF to upload the selected PDF file
-            uploadPDF(file);
-        }
+async function updateProjectsDropdown(projects) {
+    const dropdown = document.getElementById('existingProjects');
+    if (!dropdown) return;
+    dropdown.innerHTML = '';
+    
+    projects.forEach(project => {
+        const option = document.createElement('option');
+        option.value = project;
+        option.textContent = project;
+        dropdown.appendChild(option);
     });
 }
 
-// Move this outside of DOMContentLoaded to make it a standalone function
+function showErrorMessage(message) {
+    const errorContainer = document.getElementById('errorContainer') || createErrorContainer();
+    errorContainer.textContent = message;
+    errorContainer.style.display = 'block';
+}
+
+function createErrorContainer() {
+    const container = document.createElement('div');
+    container.id = 'errorContainer';
+    container.className = 'alert alert-danger';
+    document.body.insertBefore(container, document.body.firstChild);
+    return container;
+}
+
+//=============================================================
+//                     3. DOM LOADED EVENT
+//=============================================================
+document.addEventListener('DOMContentLoaded', () => {
+    initializeApp().catch(error => {
+        console.error('Failed to initialize application:', error);
+        showErrorMessage('Application initialization failed. Please refresh the page.');
+    });
+});
+
+//=============================================================
+//                     4. MODAL & PROJECT CONTROL
+//=============================================================
+function initializeModals() {
+    const newProjectModal = document.getElementById('newProjectModal');
+    if (newProjectModal) {
+        newProjectModal.addEventListener('show.bs.modal', () => {});
+    }
+
+    const createProjectBtn = document.querySelector('#newProjectModal .btn-primary');
+    if (createProjectBtn) {
+        createProjectBtn.addEventListener('click', createNewProject);
+    }
+}
+
+function initializeLoadProjectButton() {
+    const loadProjectBtn = document.getElementById('loadProjectButton');
+    if (loadProjectBtn) {
+        loadProjectBtn.addEventListener('click', loadProject);
+    }
+}
+
+function showNewProjectModal() {
+    const modal = new bootstrap.Modal(document.getElementById('newProjectModal'));
+    modal.show();
+}
+
+//=============================================================
+//                     5. UPLOAD ZONE SETUP
+//=============================================================
 function initializeUploadZone() {
     const uploadZone = document.getElementById('uploadZone');
     const pdfInput = document.getElementById('pdfUpload');
 
     if (!uploadZone || !pdfInput) {
-        console.error("Upload elements not found");
+        console.error("initializeUploadZone: Upload elements not found");
         return;
     }
 
-    // Prevent default drag behaviors
     ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
         uploadZone.addEventListener(eventName, preventDefaults, false);
         document.body.addEventListener(eventName, preventDefaults, false);
     });
 
-    // Highlight drop zone when dragging over it
     ['dragenter', 'dragover'].forEach(eventName => {
-        uploadZone.addEventListener(eventName, () => {
-            uploadZone.classList.add('dragover');
-        });
+        uploadZone.addEventListener(eventName, () => uploadZone.classList.add('dragover'));
     });
 
     ['dragleave', 'drop'].forEach(eventName => {
-        uploadZone.addEventListener(eventName, () => {
-            uploadZone.classList.remove('dragover');
-        });
+        uploadZone.addEventListener(eventName, () => uploadZone.classList.remove('dragover'));
     });
 
-    // Handle dropped files
-    uploadZone.addEventListener('drop', (e) => {
-        const dt = e.dataTransfer;
-        const files = dt.files;
-        handleFiles({ target: { files: files } });
-    });
-
-    // Handle click to upload
-    uploadZone.addEventListener('click', () => {
-        pdfInput.click();
-    });
-
-    // Handle file input change
+    uploadZone.addEventListener('drop', handleDropFiles);
+    uploadZone.addEventListener('click', () => pdfInput.click());
     pdfInput.addEventListener('change', handleFiles);
 }
 
+function handleDropFiles(e) {
+    const dt = e.dataTransfer;
+    const files = dt.files;
+    handleFiles({ target: { files: files } });
+}
+
+function handleFiles(event) {
+    const files = event.target.files;
+    const tableBody = document.getElementById('uploadedDocsTable').querySelector('tbody');
+
+    Array.from(files).forEach(file => {
+        if (file.type === "application/pdf") {
+            const row = document.createElement('tr');
+            row.dataset.file = file;
+
+            const fileNameCell = document.createElement('td');
+            fileNameCell.textContent = file.name;
+            row.appendChild(fileNameCell);
+
+            const uploadCell = document.createElement('td');
+            const uploadButton = document.createElement('button');
+            uploadButton.innerHTML = '<span style="font-family: Arial, sans-serif;">&#x2728;</span>';
+            uploadButton.onclick = () => sendFileToAI(file, row);
+            uploadCell.appendChild(uploadButton);
+            row.appendChild(uploadCell);
+
+            const checkCell = document.createElement('td');
+            checkCell.classList.add("check-cell");
+            row.appendChild(checkCell);
+
+            const removeCell = document.createElement('td');
+            const removeButton = document.createElement('button');
+            removeButton.textContent = 'X';
+            removeButton.onclick = () => row.remove();
+            removeCell.appendChild(removeButton);
+            row.appendChild(removeCell);
+
+            tableBody.appendChild(row);
+
+            uploadFile(file, project_name, project_type);
+        }
+    });
+}
+
+//=============================================================
+//                     6. BUTTON & EVENT INITIALIZATIONS
+//=============================================================
+function initializeAddRowButtons() {
+    document.querySelectorAll('.button-outline').forEach(button => {
+        button.addEventListener('click', (e) => {
+            const card = e.target.closest('.card');
+            const tableContainer = card.querySelector('.table-container');
+            if (!tableContainer) return;
+
+            const tableId = tableContainer.querySelector('.tabulator').id;
+            const table = Tabulator.findTable(`#${tableId}`)[0];
+            if (table) addRow(table);
+        });
+    });
+}
+
+function initializeAIButtons() {
+    const pdfAIButton = document.getElementById('pdfAIButton');
+    if (pdfAIButton) {
+        pdfAIButton.addEventListener('click', () => preparePayload('all'));
+    }
+    // Add more if needed for dynamic tables
+}
+
+function bindStaticEventHandlers() {
+    const clearDataButton = document.getElementById('clearDataButton');
+    if (clearDataButton) {
+        clearDataButton.addEventListener('click', () => {
+            clearAllData(project_name, project_type);
+        });
+    }
+
+    const downloadExcelButton = document.getElementById('downloadExcelButton');
+    if (downloadExcelButton) {
+        downloadExcelButton.addEventListener('click', downloadExcel);
+    }
+
+    const downloadPPTButton = document.getElementById('downloadPPTButton');
+    if (downloadPPTButton) {
+        downloadPPTButton.addEventListener('click', downloadPPT);
+    }
+}
+
+//=============================================================
+//                     7. DATA MANAGEMENT
+//=============================================================
+function preparePayload(updateScope) {
+    const payload = {
+        updateScope: updateScope, 
+        project_type: project_type,
+        project_name: project_name,
+        businessDescription: document.getElementById("businessDescription").value,
+        userPrompt: document.getElementById("chatgptPrompt").value,
+        pdfFileName: updateScope === 'all' ? document.getElementById('uploadedPDFName').value : null
+    };
+    sendTextToAI(payload);
+}
+
+function addRow(table) {
+    // For dynamic tables, define a default newRow structure or prompt user input
+    const newRow = {}; // empty row
+    table.addRow(newRow).then(() => table.redraw());
+}
+
+function adjustTableHeight(table) {
+    const rowCount = table.getDataCount("active");
+    const rowHeight = 35;
+    const headerHeight = 40;
+    const maxHeight = 600;
+    const newHeight = Math.min(rowCount * rowHeight + headerHeight, maxHeight);
+    table.element.style.height = `${newHeight}px`;
+    table.redraw();
+}
+
+//=============================================================
+//                     8. UTILITIES & API
+//=============================================================
 function preventDefaults(e) {
     e.preventDefault();
     e.stopPropagation();
 }
 
-// Call initialization when DOM is loaded
-document.addEventListener('DOMContentLoaded', () => {
-    console.log('DOM Content Loaded');
-    initializeUploadZone();
-    initializeAddRowButtons();
-});
+function closeModal(modalId) {
+    document.getElementById(modalId).style.display = 'none';
+}
 
+function populateProjectsDropdown() {
+    const dropdown = document.getElementById('existingProjects');
+    fetch('/api/context')
+        .then(response => response.json())
+        .then(contextData => {
+            dropdown.innerHTML = '';
+            contextData.available_projects.forEach(project => {
+                const option = document.createElement('option');
+                option.value = project;
+                option.textContent = project;
+                dropdown.appendChild(option);
+            });
+        })
+        .catch(error => console.error('populateProjectsDropdown: Error loading context:', error));
+}
 
+function sendFileToAI(file, row) {
+    console.log(`Processing ${file.name} with AI...`);
+    toggleLoading(true);
 
-
-// Attach the clearAllData function to the button
-document.getElementById('clearDataButton').addEventListener('click', () => {
-    clearAllData(PROJECT_NAME);
-});
-
-
-// Function to handle uploading the file to AI and update checkmark
-function uploadToAI(fileName, row) {
-    console.log(`Uploading ${fileName} to AI...`);
-
-    // Show the loading spinner
-    const loadingIcon = document.getElementById("loading");
-    loadingIcon.style.display = "block";
-
-    // Prepare the payload for the backend API
     const payload = {
-        pdfFileName: fileName,
-		projectName: PROJECT_NAME,
-        userPrompt: document.getElementById("chatgptPrompt").value, // Add user prompt to payload
-        updateScope: 'all' // Explicitly set the update scope to 'all' for full context processing
+        fileName: file.name,
+        projectName: project_name,
+        projectType: project_type,
+        userPrompt: document.getElementById("chatgptPrompt").value,
+        updateScope: 'all'
     };
 
-    // Send the request to the backend to process the PDF
     fetch('/api/openai', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -789,50 +338,327 @@ function uploadToAI(fileName, row) {
     })
     .then(response => response.json())
     .then(data => {
-        // Hide the loading spinner
-        loadingIcon.style.display = "none";
-
+        toggleLoading(false);
         if (data.error) {
-            alert(`Error uploading ${fileName}: ${data.error}`);
-        } else {
-            console.log(`Successfully uploaded ${fileName} to AI.`);
-            
-            // Update the AI response section
-            const aiResponseDiv = document.getElementById("aiResponse");
-            aiResponseDiv.innerHTML = `<p>AI Response Text: ${data.text}</p>`;
-
-            // Mark file as sent with a checkmark in the Check column
-            const checkCell = row.querySelector('.check-cell');
-            checkCell.innerHTML = '&#10004;';  // Unicode checkmark symbol
-            
-            // Reload each table to fetch updated data from the backend JSON files
-            refreshTables();
+            alert(`Error processing ${file.name}: ${data.error}`);
+            return;
         }
+        document.getElementById("aiResponse").innerHTML = `<p>AI Response Text: ${data.text}</p>`;
+        row.querySelector('.check-cell').innerHTML = '&#10004;';
+        // Refresh tables if needed
     })
     .catch(error => {
-        // Hide the loading spinner in case of error
-        loadingIcon.style.display = "none";
-        console.error('uploadToAI: Error uploading ${fileName} to AI:', error);
+        toggleLoading(false);
+        console.error(`sendFileToAI: Error processing ${file.name}:`, error);
     });
 }
 
-// Function to initialize "Add Row" buttons for all tables
-function initializeAddRowButtons() {
-    // Find all buttons with class 'button-outline' and attach click handlers
-    document.querySelectorAll('.button-outline').forEach(button => {
-        button.addEventListener('click', (e) => {
-            console.log('Add Row button clicked');
-            // Find the table container ID by traversing up to card div and finding table-container
-            const tableId = e.target.closest('.card').querySelector('.table-container').id;
-            
-            // Get the Tabulator table instance associated with this container
-            // findTable returns array of matching tables, we want the first one
-            const table = Tabulator.findTable(`#${tableId}`)[0];
-            
-            // If we found a valid table, add a new empty row to it
-            if (table) {
-                addRow(table); // addRow() is defined elsewhere and handles table-specific row structures
-            }
-        });
+function sendTextToAI(payload) {
+    toggleLoading(true);
+    const aiResponseDiv = document.getElementById("aiResponse");
+    aiResponseDiv.innerHTML = "";
+
+    payload.projectName = project_name;
+    payload.projectType = project_type;
+
+    fetch('/api/openai', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+    })
+    .then(response => {
+        if (!response.ok) throw new Error("Network response was not ok");
+        return response.json();
+    })
+    .then(data => {
+        toggleLoading(false);
+        aiResponseDiv.innerHTML = `<p>AI Response Text: ${data.text}</p>`;
+        // Refresh tables if needed
+    })
+    .catch(error => {
+        toggleLoading(false);
+        aiResponseDiv.innerHTML = `<p>Error occurred: ${error.message}</p>`;
+        console.error('sendTextToAI: Error:', error);
     });
+}
+
+function toggleLoading(show) {
+    const loadingIcon = document.getElementById("loading");
+    if (!loadingIcon) return;
+    loadingIcon.style.display = show ? "block" : "none";
+}
+
+//=============================================================
+//                     9. PROJECT MANAGEMENT
+//=============================================================
+function loadProject() {
+    const projectSelect = document.getElementById('existingProjects');
+    const selectedProject = projectSelect.value;
+    const projectTypeSelect = document.getElementById('projectType');
+    const selectedProjectType = projectTypeSelect.value;
+
+    if (!selectedProject) {
+        alert('Please select a project');
+        return;
+    }
+
+    fetch('/api/projects/load', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+            projectName: selectedProject,
+            projectType: selectedProjectType
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            alert(data.error);
+            return;
+        }
+
+        project_name = selectedProject;
+        project_type = selectedProjectType;
+        updateProjectUI(selectedProject);
+
+        // Close modal if open
+        const modal = bootstrap.Modal.getInstance(document.getElementById('loadProjectModal'));
+        if (modal) modal.hide();
+
+        alert('Project loaded successfully!');
+    })
+    .catch(error => {
+        console.error('loadProject: Error:', error);
+        alert('Error loading project');
+    });
+}
+
+function createNewProject() {
+    const projectName = document.getElementById('newProjectName').value;
+    const projectType = document.getElementById('projectType').value;
+    if (!projectName) {
+        alert('Please enter a project name');
+        return;
+    }
+
+    fetch('/api/projects/new', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ projectName, projectType })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            alert(data.error);
+            return;
+        }
+
+        project_name = projectName;
+        project_type = projectType;
+        
+        const modal = bootstrap.Modal.getInstance(document.getElementById('newProjectModal'));
+        if (modal) modal.hide();
+        
+        updateProjectUI(projectName);
+        populateProjectsDropdown();
+    })
+    .catch(error => {
+        console.error('createNewProject: Error:', error);
+        alert('Error creating project');
+    });
+}
+
+//=============================================================
+//                     10. FILE DOWNLOADS
+//=============================================================
+function downloadExcel() {
+    fetch(`/download_excel?project_type=${project_type}`, { method: 'GET' })
+        .then(response => handleFileDownload(response, 'model.xlsx'))
+        .catch(error => console.error('downloadExcel: Error:', error));
+}
+
+function downloadPPT() {
+    fetch(`/download_ppt?project_type=${project_type}`, { method: 'GET' })
+        .then(response => handleFileDownload(response, 'presentation.pptx'))
+        .catch(error => console.error('downloadPPT: Error:', error));
+}
+
+function handleFileDownload(response, defaultFilename) {
+    if (!response.ok) throw new Error(`Error downloading file: ${response.statusText}`);
+
+    const filename = response.headers.get('Content-Disposition')
+        ?.split(';')
+        ?.find(n => n.includes('filename='))
+        ?.replace('filename=', '')
+        ?.trim() || defaultFilename;
+
+    return Promise.all([response.blob(), Promise.resolve(filename)]).then(([blob, filename]) => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        window.URL.revokeObjectURL(url);
+    });
+}
+
+//=============================================================
+//                     11. DYNAMIC TABLES
+//=============================================================
+function initializeDynamicTables() {
+    // First get context to get list of available tables
+    fetch('/api/context')
+        .then(response => response.json())
+        .then(context => {
+            // Get list of available tables from context
+            const availableTables = context.available_tables;
+            
+            // For each table structure file
+            availableTables.forEach(tableFile => {
+                // Extract table name from filename (remove _structure.json)
+                const tableName = tableFile.replace('_structure.json', '');
+                
+                // Fetch schema for this table
+                console.log(`Fetching schema for table: ${tableName}`);
+                fetch(`/api/schema/${tableName}`)
+                    .then(response => {
+                        console.log(`Schema response for ${tableName}:`, response);
+                        return response.json();
+                    })
+                    .then(structure => {
+                        console.log(`Parsed schema structure for ${tableName}:`, structure);
+                        
+                        // Generate columns from structure
+                        const columns = generateColumnsFromStructure(structure);
+                        console.log(`Generated columns for ${tableName}:`, columns);
+                        
+                        // Create container ID and table ID
+                        const containerId = `${tableName}TableContainer`;
+                        const tableId = `${tableName}Table`;
+                        
+                        // Create title from table name
+                        const title = tableName.charAt(0).toUpperCase() + 
+                                    tableName.slice(1).replace(/_/g, ' ') + 
+                                    ' Data';
+                        
+                        console.log(`Creating table with ID ${tableId} and title "${title}"`);
+                        
+                        // Create table dynamically
+                        createDynamicTable(
+                            containerId,
+                            tableId,
+                            columns,
+                            [], // Initial empty data
+                            title
+                        );
+                        
+                        // Load data after table is created
+                        loadDynamicTableData(tableName, AppTables[tableId]);
+                    })
+                    .catch(error => console.error(`Error loading ${tableName} structure:`, error));
+            });
+        })
+        .catch(error => console.error('Error loading context:', error));
+}
+
+function loadDynamicTableData(tableIdentifier, table) {
+    fetch(`/api/table_data/${tableIdentifier}`)
+        .then(response => response.json())
+        .then(responseData => {
+            let tableData = responseData.data || [];
+            if (!Array.isArray(tableData)) tableData = [tableData];
+            table.setData(tableData).then(() => adjustTableHeight(table));
+        })
+        .catch(error => console.error(`loadDynamicTableData: Error loading ${tableIdentifier}:`, error));
+}
+
+function generateColumnsFromStructure(structure) {
+    // This function will parse the structure and convert it into Tabulator column definitions
+    // For example, if structure looks like the one you provided in the snippet:
+    // structure.structure.revenue_sources.items.properties has the columns info
+    const columns = [];
+
+    const rootKey = Object.keys(structure.structure)[0]; // e.g. "revenue_sources"
+    const properties = structure.structure[rootKey].items.properties;
+
+    // properties is an object: { "revenue_source_name": {type:..., order:..., ...}, ... }
+    // Sort by 'order' if needed
+    const sortedProps = Object.entries(properties).sort((a, b) => (a[1].order || 999) - (b[1].order || 999));
+
+    for (const [fieldName, fieldDef] of sortedProps) {
+        columns.push({
+            title: fieldDef.description || fieldName,
+            field: fieldName,
+            editor: fieldDef.type === 'number' ? "number" : "input",
+            formatter: fieldName.toLowerCase().includes('price') || fieldName.toLowerCase().includes('value') ? dollarFormatter : undefined
+        });
+    }
+
+    // Add delete column as last column
+    columns.push({
+        title: "",
+        formatter: () => "<button class='delete-btn'>✖</button>",
+        width: 80,
+        hozAlign: "center",
+        cellClick: (e, cell) => {
+            cell.getRow().delete();
+            cell.getTable().redraw();
+        }
+    });
+
+    return columns;
+}
+
+function createDynamicTable(containerId, tableId, columns, data = [], title) {
+    if (AppTables[tableId]) {
+        console.warn(`Table ${tableId} already exists`);
+        return AppTables[tableId];
+    }
+
+    let container = document.getElementById(containerId);
+    if (!container) {
+        container = document.createElement('div');
+        container.id = containerId;
+        container.className = 'card mb-4';
+
+        let mainContent = document.getElementById('mainContent');
+        if (!mainContent) {
+            mainContent = document.createElement('div');
+            mainContent.id = 'mainContent';
+            document.body.appendChild(mainContent);
+        }
+        mainContent.appendChild(container);
+    }
+
+    container.innerHTML = `
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">${title}</h5>
+            <div>
+                <button class="btn btn-outline-primary btn-sm add-row-btn">Add Row</button>
+                <button class="btn btn-outline-secondary btn-sm ai-btn">
+                    <span style="font-family: Arial, sans-serif;">✨</span> AI
+                </button>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="table-container">
+                <div id="${tableId}" class="tabulator"></div>
+            </div>
+        </div>
+    `;
+
+    const table = new Tabulator(`#${tableId}`, {
+        layout: "fitData",
+        autoResize: true,
+        columns: columns,
+        data: data
+    });
+
+    container.querySelector('.add-row-btn').addEventListener('click', () => addRow(table));
+    container.querySelector('.ai-btn').addEventListener('click', () => preparePayload(tableId));
+
+    AppTables[tableId] = table;
+    return table;
 }

@@ -1,6 +1,6 @@
 // Function to handle clearing all data
-export  function clearAllData(PROJECT_NAME) {
-    const payload = { projectName: PROJECT_NAME }; // Send as an object
+export  function clearAllData(project_name, project_type) {
+    const payload = { projectName: project_name, projectType: project_type }; // Send as an object
 
     fetch('/api/clear_data', {
         method: 'POST',
@@ -19,12 +19,14 @@ export  function clearAllData(PROJECT_NAME) {
 
 
 // Upload the PDF file to the "Uploads" folder
-export function uploadPDF(pdfFile) {
+export function uploadFile(upload_file, project_name, project_type) {
     const formData = new FormData();
-    formData.append("pdf", pdfFile);
-	console.log(formData)
+    formData.append("file", upload_file);
+    formData.append("projectName", project_name);
+    formData.append("projectType", project_type);
+    console.log(formData)
     // Send the file to the backend
-    fetch('/api/upload_pdf', {
+    fetch('/api/upload_file', {
         method: 'POST',
         body: formData
     })

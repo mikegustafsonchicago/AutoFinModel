@@ -1,7 +1,7 @@
 import { clearAllData } from './shared-modules.js';
-import { uploadPDF } from './shared-modules.js';
+import { uploadFile } from './shared-modules.js';
 
-const PROJECT_NAME = "catalyst";
+const project_type = "catalyst";
 
 
 
@@ -53,7 +53,7 @@ const fundamentalsTable = new Tabulator("#fundamentalsTable", {
 
 
 // Test loading fundamentals data
-fetch(`/api/table_data/${PROJECT_NAME}/${fundamentalsTable}`)
+fetch(`/api/table_data/${project_type}/${fundamentalsTable}`)
     .then(response => response.json())
     .then(data => {
         const transposedData = transposeFundamentals(data);
@@ -306,7 +306,7 @@ function refreshTables(){
 
 // Function to load table data from the backend with conditional logic based on tableIdentifier
 function loadTableData(tableIdentifier, table) {
-    fetch(`/api/table_data/${PROJECT_NAME}/${tableIdentifier}`)
+    fetch(`/api/table_data/${project_type}/${tableIdentifier}`)
         .then(response => response.json())
         .then(data => {
             if (Array.isArray(data)) {
@@ -399,7 +399,7 @@ function addRow(table) {
 function preparePayload(updateScope) {
     const payload = {
         updateScope: updateScope, // Either specific table name or "all"
-		project_name: PROJECT_NAME, //This variable tells the backend whether it's a financial model or catalyst partners project
+		project_type: project_type, //This variable tells the backend whether it's a financial model or catalyst partners project
         businessDescription: document.getElementById("businessDescription").value,
         userPrompt: document.getElementById("chatgptPrompt").value,
         pdfFileName: updateScope === 'all' ? document.getElementById('uploadedPDFName').value : null // Only include PDF if updating all
@@ -491,9 +491,9 @@ function initializePdfAIButtonListener() {
 
 // Actions following click on excel button
 document.getElementById('downloadExcelButton').addEventListener('click', function() {
-    const projectName = PROJECT_NAME;  
-	console.log(`/download_excel?project_name=${encodeURIComponent(PROJECT_NAME)}`);
-    fetch(`/download_excel?project_name=${encodeURIComponent(projectName)}`, {  // Append project_name as a query parameter
+    const projectName = project_type;  
+	console.log(`/download_excel?project_type=${encodeURIComponent(project_type)}`);
+    fetch(`/download_excel?project_type=${encodeURIComponent(projectName)}`, {  // Append project_type as a query parameter
         method: 'GET',
     })
     .then(response => {
@@ -597,8 +597,8 @@ function handleFiles(event) {
             // Append the row to the table body
             tableBody.appendChild(row);
 			
-			// Call uploadPDF to upload the selected PDF file
-            uploadPDF(file);
+			// Call uploadFile to upload the selected PDF file
+            uploadFile(file, project_name);
         }
     });
 }
@@ -607,7 +607,7 @@ function handleFiles(event) {
 
 // Attach the clearAllData function to the button
 document.getElementById('clearDataButton').addEventListener('click', function() {
-    clearAllData(PROJECT_NAME); // Pass the global PROJECT_NAME
+    clearAllData(project_type); // Pass the global project_type
 });
 
 
@@ -623,7 +623,7 @@ function uploadToAI(fileName, row) {
     const payload = {
         pdfFileName: fileName,
         userPrompt: document.getElementById("chatgptPrompt").value, // Add user prompt to payload
-		projectName: PROJECT_NAME,
+		projectName: project_type,
         updateScope: 'all' // Explicitly set the update scope to 'all' for full context processing
     };
 

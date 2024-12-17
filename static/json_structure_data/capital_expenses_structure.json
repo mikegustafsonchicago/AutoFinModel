@@ -1,89 +1,94 @@
 {
-  "capital_expenditures": {
-    "filename": "capex.json",
-    "root_key": "expenses",
-    "description": "Stores capital expenditure (CAPEX) information", 
-    "version": "1.0",
-    "explanation_file": "capex_explanation.txt",
-    "default_content": {
-      "expenses": [
-        {
-          "expense_name": "Sample Capital Expenditure",
-          "amount": 50000.0,
-          "frequency": "One-time",
-          "depreciation_life": 5,
-          "purchase_year": 2024,
-          "source_link": "https://example.com",
-          "source_string": "Sample Source",
-          "notes": "Sample capital expenditure"
-        }
-      ]
-    },
-    "structure": {
-      "expenses": {
-        "type": "array",
-        "items": {
-          "type": "object",
-          "required": [
-            "expense_name",
-            "amount",
-            "frequency",
-            "depreciation_life",
-            "purchase_year",
-            "source_link",
-            "source_string",
-            "notes"
-          ],
-          "properties": {
-            "expense_name": {
-              "type": "string",
-              "description": "Name of the capital expenditure item",
-              "min_length": 1,
-              "max_length": 100,
-              "order": 1
-            },
-            "amount": {
-              "type": "number",
-              "description": "Cost of the capital expenditure",
-              "minimum": 0,
-              "order": 2
-            },
-            "frequency": {
-              "type": "string", 
-              "description": "Frequency or timing of the expenditure",
-              "order": 3
-            },
-            "depreciation_life": {
-              "type": "number",
-              "description": "Number of years over which to depreciate this asset",
-              "minimum": 1,
-              "order": 4
-            },
-            "purchase_year": {
-              "type": "number",
-              "description": "Year the capital expenditure is planned/made",
-              "minimum": 2000,
-              "order": 5
-            },
-            "source_link": {
-              "type": "string",
-              "description": "URL to source of cost information",
-              "format": "uri",
-              "order": 6
-            },
-            "source_string": {
-              "type": "string",
-              "description": "Description of the cost information source",
-              "order": 7
-            },
-            "notes": {
-              "type": "string",
-              "description": "Additional notes about the capital expenditure",
-              "order": 8
+    "capital_expenses": {
+        "filename": "capital_expenses.json",
+        "root_key": "expenses",
+        "description": "Stores capital expenditure (CAPEX) information",
+        "version": "1.0",
+        "structure": {
+            "expenses": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "required": [
+                        "expense_name",
+                        "amount",
+                        "amount_source",
+                        "amount_source_link",
+                        "amount_notes",
+                        "frequency",
+                        "frequency_notes", 
+                        "frequency_source",
+                        "frequency_source_link"
+                    ],
+                    "properties": {
+                        "expense_name": {
+                            "type": "string",
+                            "description": "Name of the capital expenditure item",
+                            "min_length": 1,
+                            "max_length": 100,
+                            "order": 1
+                        },
+                        "amount": {
+                            "type": "number",
+                            "description": "Cost of the capital item in dollars",
+                            "minimum": 0,
+                            "order": 2
+                        },
+                        "amount_source": {
+                            "type": "string",
+                            "description": "Source of the cost information. If the source was part of this api call, you must provide detail about what page this information was found on.",
+                            "order": 3
+                        },
+                        "amount_source_link": {
+                            "type": "string",
+                            "description": "URL link to source of cost data. Must be provided as \"No source\" if the source was part of this api call or is not a website.",
+                            "format": "uri",
+                            "order": 4
+                        },
+                        "amount_notes": {
+                            "type": "string", 
+                            "description": "Additional context and explanation about how the cost was determined or calculated",
+                            "order": 5
+                        },
+                        "frequency": {
+                            "type": "string",
+                            "description": "Timing or frequency of the expenditure (e.g. One-time, Annual, etc)",
+                            "order": 6
+                        },
+                        "frequency_notes": {
+                            "type": "string",
+                            "description": "This note should precisely explain why this frequency was chosen.",
+                            "order": 7
+                        },
+                        "frequency_source": {
+                            "type": "string",
+                            "description": "Source of the frequency information. If the source was part of this api call, make sure to explain what page in the pdf the frequency information was found on.",
+                            "order": 8
+                        },
+                        "frequency_source_link": {
+                            "type": "string",
+                            "description": "URL link to source of frequency data. Must be provided as \"No source\" if the source was part of this api call or is not a website.",
+                            "format": "uri",
+                            "order": 9
+                        }
+                    }
+                }
             }
-          }
+        },
+        "default_content": {
+            "expenses": [
+                {
+                    "expense_name": "Sample Capital Expenditure",
+                    "amount": 50000.00,
+                    "amount_source": "Industry Average",
+                    "amount_source_link": "https://example.com/costs",
+                    "amount_notes": "Cost selected based on market research",
+                    "frequency": "One-time",
+                    "frequency_notes": "One-time purchase needed for initial setup",
+                    "frequency_source": "Confidential Information Memorandum, Page 15, Section 4.2",
+                    "frequency_source_link": "https://example.com/research"
+                }
+            ]
         }
-      }
     }
-  }
 }

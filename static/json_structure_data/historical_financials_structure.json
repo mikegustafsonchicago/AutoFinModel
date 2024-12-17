@@ -1,10 +1,10 @@
 {
     "historical_financials": {
         "filename": "hist_IS.json",
-        "root_key": "historical_financials", 
-        "description": "Stores historical income statement data",
+        "root_key": "historical_financials",
+        "description": "The Historical Income Statement table contains historical financial performance data organized by year. It follows a standard income statement format, breaking down revenue, costs, and various profit metrics.",
         "version": "1.0",
-        "explanation_file": "historical_financials_explanation.txt",
+        "explanation_file": "historical_financials_explanation.txt", 
         "default_content": {
             "historical_financials": [
                 {
@@ -24,29 +24,30 @@
         "structure": {
             "historical_financials": {
                 "type": "array",
+                "description": "Each item represents a full year's income statement data",
                 "items": {
                     "type": "object",
                     "required": [
                         "year",
-                        "revenue", 
-                        "cost_of_sales",
+                        "revenue",
+                        "cost_of_sales", 
                         "operating_expenses",
                         "ebitda",
                         "depreciation",
                         "ebit",
-                        "interest_expense",
+                        "interest_expense", 
                         "income_taxes",
                         "net_income"
                     ],
                     "properties": {
                         "year": {
                             "type": "number",
-                            "description": "Fiscal year",
+                            "description": "The fiscal year for the income statement data",
                             "order": 1
                         },
                         "revenue": {
-                            "type": "number",
-                            "description": "Total revenue",
+                            "type": "number", 
+                            "description": "Total revenue/sales for the year",
                             "minimum": 0,
                             "order": 2
                         },
@@ -75,12 +76,12 @@
                         },
                         "ebit": {
                             "type": "number",
-                            "description": "Earnings before interest & taxes",
+                            "description": "Earnings before interest and taxes",
                             "order": 7
                         },
                         "interest_expense": {
                             "type": "number",
-                            "description": "Interest expense",
+                            "description": "Interest expense for the year",
                             "minimum": 0,
                             "order": 8
                         },
@@ -92,7 +93,7 @@
                         },
                         "net_income": {
                             "type": "number",
-                            "description": "Net income",
+                            "description": "Final net income/profit after all expenses",
                             "order": 10
                         }
                     }
