@@ -1,49 +1,123 @@
 {
     "investment_team": {
+        "display": {
+            "defaultLayout": "normal",
+            "allowToggle": true,
+            "frozen_column": true  
+        },
         "filename": "investment_team.json",
         "root_key": "team_members", 
-        "description": "The Investment Team table details the key members of a private equity firm's investment team, including their roles, experience, and background",
+        "ai_instructions": "The Investment Team table details the key members of a private equity firm's investment team, including their roles, experience, and background",
         "version": "1.0",
         "explanation_file": "investment_team_explanation.txt",
         "structure": {
             "team_members": {
                 "type": "array",
-                "description": "Array of investment team members. The data must be returned as a flat list of team members.",
+                "ai_instructions": "Array of investment team members. The data must be returned as a flat list of team members.",
                 "items": {
                     "type": "object",
                     "required": [
-                        "investment_team_member_name",
-                        "investment_team_member_title",
-                        "investment_team_member_join_date", 
-                        "source_string",
-                        "source_link"
+                        "name",
+                        "title",
+                        "join_date",
+                        "join_date_source",
+                        "join_date_notes",
+                        "background",
+                        "background_source",
+                        "background_notes"
                     ],
                     "properties": {
-                        "investment_team_member_name": {
+                        "name": {
                             "type": "string",
-                            "description": "Full name of the team member",
+                            "ai_instructions": "Full name of the team member",
+                            "display_name": "Team Member Name",
+                            "min_length": 1,
+                            "max_length": 100,
                             "order": 1
                         },
-                        "investment_team_member_title": {
+                        "title": {
                             "type": "string",
-                            "description": "Their title or role within the firm",
+                            "ai_instructions": "Their title or role within the firm",
+                            "display_name": "Title",
+                            "min_length": 1,
+                            "max_length": 100,
                             "order": 2
                         },
-                        "investment_team_member_join_date": {
+                        "join_date": {
                             "type": ["integer", "null"],
-                            "description": "Year the team member joined the firm. If unknown, this can be null",
+                            "ai_instructions": "Year the team member joined the firm",
+                            "display_name": "Join Year",
                             "order": 3
                         },
-                        "source_string": {
-                            "type": "string", 
-                            "description": "Title or summary of the information source",
-                            "order": 4
+                        "join_date_source": {
+                            "type": "source_object",
+                            "ai_instructions": "Source information for the join date. You must provide specific page numbers, paragraph numbers, or sections where the information was found. If no referenceable source exists, use '-No Source-' for all fields.",
+                            "display_name": "Join Date Source",
+                            "order": 4,
+                            "required": ["ai_instructions", "url", "text_context"],
+                            "properties": {
+                                "object_type": {
+                                    "type": "string",
+                                    "ai_instructions": "Must be 'source_object' for parsing purposes"
+                                },
+                                "display_value": {
+                                    "type": "string",
+                                    "ai_instructions": "Provide specific source details like 'Page 5, Paragraph 2' or 'Section 3.1'. If from an uploaded document, specify exact location. If no referenceable source, use '-No Source-'"
+                                },
+                                "url": {
+                                    "type": "string",
+                                    "ai_instructions": "Full URL to source. If from an uploaded document or no referenceable source, use '-No Source-'",
+                                    "format": "uri"
+                                },
+                                "text_context": {
+                                    "type": "string",
+                                    "ai_instructions": "Exact quote from source with page/paragraph reference. If no direct quote available, use '-No Source-'"
+                                }
+                            }
                         },
-                        "source_link": {
+                        "join_date_notes": {
                             "type": "string",
-                            "description": "URL linking to the source document",
-                            "format": "uri",
+                            "ai_instructions": "Additional context about how the join date was determined",
+                            "display_name": "Join Date Notes",
                             "order": 5
+                        },
+                        "background": {
+                            "type": "string",
+                            "ai_instructions": "Professional background and experience of the team member",
+                            "display_name": "Background",
+                            "order": 6
+                        },
+                        "background_source": {
+                            "type": "source_object",
+                            "ai_instructions": "Source information for the background details. You must provide specific page numbers, paragraph numbers, or sections where the information was found. If no referenceable source exists, use '-No Source-' for all fields.",
+                            "display_name": "Background Source",
+                            "order": 7,
+                            "required": ["ai_instructions", "url", "text_context"],
+                            "properties": {
+                                "object_type": {
+                                    "type": "string",
+                                    "ai_instructions": "Must be 'source_object' for parsing purposes"
+                                },
+                                "display_value": {
+                                    "type": "string",
+                                    "ai_instructions": "Provide specific source details like 'Page 5, Paragraph 2' or 'Section 3.1'. If from an uploaded document, specify exact location. If no referenceable source, use '-No Source-'"
+                                },
+                                "url": {
+                                    "type": "string",
+                                    "ai_instructions": "Full URL to source. If from an uploaded document or no referenceable source, use '-No Source-'",
+                                    "format": "uri"
+                                },
+                                "text_context": {
+                                    "type": "string",
+                                    "ai_instructions": "Exact quote from source with page/paragraph reference. If no direct quote available, use '-No Source-'"
+                                }
+                            }
+                        },
+                        "background_notes": {
+                            "type": "string",
+                            "ai_instructions": "Additional context about the background information",
+                            "display_name": "Background Notes",
+                            "order": 8
                         }
                     }
                 }
@@ -52,18 +126,24 @@
         "default_content": {
             "team_members": [
                 {
-                    "investment_team_member_name": "Placeholder Name",
-                    "investment_team_member_title": "Placeholder Title",
-                    "investment_team_member_join_date": 2020,
-                    "source_string": "Placeholder Source", 
-                    "source_link": "https://example.com"
-                },
-                {
-                    "investment_team_member_name": "Another Name",
-                    "investment_team_member_title": "Another Title",
-                    "investment_team_member_join_date": null,
-                    "source_string": "Another Source",
-                    "source_link": "https://example.com"
+                    "name": "Sample Team Member",
+                    "title": "Partner",
+                    "join_date": 2020,
+                    "join_date_source": {
+                        "object_type": "source_object",
+                        "display_value": "-No Source-",
+                        "url": "-No Source-",
+                        "text_context": "-No Source-"
+                    },
+                    "join_date_notes": "Join date based on firm announcement",
+                    "background": "15 years of private equity experience",
+                    "background_source": {
+                        "object_type": "source_object",
+                        "display_value": "-No Source-",
+                        "url": "-No Source-",
+                        "text_context": "-No Source-"
+                    },
+                    "background_notes": "Background compiled from public sources"
                 }
             ]
         }

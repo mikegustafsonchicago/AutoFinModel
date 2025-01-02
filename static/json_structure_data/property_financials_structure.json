@@ -1,138 +1,369 @@
 {
     "property_financials": {
+        "display": {
+            "defaultLayout": "transposed",
+            "allowToggle": true,
+            "frozen_column": true  
+        },
         "filename": "property_financials.json",
         "root_key": "property_details", 
-        "description": "Stores commercial property financial and lease information",
+        "ai_instructions": "Stores commercial property financial and lease information",
         "version": "1.0",
         "structure": {
             "property_details": {
-                "type": "object",
-                "required": [
-                    "noi",
-                    "rent_monthly",
-                    "rentable_sqft", 
-                    "land_area",
-                    "tenant_name",
-                    "website",
-                    "guarantor",
-                    "ownership_type", 
-                    "lease_type",
-                    "landlord_responsibilities",
-                    "store_open_date",
-                    "lease_term_remaining",
-                    "rent_commencement",
-                    "lease_expiration",
-                    "rent_increases",
-                    "options"
-                ],
-                "properties": {
-                    "noi": {
-                        "type": "number",
-                        "description": "Net Operating Income (annual), must be >= 0",
-                        "minimum": 0,
-                        "order": 1
-                    },
-                    "rent_monthly": {
-                        "type": "number",
-                        "description": "Monthly rent amount, must be >= 0", 
-                        "minimum": 0,
-                        "order": 2
-                    },
-                    "rentable_sqft": {
-                        "type": "number",
-                        "description": "Rentable square footage, must be >= 0",
-                        "minimum": 0,
-                        "order": 3
-                    },
-                    "land_area": {
-                        "type": "number",
-                        "description": "Land area in acres, must be >= 0",
-                        "minimum": 0,
-                        "order": 4
-                    },
-                    "tenant_name": {
-                        "type": "string",
-                        "description": "Name of tenant",
-                        "order": 5
-                    },
-                    "website": {
-                        "type": "string",
-                        "description": "Tenant website",
-                        "order": 6
-                    },
-                    "guarantor": {
-                        "type": "string",
-                        "description": "Lease guarantor",
-                        "order": 7
-                    },
-                    "ownership_type": {
-                        "type": "string",
-                        "description": "Type of property ownership",
-                        "order": 8
-                    },
-                    "lease_type": {
-                        "type": "string",
-                        "description": "Type of lease agreement",
-                        "order": 9
-                    },
-                    "landlord_responsibilities": {
-                        "type": "string",
-                        "description": "Landlord responsibilities under lease",
-                        "order": 10
-                    },
-                    "store_open_date": {
-                        "type": "string",
-                        "description": "Date store opened",
-                        "order": 11
-                    },
-                    "lease_term_remaining": {
-                        "type": "number",
-                        "description": "Years remaining on lease, must be >= 0",
-                        "minimum": 0,
-                        "order": 12
-                    },
-                    "rent_commencement": {
-                        "type": "string",
-                        "description": "Rent commencement date",
-                        "order": 13
-                    },
-                    "lease_expiration": {
-                        "type": "string",
-                        "description": "Lease expiration date",
-                        "order": 14
-                    },
-                    "rent_increases": {
-                        "type": "string",
-                        "description": "Rent increase terms",
-                        "order": 15
-                    },
-                    "options": {
-                        "type": "string",
-                        "description": "Lease extension options",
-                        "order": 16
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "required": [
+                        "noi",
+                        "noi_source",
+                        "noi_notes",
+                        "rent_monthly",
+                        "rent_source",
+                        "rent_notes",
+                        "rentable_sqft",
+                        "sqft_source", 
+                        "sqft_notes",
+                        "land_area",
+                        "land_source",
+                        "land_notes",
+                        "tenant_name",
+                        "website",
+                        "guarantor",
+                        "ownership_type",
+                        "lease_type",
+                        "landlord_responsibilities",
+                        "store_open_date",
+                        "lease_term_remaining",
+                        "term_source",
+                        "term_notes",
+                        "rent_commencement",
+                        "lease_expiration",
+                        "rent_increases",
+                        "options"
+                    ],
+                    "properties": {
+                        "noi": {
+                            "type": "number",
+                            "ai_instructions": "Net Operating Income (annual), must be >= 0",
+                            "display_name": "Net Operating Income",
+                            "minimum": 0,
+                            "order": 1
+                        },
+                        "noi_source": {
+                            "type": "source_object",
+                            "ai_instructions": "Source information for the NOI data. You must provide specific page numbers, paragraph numbers, or sections where the information was found. If no referenceable source exists, use '-No Source-' for all fields.",
+                            "display_name": "NOI Source",
+                            "order": 2,
+                            "required": ["ai_instructions", "url", "text_context"],
+                            "properties": {
+                                "object_type": {
+                                    "type": "string",
+                                    "ai_instructions": "Must be 'source_object' for parsing purposes"
+                                },
+                                "display_value": {
+                                    "type": "string",
+                                    "ai_instructions": "Provide specific source details like 'Page 5, Paragraph 2' or 'Section 3.1'. If from an uploaded document, specify exact location. If no referenceable source, use '-No Source-'"
+                                },
+                                "url": {
+                                    "type": "string",
+                                    "ai_instructions": "Full URL to source. If from an uploaded document or no referenceable source, use '-No Source-'",
+                                    "format": "uri"
+                                },
+                                "text_context": {
+                                    "type": "string",
+                                    "ai_instructions": "Exact quote from source with page/paragraph reference. If no direct quote available, use '-No Source-'"
+                                }
+                            }
+                        },
+                        "noi_notes": {
+                            "type": "string",
+                            "ai_instructions": "Additional context about how the NOI was determined",
+                            "display_name": "NOI Notes",
+                            "order": 3
+                        },
+                        "rent_monthly": {
+                            "type": "number",
+                            "ai_instructions": "Monthly rent amount, must be >= 0", 
+                            "display_name": "Monthly Rent",
+                            "minimum": 0,
+                            "order": 4
+                        },
+                        "rent_source": {
+                            "type": "source_object",
+                            "ai_instructions": "Source information for the rent data. You must provide specific page numbers, paragraph numbers, or sections where the information was found. If no referenceable source exists, use '-No Source-' for all fields.",
+                            "display_name": "Rent Source",
+                            "order": 5,
+                            "required": ["ai_instructions", "url", "text_context"],
+                            "properties": {
+                                "object_type": {
+                                    "type": "string",
+                                    "ai_instructions": "Must be 'source_object' for parsing purposes"
+                                },
+                                "display_value": {
+                                    "type": "string",
+                                    "ai_instructions": "Provide specific source details like 'Page 5, Paragraph 2' or 'Section 3.1'. If from an uploaded document, specify exact location. If no referenceable source, use '-No Source-'"
+                                },
+                                "url": {
+                                    "type": "string",
+                                    "ai_instructions": "Full URL to source. If from an uploaded document or no referenceable source, use '-No Source-'",
+                                    "format": "uri"
+                                },
+                                "text_context": {
+                                    "type": "string",
+                                    "ai_instructions": "Exact quote from source with page/paragraph reference. If no direct quote available, use '-No Source-'"
+                                }
+                            }
+                        },
+                        "rent_notes": {
+                            "type": "string",
+                            "ai_instructions": "Additional context about how the rent was determined",
+                            "display_name": "Rent Notes",
+                            "order": 6
+                        },
+                        "rentable_sqft": {
+                            "type": "number",
+                            "ai_instructions": "Rentable square footage, must be >= 0",
+                            "display_name": "Rentable Sq Ft",
+                            "minimum": 0,
+                            "order": 7
+                        },
+                        "sqft_source": {
+                            "type": "source_object",
+                            "ai_instructions": "Source information for the square footage data. You must provide specific page numbers, paragraph numbers, or sections where the information was found. If no referenceable source exists, use '-No Source-' for all fields.",
+                            "display_name": "Square Footage Source",
+                            "order": 8,
+                            "required": ["ai_instructions", "url", "text_context"],
+                            "properties": {
+                                "object_type": {
+                                    "type": "string",
+                                    "ai_instructions": "Must be 'source_object' for parsing purposes"
+                                },
+                                "display_value": {
+                                    "type": "string",
+                                    "ai_instructions": "Provide specific source details like 'Page 5, Paragraph 2' or 'Section 3.1'. If from an uploaded document, specify exact location. If no referenceable source, use '-No Source-'"
+                                },
+                                "url": {
+                                    "type": "string",
+                                    "ai_instructions": "Full URL to source. If from an uploaded document or no referenceable source, use '-No Source-'",
+                                    "format": "uri"
+                                },
+                                "text_context": {
+                                    "type": "string",
+                                    "ai_instructions": "Exact quote from source with page/paragraph reference. If no direct quote available, use '-No Source-'"
+                                }
+                            }
+                        },
+                        "sqft_notes": {
+                            "type": "string",
+                            "ai_instructions": "Additional context about how the square footage was determined",
+                            "display_name": "Square Footage Notes",
+                            "order": 9
+                        },
+                        "land_area": {
+                            "type": "number",
+                            "ai_instructions": "Land area in acres, must be >= 0",
+                            "display_name": "Land Area (Acres)",
+                            "minimum": 0,
+                            "order": 10
+                        },
+                        "land_source": {
+                            "type": "source_object",
+                            "ai_instructions": "Source information for the land area data. You must provide specific page numbers, paragraph numbers, or sections where the information was found. If no referenceable source exists, use '-No Source-' for all fields.",
+                            "display_name": "Land Area Source",
+                            "order": 11,
+                            "required": ["ai_instructions", "url", "text_context"],
+                            "properties": {
+                                "object_type": {
+                                    "type": "string",
+                                    "ai_instructions": "Must be 'source_object' for parsing purposes"
+                                },
+                                "display_value": {
+                                    "type": "string",
+                                    "ai_instructions": "Provide specific source details like 'Page 5, Paragraph 2' or 'Section 3.1'. If from an uploaded document, specify exact location. If no referenceable source, use '-No Source-'"
+                                },
+                                "url": {
+                                    "type": "string",
+                                    "ai_instructions": "Full URL to source. If from an uploaded document or no referenceable source, use '-No Source-'",
+                                    "format": "uri"
+                                },
+                                "text_context": {
+                                    "type": "string",
+                                    "ai_instructions": "Exact quote from source with page/paragraph reference. If no direct quote available, use '-No Source-'"
+                                }
+                            }
+                        },
+                        "land_notes": {
+                            "type": "string",
+                            "ai_instructions": "Additional context about how the land area was determined",
+                            "display_name": "Land Area Notes",
+                            "order": 12
+                        },
+                        "tenant_name": {
+                            "type": "string",
+                            "ai_instructions": "Name of tenant",
+                            "display_name": "Tenant Name",
+                            "order": 13
+                        },
+                        "website": {
+                            "type": "string",
+                            "ai_instructions": "Tenant website",
+                            "display_name": "Website",
+                            "order": 14
+                        },
+                        "guarantor": {
+                            "type": "string",
+                            "ai_instructions": "Lease guarantor",
+                            "display_name": "Guarantor",
+                            "order": 15
+                        },
+                        "ownership_type": {
+                            "type": "string",
+                            "ai_instructions": "Type of property ownership",
+                            "display_name": "Ownership Type",
+                            "order": 16
+                        },
+                        "lease_type": {
+                            "type": "string",
+                            "ai_instructions": "Type of lease agreement",
+                            "display_name": "Lease Type",
+                            "order": 17
+                        },
+                        "landlord_responsibilities": {
+                            "type": "string",
+                            "ai_instructions": "Landlord responsibilities under lease",
+                            "display_name": "Landlord Responsibilities",
+                            "order": 18
+                        },
+                        "store_open_date": {
+                            "type": "string",
+                            "ai_instructions": "Date store opened",
+                            "display_name": "Store Open Date",
+                            "order": 19
+                        },
+                        "lease_term_remaining": {
+                            "type": "number",
+                            "ai_instructions": "Years remaining on lease, must be >= 0",
+                            "display_name": "Lease Term Remaining",
+                            "minimum": 0,
+                            "order": 20
+                        },
+                        "term_source": {
+                            "type": "source_object",
+                            "ai_instructions": "Source information for the lease term data. You must provide specific page numbers, paragraph numbers, or sections where the information was found. If no referenceable source exists, use '-No Source-' for all fields.",
+                            "display_name": "Lease Term Source",
+                            "order": 21,
+                            "required": ["ai_instructions", "url", "text_context"],
+                            "properties": {
+                                "object_type": {
+                                    "type": "string",
+                                    "ai_instructions": "Must be 'source_object' for parsing purposes"
+                                },
+                                "display_value": {
+                                    "type": "string",
+                                    "ai_instructions": "Provide specific source details like 'Page 5, Paragraph 2' or 'Section 3.1'. If from an uploaded document, specify exact location. If no referenceable source, use '-No Source-'"
+                                },
+                                "url": {
+                                    "type": "string",
+                                    "ai_instructions": "Full URL to source. If from an uploaded document or no referenceable source, use '-No Source-'",
+                                    "format": "uri"
+                                },
+                                "text_context": {
+                                    "type": "string",
+                                    "ai_instructions": "Exact quote from source with page/paragraph reference. If no direct quote available, use '-No Source-'"
+                                }
+                            }
+                        },
+                        "term_notes": {
+                            "type": "string",
+                            "ai_instructions": "Additional context about how the lease term was determined",
+                            "display_name": "Lease Term Notes",
+                            "order": 22
+                        },
+                        "rent_commencement": {
+                            "type": "string",
+                            "ai_instructions": "Rent commencement date",
+                            "display_name": "Rent Commencement",
+                            "order": 23
+                        },
+                        "lease_expiration": {
+                            "type": "string",
+                            "ai_instructions": "Lease expiration date",
+                            "display_name": "Lease Expiration",
+                            "order": 24
+                        },
+                        "rent_increases": {
+                            "type": "string",
+                            "ai_instructions": "Rent increase terms",
+                            "display_name": "Rent Increases",
+                            "order": 25
+                        },
+                        "options": {
+                            "type": "string",
+                            "ai_instructions": "Lease extension options",
+                            "display_name": "Extension Options",
+                            "order": 26
+                        }
                     }
                 }
             }
         },
         "default_content": {
-            "property_details": {
-                "noi": 100000,
-                "rent_monthly": 10000,
-                "rentable_sqft": 5000,
-                "land_area": 1.0,
-                "tenant_name": "Sample Tenant",
-                "website": "example.com",
-                "guarantor": "Sample Guarantor",
-                "ownership_type": "Fee Simple",
-                "lease_type": "NNN",
-                "landlord_responsibilities": "None",
-                "store_open_date": "January 2024",
-                "lease_term_remaining": 10,
-                "rent_commencement": "February 2024",
-                "lease_expiration": "January 2034", 
-                "rent_increases": "3% Annual",
-                "options": "Two (2), Five (5) Year"
-            }
+            "property_details": [
+                {
+                    "noi": 100000,
+                    "noi_source": {
+                        "object_type": "source_object",
+                        "display_value": "-No Source-",
+                        "url": "-No Source-",
+                        "text_context": "-No Source-"
+                    },
+                    "noi_notes": "Sample NOI value",
+                    "rent_monthly": 10000,
+                    "rent_source": {
+                        "object_type": "source_object",
+                        "display_value": "-No Source-",
+                        "url": "-No Source-",
+                        "text_context": "-No Source-"
+                    },
+                    "rent_notes": "Sample monthly rent",
+                    "rentable_sqft": 5000,
+                    "sqft_source": {
+                        "object_type": "source_object",
+                        "display_value": "-No Source-",
+                        "url": "-No Source-",
+                        "text_context": "-No Source-"
+                    },
+                    "sqft_notes": "Sample square footage",
+                    "land_area": 1.0,
+                    "land_source": {
+                        "object_type": "source_object",
+                        "display_value": "-No Source-",
+                        "url": "-No Source-",
+                        "text_context": "-No Source-"
+                    },
+                    "land_notes": "Sample land area",
+                    "tenant_name": "Sample Tenant",
+                    "website": "example.com",
+                    "guarantor": "Sample Guarantor",
+                    "ownership_type": "Fee Simple",
+                    "lease_type": "NNN",
+                    "landlord_responsibilities": "None",
+                    "store_open_date": "January 2024",
+                    "lease_term_remaining": 10,
+                    "term_source": {
+                        "object_type": "source_object",
+                        "display_value": "-No Source-",
+                        "url": "-No Source-",
+                        "text_context": "-No Source-"
+                    },
+                    "term_notes": "Sample lease term",
+                    "rent_commencement": "February 2024",
+                    "lease_expiration": "January 2034",
+                    "rent_increases": "3% Annual",
+                    "options": "Two (2), Five (5) Year"
+                }
+            ]
         }
     }
 }

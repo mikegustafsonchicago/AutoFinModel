@@ -1,67 +1,276 @@
 {
     "seed_terms": {
+        "display": {
+            "defaultLayout": "transposed",
+            "allowToggle": true,
+            "frozen_column": true  
+        },
         "filename": "seed_terms.json",
         "root_key": "investments",
-        "description": "The Seed Terms table captures key information about a firm's seed investment strategy, including target investment sizes, revenue sharing terms, and fundraising timelines",
+        "ai_instructions": "The Seed Terms table captures key information about a firm's seed investment strategy, including target investment sizes, revenue sharing terms, and fundraising timelines",
         "version": "1.0",
-        "explanation_file": "seed_terms_explanation.txt",
+        "explanation_file": "seed_terms_explanation.txt", 
         "structure": {
             "investments": {
                 "type": "array",
-                "description": "Array of seed investment terms. The AI should return data in exactly this structure, with all fields populated according to the specifications.",
+                "ai_instructions": "Array of seed investment terms. The AI should return data in exactly this structure, with all fields populated according to the specifications.",
                 "items": {
                     "type": "object",
                     "required": [
                         "target_seed_investment",
+                        "target_source",
+                        "target_notes",
                         "initial_seed_investment",
+                        "initial_source",
+                        "initial_notes",
                         "fundraising_date",
+                        "date_source",
+                        "date_notes",
                         "revenue_share",
-                        "revenue_share_cap", 
+                        "share_source",
+                        "share_notes",
+                        "revenue_share_cap",
+                        "cap_source",
+                        "cap_notes",
                         "revenue_share_tail",
-                        "source_string",
-                        "source_link"
+                        "tail_source",
+                        "tail_notes"
                     ],
                     "properties": {
                         "target_seed_investment": {
-                            "type": "string",
-                            "description": "Target seed investment amount or range that the firm typically deploys",
+                            "type": "number",
+                            "ai_instructions": "Target seed investment amount that the firm typically deploys",
+                            "display_name": "Target Investment ($)",
+                            "minimum": 0,
                             "order": 1
                         },
+                        "target_source": {
+                            "type": "source_object",
+                            "ai_instructions": "Source information for the target investment data. You must provide specific page numbers, paragraph numbers, or sections where the information was found. If no referenceable source exists, use '-No Source-' for all fields.",
+                            "display_name": "Target Investment Source",
+                            "order": 2,
+                            "required": ["ai_instructions", "url", "text_context"],
+                            "properties": {
+                                "object_type": {
+                                    "type": "string",
+                                    "ai_instructions": "Must be 'source_object' for parsing purposes"
+                                },
+                                "display_value": {
+                                    "type": "string",
+                                    "ai_instructions": "Provide specific source details like 'Page 5, Paragraph 2' or 'Section 3.1'. If from an uploaded document, specify exact location. If no referenceable source, use '-No Source-'"
+                                },
+                                "url": {
+                                    "type": "string", 
+                                    "ai_instructions": "Full URL to source. If from an uploaded document or no referenceable source, use '-No Source-'",
+                                    "format": "uri"
+                                },
+                                "text_context": {
+                                    "type": "string",
+                                    "ai_instructions": "Exact quote from source with page/paragraph reference. If no direct quote available, use '-No Source-'"
+                                }
+                            }
+                        },
+                        "target_notes": {
+                            "type": "string",
+                            "ai_instructions": "Additional context about how the target investment was determined",
+                            "display_name": "Target Investment Notes",
+                            "order": 3
+                        },
                         "initial_seed_investment": {
-                            "type": "string", 
-                            "description": "Initial seed investment amount that the firm provides upfront",
-                            "order": 2
+                            "type": "number",
+                            "ai_instructions": "Initial seed investment amount that the firm provides upfront",
+                            "display_name": "Initial Investment ($)",
+                            "minimum": 0,
+                            "order": 4
+                        },
+                        "initial_source": {
+                            "type": "source_object",
+                            "ai_instructions": "Source information for the initial investment data. You must provide specific page numbers, paragraph numbers, or sections where the information was found. If no referenceable source exists, use '-No Source-' for all fields.",
+                            "display_name": "Initial Investment Source",
+                            "order": 5,
+                            "required": ["ai_instructions", "url", "text_context"],
+                            "properties": {
+                                "object_type": {
+                                    "type": "string",
+                                    "ai_instructions": "Must be 'source_object' for parsing purposes"
+                                },
+                                "display_value": {
+                                    "type": "string",
+                                    "ai_instructions": "Provide specific source details like 'Page 5, Paragraph 2' or 'Section 3.1'. If from an uploaded document, specify exact location. If no referenceable source, use '-No Source-'"
+                                },
+                                "url": {
+                                    "type": "string",
+                                    "ai_instructions": "Full URL to source. If from an uploaded document or no referenceable source, use '-No Source-'",
+                                    "format": "uri"
+                                },
+                                "text_context": {
+                                    "type": "string",
+                                    "ai_instructions": "Exact quote from source with page/paragraph reference. If no direct quote available, use '-No Source-'"
+                                }
+                            }
+                        },
+                        "initial_notes": {
+                            "type": "string",
+                            "ai_instructions": "Additional context about how the initial investment was determined",
+                            "display_name": "Initial Investment Notes",
+                            "order": 6
                         },
                         "fundraising_date": {
                             "type": "string",
-                            "description": "Expected timeline or date for the seed fundraising round",
-                            "order": 3
-                        },
-                        "revenue_share": {
-                            "type": "string",
-                            "description": "Percentage of revenue shared with the firm, if applicable",
-                            "order": 4
-                        },
-                        "revenue_share_cap": {
-                            "type": "string",
-                            "description": "Maximum cap on revenue sharing, expressed as a multiple",
-                            "order": 5
-                        },
-                        "revenue_share_tail": {
-                            "type": "string",
-                            "description": "Residual revenue share percentage after reaching the cap",
-                            "order": 6
-                        },
-                        "source_string": {
-                            "type": "string",
-                            "description": "Description or source title for validation",
+                            "ai_instructions": "Expected timeline or date for the seed fundraising round",
+                            "display_name": "Fundraising Date",
                             "order": 7
                         },
-                        "source_link": {
+                        "date_source": {
+                            "type": "source_object",
+                            "ai_instructions": "Source information for the fundraising date. You must provide specific page numbers, paragraph numbers, or sections where the information was found. If no referenceable source exists, use '-No Source-' for all fields.",
+                            "display_name": "Fundraising Date Source",
+                            "order": 8,
+                            "required": ["ai_instructions", "url", "text_context"],
+                            "properties": {
+                                "object_type": {
+                                    "type": "string",
+                                    "ai_instructions": "Must be 'source_object' for parsing purposes"
+                                },
+                                "display_value": {
+                                    "type": "string",
+                                    "ai_instructions": "Provide specific source details like 'Page 5, Paragraph 2' or 'Section 3.1'. If from an uploaded document, specify exact location. If no referenceable source, use '-No Source-'"
+                                },
+                                "url": {
+                                    "type": "string",
+                                    "ai_instructions": "Full URL to source. If from an uploaded document or no referenceable source, use '-No Source-'",
+                                    "format": "uri"
+                                },
+                                "text_context": {
+                                    "type": "string",
+                                    "ai_instructions": "Exact quote from source with page/paragraph reference. If no direct quote available, use '-No Source-'"
+                                }
+                            }
+                        },
+                        "date_notes": {
                             "type": "string",
-                            "description": "URL linking to source documentation",
-                            "format": "uri",
-                            "order": 8
+                            "ai_instructions": "Additional context about how the fundraising date was determined",
+                            "display_name": "Fundraising Date Notes",
+                            "order": 9
+                        },
+                        "revenue_share": {
+                            "type": "number",
+                            "ai_instructions": "Percentage of revenue shared with the firm",
+                            "display_name": "Revenue Share %",
+                            "minimum": 0,
+                            "maximum": 100,
+                            "order": 10
+                        },
+                        "share_source": {
+                            "type": "source_object",
+                            "ai_instructions": "Source information for the revenue share percentage. You must provide specific page numbers, paragraph numbers, or sections where the information was found. If no referenceable source exists, use '-No Source-' for all fields.",
+                            "display_name": "Revenue Share Source",
+                            "order": 11,
+                            "required": ["ai_instructions", "url", "text_context"],
+                            "properties": {
+                                "object_type": {
+                                    "type": "string",
+                                    "ai_instructions": "Must be 'source_object' for parsing purposes"
+                                },
+                                "display_value": {
+                                    "type": "string",
+                                    "ai_instructions": "Provide specific source details like 'Page 5, Paragraph 2' or 'Section 3.1'. If from an uploaded document, specify exact location. If no referenceable source, use '-No Source-'"
+                                },
+                                "url": {
+                                    "type": "string",
+                                    "ai_instructions": "Full URL to source. If from an uploaded document or no referenceable source, use '-No Source-'",
+                                    "format": "uri"
+                                },
+                                "text_context": {
+                                    "type": "string",
+                                    "ai_instructions": "Exact quote from source with page/paragraph reference. If no direct quote available, use '-No Source-'"
+                                }
+                            }
+                        },
+                        "share_notes": {
+                            "type": "string",
+                            "ai_instructions": "Additional context about how the revenue share percentage was determined",
+                            "display_name": "Revenue Share Notes",
+                            "order": 12
+                        },
+                        "revenue_share_cap": {
+                            "type": "number",
+                            "ai_instructions": "Maximum cap on revenue sharing, expressed as a multiple",
+                            "display_name": "Revenue Share Cap",
+                            "minimum": 0,
+                            "order": 13
+                        },
+                        "cap_source": {
+                            "type": "source_object",
+                            "ai_instructions": "Source information for the revenue share cap. You must provide specific page numbers, paragraph numbers, or sections where the information was found. If no referenceable source exists, use '-No Source-' for all fields.",
+                            "display_name": "Revenue Share Cap Source",
+                            "order": 14,
+                            "required": ["ai_instructions", "url", "text_context"],
+                            "properties": {
+                                "object_type": {
+                                    "type": "string",
+                                    "ai_instructions": "Must be 'source_object' for parsing purposes"
+                                },
+                                "display_value": {
+                                    "type": "string",
+                                    "ai_instructions": "Provide specific source details like 'Page 5, Paragraph 2' or 'Section 3.1'. If from an uploaded document, specify exact location. If no referenceable source, use '-No Source-'"
+                                },
+                                "url": {
+                                    "type": "string",
+                                    "ai_instructions": "Full URL to source. If from an uploaded document or no referenceable source, use '-No Source-'",
+                                    "format": "uri"
+                                },
+                                "text_context": {
+                                    "type": "string",
+                                    "ai_instructions": "Exact quote from source with page/paragraph reference. If no direct quote available, use '-No Source-'"
+                                }
+                            }
+                        },
+                        "cap_notes": {
+                            "type": "string",
+                            "ai_instructions": "Additional context about how the revenue share cap was determined",
+                            "display_name": "Revenue Share Cap Notes",
+                            "order": 15
+                        },
+                        "revenue_share_tail": {
+                            "type": "number",
+                            "ai_instructions": "Residual revenue share percentage after reaching the cap",
+                            "display_name": "Revenue Share Tail %",
+                            "minimum": 0,
+                            "maximum": 100,
+                            "order": 16
+                        },
+                        "tail_source": {
+                            "type": "source_object",
+                            "ai_instructions": "Source information for the revenue share tail. You must provide specific page numbers, paragraph numbers, or sections where the information was found. If no referenceable source exists, use '-No Source-' for all fields.",
+                            "display_name": "Revenue Share Tail Source",
+                            "order": 17,
+                            "required": ["ai_instructions", "url", "text_context"],
+                            "properties": {
+                                "object_type": {
+                                    "type": "string",
+                                    "ai_instructions": "Must be 'source_object' for parsing purposes"
+                                },
+                                "display_value": {
+                                    "type": "string",
+                                    "ai_instructions": "Provide specific source details like 'Page 5, Paragraph 2' or 'Section 3.1'. If from an uploaded document, specify exact location. If no referenceable source, use '-No Source-'"
+                                },
+                                "url": {
+                                    "type": "string",
+                                    "ai_instructions": "Full URL to source. If from an uploaded document or no referenceable source, use '-No Source-'",
+                                    "format": "uri"
+                                },
+                                "text_context": {
+                                    "type": "string",
+                                    "ai_instructions": "Exact quote from source with page/paragraph reference. If no direct quote available, use '-No Source-'"
+                                }
+                            }
+                        },
+                        "tail_notes": {
+                            "type": "string",
+                            "ai_instructions": "Additional context about how the revenue share tail was determined",
+                            "display_name": "Revenue Share Tail Notes",
+                            "order": 18
                         }
                     }
                 }
@@ -70,14 +279,54 @@
         "default_content": {
             "investments": [
                 {
-                    "target_seed_investment": "Target Seed Investment Placeholder",
-                    "initial_seed_investment": "Initial Seed Investment Placeholder",
-                    "fundraising_date": "Placeholder Date", 
-                    "revenue_share": "0%",
-                    "revenue_share_cap": "0.0x",
-                    "revenue_share_tail": "0%",
-                    "source_string": "Placeholder Source",
-                    "source_link": "https://example.com"
+                    "target_seed_investment": 100000,
+                    "target_source": {
+                        "object_type": "source_object",
+                        "display_value": "-No Source-",
+                        "url": "-No Source-",
+                        "text_context": "-No Source-"
+                    },
+                    "target_notes": "Sample target investment amount",
+                    "initial_seed_investment": 50000,
+                    "initial_source": {
+                        "object_type": "source_object",
+                        "display_value": "-No Source-",
+                        "url": "-No Source-",
+                        "text_context": "-No Source-"
+                    },
+                    "initial_notes": "Sample initial investment amount",
+                    "fundraising_date": "Q4 2024",
+                    "date_source": {
+                        "object_type": "source_object",
+                        "display_value": "-No Source-",
+                        "url": "-No Source-",
+                        "text_context": "-No Source-"
+                    },
+                    "date_notes": "Sample fundraising timeline",
+                    "revenue_share": 5,
+                    "share_source": {
+                        "object_type": "source_object",
+                        "display_value": "-No Source-",
+                        "url": "-No Source-",
+                        "text_context": "-No Source-"
+                    },
+                    "share_notes": "Sample revenue share percentage",
+                    "revenue_share_cap": 3,
+                    "cap_source": {
+                        "object_type": "source_object",
+                        "display_value": "-No Source-",
+                        "url": "-No Source-",
+                        "text_context": "-No Source-"
+                    },
+                    "cap_notes": "Sample revenue share cap multiple",
+                    "revenue_share_tail": 1,
+                    "tail_source": {
+                        "object_type": "source_object",
+                        "display_value": "-No Source-",
+                        "url": "-No Source-",
+                        "text_context": "-No Source-"
+                    },
+                    "tail_notes": "Sample revenue share tail percentage"
                 }
             ]
         }

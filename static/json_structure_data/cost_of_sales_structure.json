@@ -1,8 +1,13 @@
 {
     "cost_of_sales": {
+        "display": {
+            "defaultLayout": "normal",
+            "allowToggle": true,
+            "frozen_column": true
+        },
         "filename": "cost_of_sales.json",
         "root_key": "cost_items",
-        "description": "Stores cost of goods sold (COGS) and direct cost information",
+        "ai_instructions": "Stores cost of goods sold (COGS) and direct cost information",
         "version": "1.0",
         "explanation_file": "cost_of_sales_explanation.txt",
         "default_content": {
@@ -10,84 +15,125 @@
                 {
                     "cost_item_name": "Sample Direct Cost",
                     "cost_per_unit": 10.0,
-                    "cost_source": "No Source",
-                    "cost_source_link": "",
+                    "cost_source": {
+                        "object_type": "source_object",
+                        "display_value": "-No Source-",
+                        "url": "-No Source-",
+                        "text_context": "-No Source-"
+                    },
                     "cost_notes": "Sample cost notes",
                     "monthly_transactions": 100,
                     "frequency_notes": "Units per month",
-                    "frequency_source": "No Source", 
-                    "frequency_source_link": ""
+                    "frequency_source": {
+                        "object_type": "source_object",
+                        "display_value": "-No Source-",
+                        "url": "-No Source-",
+                        "text_context": "-No Source-"
+                    }
                 }
             ]
         },
         "structure": {
             "cost_items": {
                 "type": "array",
-                "description": "Contains cost entries for direct costs and COGS",
+                "ai_instructions": "Contains cost entries for direct costs and COGS",
                 "items": {
                     "type": "object",
                     "required": [
                         "cost_item_name",
                         "cost_per_unit",
                         "cost_source",
-                        "cost_source_link", 
                         "cost_notes",
                         "monthly_transactions",
                         "frequency_notes",
-                        "frequency_source",
-                        "frequency_source_link"
+                        "frequency_source"
                     ],
                     "properties": {
                         "cost_item_name": {
                             "type": "string",
-                            "description": "Name of the cost item or direct cost",
+                            "ai_instructions": "Name of the cost item or direct cost",
+                            "display_name": "Cost Item Name",
                             "min_length": 1,
                             "max_length": 100,
                             "order": 1
                         },
                         "cost_per_unit": {
                             "type": "number",
-                            "description": "Cost per unit/service",
+                            "ai_instructions": "Cost per unit/service",
+                            "display_name": "Cost per Unit ($)",
                             "minimum": 0,
                             "order": 2
                         },
                         "cost_source": {
-                            "type": "string",
-                            "description": "Description of cost information source. Be extremely precise, ideally, explain the paragraph or page number from the uploaded document. This is never optional, but if you can't provide a referencable source, write \"No Source\"",
-                            "order": 3
-                        },
-                        "cost_source_link": {
-                            "type": "string",
-                            "description": "URL to cost source documentation. If there is no source, leave this blank",
-                            "format": "uri",
-                            "order": 4
+                            "type": "source_object",
+                            "ai_instructions": "Source information for the cost data. You must provide specific page numbers, paragraph numbers, or sections where the information was found. If no referenceable source exists, use '-No Source-' for all fields.",
+                            "display_name": "Cost Source",
+                            "order": 3,
+                            "required": ["ai_instructions", "url", "text_context"],
+                            "properties": {
+                                "object_type": {
+                                    "type": "string",
+                                    "ai_instructions": "Must be 'source_object' for parsing purposes"
+                                },
+                                "display_value": {
+                                    "type": "string",
+                                    "ai_instructions": "Provide specific source details like 'Page 5, Paragraph 2' or 'Section 3.1'. If from an uploaded document, specify exact location. If no referenceable source, use '-No Source-'"
+                                },
+                                "url": {
+                                    "type": "string",
+                                    "ai_instructions": "Full URL to source. If from an uploaded document or no referenceable source, use '-No Source-'",
+                                    "format": "uri"
+                                },
+                                "text_context": {
+                                    "type": "string",
+                                    "ai_instructions": "Exact quote from source with page/paragraph reference. If no direct quote available, use '-No Source-'"
+                                }
+                            }
                         },
                         "cost_notes": {
                             "type": "string",
-                            "description": "Additional context and explanation about how the cost was determined or calculated",
-                            "order": 5
+                            "ai_instructions": "Additional context and explanation about how the cost was determined or calculated",
+                            "display_name": "Cost Notes",
+                            "order": 4
                         },
                         "monthly_transactions": {
                             "type": "number",
-                            "description": "Number of transactions per month",
+                            "ai_instructions": "Number of transactions per month",
+                            "display_name": "Monthly Transactions",
                             "minimum": 0,
-                            "order": 6
+                            "order": 5
                         },
                         "frequency_notes": {
                             "type": "string",
-                            "description": "Additional context about transaction frequency",
-                            "order": 7
+                            "ai_instructions": "Additional context about transaction frequency",
+                            "display_name": "Frequency Notes",
+                            "order": 6
                         },
                         "frequency_source": {
-                            "type": "string",
-                            "description": "Description of frequency data source. Be extremely precise, ideally, explain the paragraph or page number from the uploaded document. This is never optional, but if you can't provide a referencable source, write \"No Source\"",
-                            "order": 8
-                        },
-                        "frequency_source_link": {
-                            "type": "string",
-                            "description": "URL to frequency source documentation. If there is no source, leave this blank",
-                            "format": "uri",
-                            "order": 9
+                            "type": "source_object",
+                            "ai_instructions": "Source information for the frequency data. You must provide specific page numbers, paragraph numbers, or sections where the information was found. If no referenceable source exists, use '-No Source-' for all fields.",
+                            "display_name": "Frequency Source",
+                            "order": 7,
+                            "required": ["ai_instructions", "url", "text_context"],
+                            "properties": {
+                                "object_type": {
+                                    "type": "string",
+                                    "ai_instructions": "Must be 'source_object' for parsing purposes"
+                                },
+                                "display_value": {
+                                    "type": "string",
+                                    "ai_instructions": "Provide specific source details like 'Page 5, Paragraph 2' or 'Section 3.1'. If from an uploaded document, specify exact location. If no referenceable source, use '-No Source-'"
+                                },
+                                "url": {
+                                    "type": "string",
+                                    "ai_instructions": "Full URL to source. If from an uploaded document or no referenceable source, use '-No Source-'",
+                                    "format": "uri"
+                                },
+                                "text_context": {
+                                    "type": "string",
+                                    "ai_instructions": "Exact quote from source with page/paragraph reference. If no direct quote available, use '-No Source-'"
+                                }
+                            }
                         }
                     }
                 }

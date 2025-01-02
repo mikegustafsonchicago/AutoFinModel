@@ -3,27 +3,26 @@ import pdfplumber
 import tiktoken
 import logging
 from typing import List
-from config import MAX_TOKENS_PER_CALL, OPENAI_MODEL
+from config import MAX_TOKENS_PER_CALL, OPENAI_MODEL, BUCKET_NAME
 from file_manager import get_project_uploads_path
 from context_manager import get_user_context
+from upload_file_manager import count_tokens
+from boto3 import client
+from botocore.exceptions import ClientError
+import tempfile
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
 
-# Function to count tokens for a given text
-def count_tokens(text, model=OPENAI_MODEL):
-    if text:
-        tokenizer = tiktoken.encoding_for_model(model)
-        tokens = tokenizer.encode(text)
-        return len(tokens)
-    else:
-        logging.debug("Warning: No Text sent to count_tokens")
-        return 0
+# Initialize S3 client
+s3_client = client('s3')
+
+
 
 # Function to extract text from a PDF, divided by pages
 def extract_pdf_pages(file_name) -> List[str]:
     """
-    Extracts text from each page of a PDF file.
+    Extracts text from each page of a PDF file in S3.
     
     Parameters:
     file_name: The name of the PDF file
@@ -32,26 +31,31 @@ def extract_pdf_pages(file_name) -> List[str]:
     List[str]: A list of strings where each string is the text content of a page.
     """
     user_context = get_user_context()
-    # Get the full path to the PDF file
     uploads_dir = get_project_uploads_path()
     if not uploads_dir:
-        logging.error(f"Could not find uploads directory for user {user_context.username} and project {user_context.current_project}")
+        logging.error(f"Could not find uploads directory for user {user_context.username}")
         return []
         
-    pdf_path = os.path.join(uploads_dir, file_name)
-    if not os.path.exists(pdf_path):
-        logging.error(f"PDF file not found: {pdf_path}")
-        return []
-
-    logging.debug(f"The pdf path is {pdf_path}")
+    pdf_path = f"{uploads_dir}/{file_name}".replace('\\', '/')
+    
     try:
-        pages = []
-        with pdfplumber.open(pdf_path) as pdf:
-            # Loop through all pages and store text
-            for page in pdf.pages:
-                page_text = page.extract_text() or ""
-                pages.append(page_text)
-        return pages
+        # Create temp file that deletes itself when closed
+        with tempfile.NamedTemporaryFile(suffix='.pdf', delete=True) as temp_file:
+            # Download PDF from S3
+            s3_client.download_file(BUCKET_NAME, pdf_path, temp_file.name)
+            
+            # Process PDF while temp file is still open
+            pages = []
+            with pdfplumber.open(temp_file.name) as pdf:
+                for page in pdf.pages:
+                    page_text = page.extract_text() or ""
+                    pages.append(page_text)
+            
+            return pages
+            
+    except ClientError as e:
+        logging.error(f"Error accessing PDF in S3: {e}")
+        return []
     except Exception as e:
         logging.error(f"Error extracting text from PDF: {e}")
         return []
@@ -66,24 +70,31 @@ def get_page_token_counts(file_name) -> List[int]:
     Returns:
     List[int]: A list of integers where each integer is the token count for a page.
     """
+    
     user_context = get_user_context()
     # Get the full path to the PDF file
     uploads_dir = get_project_uploads_path()
     if not uploads_dir:
         logging.error(f"Could not find uploads directory for user {user_context.username} and project {user_context.current_project}")
         return []
-        
-    pdf_path = os.path.join(uploads_dir, file_name)
-    if not os.path.exists(pdf_path):
-        logging.error(f"PDF file not found: {pdf_path}")
+    
+    # Ensure consistent forward slashes for S3 paths
+    pdf_path = f"{uploads_dir}/{file_name}".replace('\\', '/')
+    
+    # Check if file exists in S3 instead of local filesystem
+    try:
+        s3_client.head_object(Bucket=BUCKET_NAME, Key=pdf_path)
+    except ClientError:
+        logging.error(f"PDF file not found in S3: {pdf_path}")
         return []
     
     # Extract the text for each page in the PDF
     pages = extract_pdf_pages(file_name)  # List of page texts
+    
     page_token_counts = []
 
     # Count tokens for each page and store in the list
-    for page in pages:
+    for i, page in enumerate(pages):
         token_count = count_tokens(page)  # Use your tokenizer to count tokens
         page_token_counts.append(token_count)
 
@@ -92,7 +103,7 @@ def get_page_token_counts(file_name) -> List[int]:
 
 def get_pdf_content_by_page_indices(file_name, start_page: int, end_page: int) -> str:
     """
-    Returns the content of specified pages from a PDF file.
+    Returns the content of specified pages from a PDF file in S3.
     
     Parameters:
     file_name: The name of the PDF file
@@ -109,11 +120,9 @@ def get_pdf_content_by_page_indices(file_name, start_page: int, end_page: int) -
         logging.error(f"Could not find uploads directory for user {user_context.username} and project {user_context.current_project}")
         return ""
         
-    pdf_path = os.path.join(uploads_dir, file_name)
-    if not os.path.exists(pdf_path):
-        logging.error(f"PDF file not found: {pdf_path}")
-        return ""
-
+    # Ensure consistent forward slashes for S3 paths
+    pdf_path = f"{uploads_dir}/{file_name}".replace('\\', '/')
+    
     # Extract all pages from the PDF as a list of text strings
     all_pages = extract_pdf_pages(file_name)
     if not all_pages:

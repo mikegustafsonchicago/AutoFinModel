@@ -1,22 +1,15 @@
 {
     "operating_expenses": {
+        "display": {
+            "defaultLayout": "normal",
+            "allowToggle": true,
+            "frozen_column": true  
+        },
         "filename": "OPEX.json",
         "root_key": "expenses",
-        "description": "Stores operating expense information", 
+        "ai_instructions": "Stores operating expense information", 
         "version": "1.0",
         "explanation_file": "opex_explanation.txt",
-        "default_content": {
-            "expenses": [
-                {
-                    "expense_name": "Sample Operating Expense",
-                    "amount": 1000.0,
-                    "frequency": "Monthly", 
-                    "notes": "Sample operating expense - explain why this expense was chosen and justify the amount",
-                    "source_link": "",
-                    "source_string": "No source"
-                }
-            ]
-        },
         "structure": {
             "expenses": {
                 "type": "array",
@@ -25,48 +18,124 @@
                     "required": [
                         "expense_name",
                         "amount",
-                        "frequency", 
-                        "notes",
-                        "source_link",
-                        "source_string"
+                        "amount_source",
+                        "amount_notes",
+                        "frequency",
+                        "frequency_notes",
+                        "frequency_source"
                     ],
                     "properties": {
                         "expense_name": {
                             "type": "string",
-                            "description": "Name or description of the operating expense",
+                            "ai_instructions": "Name or ai_instructions of the operating expense",
+                            "display_name": "Expense Name",
                             "min_length": 1,
                             "max_length": 100,
                             "order": 1
                         },
                         "amount": {
                             "type": "number",
-                            "description": "Cost of the expense in dollars",
+                            "ai_instructions": "Cost of the expense in dollars",
+                            "display_name": "Amount ($)",
                             "minimum": 0,
                             "order": 2
                         },
-                        "frequency": {
-                            "type": "string", 
-                            "description": "How often the expense occurs (e.g. monthly, annually)",
-                            "order": 3
+                        "amount_source": {
+                            "type": "source_object",
+                            "ai_instructions": "Source information for the cost data. You must provide specific page numbers, paragraph numbers, or sections where the information was found. If no referenceable source exists, use '-No Source-' for all fields.",
+                            "display_name": "Amount Source",
+                            "order": 3,
+                            "required": ["ai_instructions", "url", "text_context"],
+                            "properties": {
+                                "object_type": {
+                                    "type": "string",
+                                    "ai_instructions": "Must be 'source_object' for parsing purposes"
+                                },
+                                "display_value": {
+                                    "type": "string",
+                                    "ai_instructions": "Provide specific source details like 'Page 5, Paragraph 2' or 'Section 3.1'. If from an uploaded document, specify exact location. If no referenceable source, use '-No Source-'"
+                                },
+                                "url": {
+                                    "type": "string",
+                                    "ai_instructions": "Full URL to source. If from an uploaded document or no referenceable source, use '-No Source-'",
+                                    "format": "uri"
+                                },
+                                "text_context": {
+                                    "type": "string",
+                                    "ai_instructions": "Exact quote from source with page/paragraph reference. If no direct quote available, use '-No Source-'"
+                                }
+                            }
                         },
-                        "notes": {
+                        "amount_notes": {
                             "type": "string",
-                            "description": "These notes should clarify why the expense was chosen to be included in the operating expenses, or justify the amount",
+                            "ai_instructions": "Additional context about how the cost was determined",
+                            "display_name": "Amount Notes",
                             "order": 4
                         },
-                        "source_link": {
+                        "frequency": {
                             "type": "string",
-                            "description": "URL to expense source information. If the source was part of this api call, or is not a website, leave this blank",
+                            "ai_instructions": "Timing or frequency of the expenditure (e.g., Monthly, Annual)",
+                            "display_name": "Frequency",
                             "order": 5
                         },
-                        "source_string": {
-                            "type": "string",
-                            "description": "Description of expense source. Be precise, ideally down to the page or paragraph. If you don't have a source, write \"No source\"",
+                        "frequency_notes": {
+                            "type": "string", 
+                            "ai_instructions": "Explain why this frequency was chosen. If you don't have a referenceable justification, write 'assumption'",
+                            "display_name": "Frequency Notes",
                             "order": 6
+                        },
+                        "frequency_source": {
+                            "type": "source_object",
+                            "ai_instructions": "Source information for the frequency data. You must provide specific page numbers, paragraph numbers, or sections where the information was found. If no referenceable source exists, use '-No Source-' for all fields.",
+                            "display_name": "Frequency Source",
+                            "order": 7,
+                            "required": ["ai_instructions", "url", "text_context"],
+                            "properties": {
+                                "object_type": {
+                                    "type": "string",
+                                    "ai_instructions": "Must be 'source_object' for parsing purposes"
+                                },
+                                "display_value": {
+                                    "type": "string",
+                                    "ai_instructions": "Provide specific source details like 'Page 5, Paragraph 2' or 'Section 3.1'. If from an uploaded document, specify exact location. If no referenceable source, use '-No Source-'"
+                                },
+                                "url": {
+                                    "type": "string",
+                                    "ai_instructions": "Full URL to source. If from an uploaded document or no referenceable source, use '-No Source-'",
+                                    "format": "uri"
+                                },
+                                "text_context": {
+                                    "type": "string",
+                                    "ai_instructions": "Exact quote from source with page/paragraph reference. If no direct quote available, use '-No Source-'"
+                                }
+                            }
                         }
                     }
                 }
             }
+        },
+        "default_content": {
+            "expenses": [
+                {
+                    "expense_name": "Sample Operating Expense",
+                    "amount": 1000.0,
+                    "amount_source": {
+                        "object_type": "source_object",
+                        "display_value": "-No Source-",
+                        "url": "-No Source-",
+                        "text_context": "-No Source-"
+                    },
+                    "amount_notes": "Cost selected based on market research",
+                    "frequency": "Monthly",
+                    "frequency_notes": "Monthly recurring operational expense",
+                    "frequency_source": {
+                        "object_type": "source_object",
+                        "display_value": "-No Source-",
+                        "url": "-No Source-",
+                        "text_context": "-No Source-"
+                    }
+                }
+            ]
         }
     }
 }

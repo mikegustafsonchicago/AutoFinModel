@@ -1,8 +1,13 @@
 {
     "property_zoning": {
+        "display": {
+            "defaultLayout": "transposed",
+            "allowToggle": true,
+            "frozen_column": true  
+        },
         "filename": "property_zoning.json",
         "root_key": "property_details",
-        "description": "Stores property zoning and development information", 
+        "ai_instructions": "Stores property zoning and development information", 
         "version": "1.0",
         "structure": {
             "property_details": {
@@ -14,59 +19,273 @@
                         "municipality",
                         "parcel_id", 
                         "approximate_acreage",
+                        "acreage_source",
+                        "acreage_notes",
                         "current_use",
+                        "use_source",
+                        "use_notes",
                         "zoning",
+                        "zoning_source",
+                        "zoning_notes",
                         "water_sewer",
+                        "water_source",
+                        "water_notes",
                         "electricity",
-                        "availability"
+                        "electricity_source",
+                        "electricity_notes",
+                        "availability",
+                        "availability_source",
+                        "availability_notes"
                     ],
                     "properties": {
                         "address": {
                             "type": "string",
-                            "description": "Street address of the property",
+                            "ai_instructions": "Street address of the property",
+                            "display_name": "Property Address",
                             "min_length": 1,
                             "max_length": 100,
                             "order": 1
                         },
                         "municipality": {
                             "type": "string", 
-                            "description": "City and state location",
+                            "ai_instructions": "City and state location",
+                            "display_name": "Municipality",
                             "order": 2
                         },
                         "parcel_id": {
                             "type": "string",
-                            "description": "Property parcel identification number",
+                            "ai_instructions": "Property parcel identification number",
+                            "display_name": "Parcel ID",
                             "order": 3
                         },
                         "approximate_acreage": {
-                            "type": "string",
-                            "description": "Approximate size of property in acres",
+                            "type": "number",
+                            "ai_instructions": "Approximate size of property in acres",
+                            "display_name": "Approximate Acreage",
+                            "minimum": 0,
                             "order": 4
+                        },
+                        "acreage_source": {
+                            "type": "source_object",
+                            "ai_instructions": "Source information for the acreage data. You must provide specific page numbers, paragraph numbers, or sections where the information was found. If no referenceable source exists, use '-No Source-' for all fields.",
+                            "display_name": "Acreage Source",
+                            "order": 5,
+                            "required": ["ai_instructions", "url", "text_context"],
+                            "properties": {
+                                "object_type": {
+                                    "type": "string",
+                                    "ai_instructions": "Must be 'source_object' for parsing purposes"
+                                },
+                                "display_value": {
+                                    "type": "string",
+                                    "ai_instructions": "Provide specific source details like 'Page 5, Paragraph 2' or 'Section 3.1'. If from an uploaded document, specify exact location. If no referenceable source, use '-No Source-'"
+                                },
+                                "url": {
+                                    "type": "string",
+                                    "ai_instructions": "Full URL to source. If from an uploaded document or no referenceable source, use '-No Source-'",
+                                    "format": "uri"
+                                },
+                                "text_context": {
+                                    "type": "string",
+                                    "ai_instructions": "Exact quote from source with page/paragraph reference. If no direct quote available, use '-No Source-'"
+                                }
+                            }
+                        },
+                        "acreage_notes": {
+                            "type": "string",
+                            "ai_instructions": "Additional context about how the acreage was determined",
+                            "display_name": "Acreage Notes",
+                            "order": 6
                         },
                         "current_use": {
                             "type": "string",
-                            "description": "Current property usage designation",
-                            "order": 5
+                            "ai_instructions": "Current property usage designation",
+                            "display_name": "Current Use",
+                            "order": 7
+                        },
+                        "use_source": {
+                            "type": "source_object",
+                            "ai_instructions": "Source information for the current use data. You must provide specific page numbers, paragraph numbers, or sections where the information was found. If no referenceable source exists, use '-No Source-' for all fields.",
+                            "display_name": "Current Use Source",
+                            "order": 8,
+                            "required": ["ai_instructions", "url", "text_context"],
+                            "properties": {
+                                "object_type": {
+                                    "type": "string",
+                                    "ai_instructions": "Must be 'source_object' for parsing purposes"
+                                },
+                                "display_value": {
+                                    "type": "string",
+                                    "ai_instructions": "Provide specific source details like 'Page 5, Paragraph 2' or 'Section 3.1'. If from an uploaded document, specify exact location. If no referenceable source, use '-No Source-'"
+                                },
+                                "url": {
+                                    "type": "string",
+                                    "ai_instructions": "Full URL to source. If from an uploaded document or no referenceable source, use '-No Source-'",
+                                    "format": "uri"
+                                },
+                                "text_context": {
+                                    "type": "string",
+                                    "ai_instructions": "Exact quote from source with page/paragraph reference. If no direct quote available, use '-No Source-'"
+                                }
+                            }
+                        },
+                        "use_notes": {
+                            "type": "string",
+                            "ai_instructions": "Additional context about how the current use was determined",
+                            "display_name": "Current Use Notes",
+                            "order": 9
                         },
                         "zoning": {
                             "type": "string",
-                            "description": "Property zoning classification",
-                            "order": 6
+                            "ai_instructions": "Property zoning classification",
+                            "display_name": "Zoning",
+                            "order": 10
+                        },
+                        "zoning_source": {
+                            "type": "source_object",
+                            "ai_instructions": "Source information for the zoning data. You must provide specific page numbers, paragraph numbers, or sections where the information was found. If no referenceable source exists, use '-No Source-' for all fields.",
+                            "display_name": "Zoning Source",
+                            "order": 11,
+                            "required": ["ai_instructions", "url", "text_context"],
+                            "properties": {
+                                "object_type": {
+                                    "type": "string",
+                                    "ai_instructions": "Must be 'source_object' for parsing purposes"
+                                },
+                                "display_value": {
+                                    "type": "string",
+                                    "ai_instructions": "Provide specific source details like 'Page 5, Paragraph 2' or 'Section 3.1'. If from an uploaded document, specify exact location. If no referenceable source, use '-No Source-'"
+                                },
+                                "url": {
+                                    "type": "string",
+                                    "ai_instructions": "Full URL to source. If from an uploaded document or no referenceable source, use '-No Source-'",
+                                    "format": "uri"
+                                },
+                                "text_context": {
+                                    "type": "string",
+                                    "ai_instructions": "Exact quote from source with page/paragraph reference. If no direct quote available, use '-No Source-'"
+                                }
+                            }
+                        },
+                        "zoning_notes": {
+                            "type": "string",
+                            "ai_instructions": "Additional context about how the zoning was determined",
+                            "display_name": "Zoning Notes",
+                            "order": 12
                         },
                         "water_sewer": {
                             "type": "string",
-                            "description": "Water and sewer service provider",
-                            "order": 7
+                            "ai_instructions": "Water and sewer service provider",
+                            "display_name": "Water/Sewer Provider",
+                            "order": 13
+                        },
+                        "water_source": {
+                            "type": "source_object",
+                            "ai_instructions": "Source information for the water/sewer data. You must provide specific page numbers, paragraph numbers, or sections where the information was found. If no referenceable source exists, use '-No Source-' for all fields.",
+                            "display_name": "Water/Sewer Source",
+                            "order": 14,
+                            "required": ["ai_instructions", "url", "text_context"],
+                            "properties": {
+                                "object_type": {
+                                    "type": "string",
+                                    "ai_instructions": "Must be 'source_object' for parsing purposes"
+                                },
+                                "display_value": {
+                                    "type": "string",
+                                    "ai_instructions": "Provide specific source details like 'Page 5, Paragraph 2' or 'Section 3.1'. If from an uploaded document, specify exact location. If no referenceable source, use '-No Source-'"
+                                },
+                                "url": {
+                                    "type": "string",
+                                    "ai_instructions": "Full URL to source. If from an uploaded document or no referenceable source, use '-No Source-'",
+                                    "format": "uri"
+                                },
+                                "text_context": {
+                                    "type": "string",
+                                    "ai_instructions": "Exact quote from source with page/paragraph reference. If no direct quote available, use '-No Source-'"
+                                }
+                            }
+                        },
+                        "water_notes": {
+                            "type": "string",
+                            "ai_instructions": "Additional context about how the water/sewer information was determined",
+                            "display_name": "Water/Sewer Notes",
+                            "order": 15
                         },
                         "electricity": {
                             "type": "string",
-                            "description": "Electrical service provider",
-                            "order": 8
+                            "ai_instructions": "Electrical service provider",
+                            "display_name": "Electrical Provider",
+                            "order": 16
+                        },
+                        "electricity_source": {
+                            "type": "source_object",
+                            "ai_instructions": "Source information for the electricity data. You must provide specific page numbers, paragraph numbers, or sections where the information was found. If no referenceable source exists, use '-No Source-' for all fields.",
+                            "display_name": "Electricity Source",
+                            "order": 17,
+                            "required": ["ai_instructions", "url", "text_context"],
+                            "properties": {
+                                "object_type": {
+                                    "type": "string",
+                                    "ai_instructions": "Must be 'source_object' for parsing purposes"
+                                },
+                                "display_value": {
+                                    "type": "string",
+                                    "ai_instructions": "Provide specific source details like 'Page 5, Paragraph 2' or 'Section 3.1'. If from an uploaded document, specify exact location. If no referenceable source, use '-No Source-'"
+                                },
+                                "url": {
+                                    "type": "string",
+                                    "ai_instructions": "Full URL to source. If from an uploaded document or no referenceable source, use '-No Source-'",
+                                    "format": "uri"
+                                },
+                                "text_context": {
+                                    "type": "string",
+                                    "ai_instructions": "Exact quote from source with page/paragraph reference. If no direct quote available, use '-No Source-'"
+                                }
+                            }
+                        },
+                        "electricity_notes": {
+                            "type": "string",
+                            "ai_instructions": "Additional context about how the electricity information was determined",
+                            "display_name": "Electricity Notes",
+                            "order": 18
                         },
                         "availability": {
                             "type": "string",
-                            "description": "Property availability status",
-                            "order": 9
+                            "ai_instructions": "Property availability status",
+                            "display_name": "Availability",
+                            "order": 19
+                        },
+                        "availability_source": {
+                            "type": "source_object",
+                            "ai_instructions": "Source information for the availability data. You must provide specific page numbers, paragraph numbers, or sections where the information was found. If no referenceable source exists, use '-No Source-' for all fields.",
+                            "display_name": "Availability Source",
+                            "order": 20,
+                            "required": ["ai_instructions", "url", "text_context"],
+                            "properties": {
+                                "object_type": {
+                                    "type": "string",
+                                    "ai_instructions": "Must be 'source_object' for parsing purposes"
+                                },
+                                "display_value": {
+                                    "type": "string",
+                                    "ai_instructions": "Provide specific source details like 'Page 5, Paragraph 2' or 'Section 3.1'. If from an uploaded document, specify exact location. If no referenceable source, use '-No Source-'"
+                                },
+                                "url": {
+                                    "type": "string",
+                                    "ai_instructions": "Full URL to source. If from an uploaded document or no referenceable source, use '-No Source-'",
+                                    "format": "uri"
+                                },
+                                "text_context": {
+                                    "type": "string",
+                                    "ai_instructions": "Exact quote from source with page/paragraph reference. If no direct quote available, use '-No Source-'"
+                                }
+                            }
+                        },
+                        "availability_notes": {
+                            "type": "string",
+                            "ai_instructions": "Additional context about how the availability was determined",
+                            "display_name": "Availability Notes",
+                            "order": 21
                         }
                     }
                 }
@@ -78,12 +297,54 @@
                     "address": "123 Sample Street",
                     "municipality": "Sample City, ST",
                     "parcel_id": "12-345-678",
-                    "approximate_acreage": "5.2",
+                    "approximate_acreage": 5.2,
+                    "acreage_source": {
+                        "object_type": "source_object",
+                        "display_value": "-No Source-",
+                        "url": "-No Source-",
+                        "text_context": "-No Source-"
+                    },
+                    "acreage_notes": "Approximate acreage from property records",
                     "current_use": "Vacant",
+                    "use_source": {
+                        "object_type": "source_object",
+                        "display_value": "-No Source-",
+                        "url": "-No Source-",
+                        "text_context": "-No Source-"
+                    },
+                    "use_notes": "Based on site visit",
                     "zoning": "Commercial",
+                    "zoning_source": {
+                        "object_type": "source_object",
+                        "display_value": "-No Source-",
+                        "url": "-No Source-",
+                        "text_context": "-No Source-"
+                    },
+                    "zoning_notes": "Per municipal zoning map",
                     "water_sewer": "Municipal",
+                    "water_source": {
+                        "object_type": "source_object",
+                        "display_value": "-No Source-",
+                        "url": "-No Source-",
+                        "text_context": "-No Source-"
+                    },
+                    "water_notes": "Connected to city utilities",
                     "electricity": "Sample Electric Co",
-                    "availability": "For Sale"
+                    "electricity_source": {
+                        "object_type": "source_object",
+                        "display_value": "-No Source-",
+                        "url": "-No Source-",
+                        "text_context": "-No Source-"
+                    },
+                    "electricity_notes": "Active service confirmed",
+                    "availability": "For Sale",
+                    "availability_source": {
+                        "object_type": "source_object",
+                        "display_value": "-No Source-",
+                        "url": "-No Source-",
+                        "text_context": "-No Source-"
+                    },
+                    "availability_notes": "Listed with broker"
                 }
             ]
         }

@@ -1,14 +1,19 @@
 {
     "fees_key_terms": {
+        "display": {
+            "defaultLayout": "true",
+            "allowToggle": true,
+            "frozen_column": true  
+        },
         "filename": "fees_key_terms.json",
         "root_key": "terms",
-        "description": "The Fees and Key Terms table outlines the fee structure and key terms associated with the firm's fund or investment program, providing critical information for potential investors",
+        "ai_instructions": "The Fees and Key Terms table outlines the fee structure and key terms associated with the firm's fund or investment program, providing critical information for potential investors",
         "version": "1.0",
         "explanation_file": "fees_key_terms_explanation.txt",
         "structure": {
             "terms": {
                 "type": "array",
-                "description": "Array of fee structures and key terms for funds",
+                "ai_instructions": "Array of fee structures and key terms for funds",
                 "items": {
                     "type": "object",
                     "required": [
@@ -20,66 +25,89 @@
                         "investment_period",
                         "fund_term",
                         "GP_commitment",
-                        "GP_commitment_source",
-                        "source_string",
-                        "source_link"
+                        "terms_source",
+                        "terms_notes"
                     ],
                     "properties": {
                         "currency": {
                             "type": "string",
-                            "description": "The currency in which the firm operates or raises funds (e.g., 'USD')",
+                            "ai_instructions": "The currency in which the firm operates or raises funds (e.g., 'USD')",
+                            "display_name": "Currency",
                             "order": 1
                         },
                         "target_fundraise": {
                             "type": "string", 
-                            "description": "The target amount the firm aims to raise for its fund",
+                            "ai_instructions": "The target amount the firm aims to raise for its fund",
+                            "display_name": "Target Fundraise",
                             "order": 2
                         },
                         "management_fee": {
                             "type": "string",
-                            "description": "The percentage charged as a management fee by the firm (e.g., '2%')",
+                            "ai_instructions": "The percentage charged as a management fee by the firm (e.g., '2%')",
+                            "display_name": "Management Fee",
                             "order": 3
                         },
                         "carried_interest": {
                             "type": "string",
-                            "description": "The percentage of profits shared with the firm as carried interest (e.g., '20%')",
+                            "ai_instructions": "The percentage of profits shared with the firm as carried interest (e.g., '20%')",
+                            "display_name": "Carried Interest",
                             "order": 4
                         },
                         "preferred_return": {
                             "type": "string",
-                            "description": "The minimum return rate offered to investors before the firm receives carried interest",
+                            "ai_instructions": "The minimum return rate offered to investors before the firm receives carried interest",
+                            "display_name": "Preferred Return",
                             "order": 5
                         },
                         "investment_period": {
                             "type": "string",
-                            "description": "Duration of the firm's investment period, typically in years",
+                            "ai_instructions": "Duration of the firm's investment period, typically in years",
+                            "display_name": "Investment Period",
                             "order": 6
                         },
                         "fund_term": {
                             "type": "string",
-                            "description": "Total term of the fund, usually including investment and divestment phases",
+                            "ai_instructions": "Total term of the fund, usually including investment and divestment phases",
+                            "display_name": "Fund Term",
                             "order": 7
                         },
                         "GP_commitment": {
                             "type": "string",
-                            "description": "The percentage committed by the General Partner in the fund (e.g., '5%')",
+                            "ai_instructions": "The percentage committed by the General Partner in the fund (e.g., '5%')",
+                            "display_name": "GP Commitment",
                             "order": 8
                         },
-                        "GP_commitment_source": {
-                            "type": "string",
-                            "description": "Source of the General Partner's commitment (e.g., 'Capital reserves')",
-                            "order": 9
+                        "terms_source": {
+                            "type": "source_object",
+                            "ai_instructions": "Source information for the fund terms. You must provide specific page numbers, paragraph numbers, or sections where the information was found. If no referenceable source exists, use '-No Source-' for all fields.",
+                            "display_name": "Terms Source",
+                            "order": 9,
+                            "required": ["ai_instructions", "url", "text_context"],
+                            "properties": {
+                                "object_type": {
+                                    "type": "string",
+                                    "ai_instructions": "Must be 'source_object' for parsing purposes"
+                                },
+                                "display_value": {
+                                    "type": "string", 
+                                    "ai_instructions": "Provide specific source details like 'Page 5, Paragraph 2' or 'Section 3.1'. If from an uploaded document, specify exact location. If no referenceable source, use '-No Source-'"
+                                },
+                                "url": {
+                                    "type": "string",
+                                    "ai_instructions": "Full URL to source. If from an uploaded document or no referenceable source, use '-No Source-'",
+                                    "format": "uri"
+                                },
+                                "text_context": {
+                                    "type": "string",
+                                    "ai_instructions": "Exact quote from source with page/paragraph reference. If no direct quote available, use '-No Source-'"
+                                }
+                            }
                         },
-                        "source_string": {
+                        "terms_notes": {
                             "type": "string",
-                            "description": "Summary of the information source",
+                            "ai_instructions": "Additional context about how the terms were determined",
+                            "display_name": "Terms Notes",
                             "order": 10
-                        },
-                        "source_link": {
-                            "type": "string",
-                            "description": "URL linking to the source document",
-                            "format": "uri",
-                            "order": 11
                         }
                     }
                 }
@@ -92,13 +120,17 @@
                     "target_fundraise": "100M",
                     "management_fee": "2%",
                     "carried_interest": "20%",
-                    "preferred_return": "8%", 
-                    "investment_period": "5 years",
+                    "preferred_return": "8%",
+                    "investment_period": "5 years", 
                     "fund_term": "10 years",
                     "GP_commitment": "5%",
-                    "GP_commitment_source": "Capital reserves",
-                    "source_string": "Placeholder Source",
-                    "source_link": "https://example.com"
+                    "terms_source": {
+                        "object_type": "source_object",
+                        "display_value": "-No Source-",
+                        "url": "-No Source-", 
+                        "text_context": "-No Source-"
+                    },
+                    "terms_notes": "Sample fund terms and fee structure"
                 }
             ]
         }

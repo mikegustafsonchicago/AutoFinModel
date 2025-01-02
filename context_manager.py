@@ -4,7 +4,76 @@ from flask import session
 from typing import Optional
 import logging
 import os
+import boto3
+from botocore.exceptions import ClientError
+from config import ALLOWABLE_PROJECT_TYPES, OUTPUTS_FOR_PROJECT_TYPE
 
+# Configure S3 client
+s3_client = boto3.client(
+    's3',
+    aws_access_key_id=os.getenv('AWS_ACCESS_KEY_ID'),
+    aws_secret_access_key=os.getenv('AWS_SECRET_ACCESS_KEY'),
+    region_name=os.getenv('AWS_REGION'),
+)
+BUCKET_NAME = os.getenv('AWS_BUCKET_NAME')
+
+# File management helper functions
+def list_files_in_s3(prefix):
+    """List files in S3 with given prefix"""
+    try:
+        response = s3_client.list_objects_v2(Bucket=BUCKET_NAME, Prefix=prefix)
+        if 'Contents' in response:
+            return [obj['Key'] for obj in response['Contents']]
+        return []
+    except ClientError as e:
+        logging.error(f"Error listing files in S3: {str(e)}")
+        return []
+
+def get_project_structures_path():
+    """Get S3 path to project's structures directory"""
+    try:
+        username = session.get('username', 'default')
+        current_project = session.get('current_project')
+        return f"users/{username}/projects/{current_project}/data/structures"
+    except Exception as e:
+        logging.error(f"Error getting project structures path: {str(e)}")
+        return None
+
+def get_project_uploads_path():
+    """Get S3 path to project's uploads directory"""
+    try:
+        username = session.get('username', 'default')
+        current_project = session.get('current_project')
+        return f"users/{username}/projects/{current_project}/uploads"
+    except Exception as e:
+        logging.error(f"Error getting project uploads path: {str(e)}")
+        return None
+
+def list_projects():
+    """List all projects for current user from S3"""
+    try:
+        username = session.get('username', 'default')
+        prefix = f"users/{username}/projects/"
+        
+        response = s3_client.list_objects_v2(
+            Bucket=BUCKET_NAME,
+            Prefix=prefix,
+            Delimiter="/"
+        )
+        
+        projects = []
+        if 'CommonPrefixes' in response:
+            for prefix in response['CommonPrefixes']:
+                # Extract project name from prefix
+                project = prefix['Prefix'].split('/')[-2]
+                if project:
+                    projects.append(project)
+                    
+        return projects
+
+    except ClientError as e:
+        logging.error(f"Error listing projects: {str(e)}")
+        return []
 
 @dataclass
 class UserContext:
@@ -13,6 +82,9 @@ class UserContext:
     project_type: Optional[str] = None
     available_projects: list[str] = None
     available_tables: list[str] = None
+    new_project_types = ALLOWABLE_PROJECT_TYPES
+    uploaded_files: list[str] = None
+    available_outputs: list[str] = None
 
 class ContextManager:
     _instance = None  # Class variable to store the singleton instance
@@ -27,12 +99,12 @@ class ContextManager:
         cls._instance.project_type = session.get('project_type')
         cls._instance.available_projects = session.get('available_projects', [])
         cls._instance.available_tables = session.get('available_tables', [])
-        
+        cls._instance.available_outputs = session.get('available_outputs', [])
+
         return cls._instance
 
     @staticmethod
     def initialize_session(username):
-        logging.debug(f"[ContextManager.initialize_session] Initializing session for user: {username}")
         old_username = session.get('username')
         if old_username != username:
             logging.info(f"Username changed from {old_username} to {username}")
@@ -43,10 +115,10 @@ class ContextManager:
             logging.info(f"Available projects reset from {old_projects} to []")
         session['available_projects'] = []
         session['available_tables'] = []
+        session['available_outputs'] = []
 
     @staticmethod
     def set_project_context(project_name, project_type):
-        logging.debug(f"[ContextManager.set_project_context] Setting project context: name: {project_name}, type: {project_type}")
         old_project = session.get('current_project')
         old_type = session.get('project_type')
         
@@ -57,57 +129,76 @@ class ContextManager:
             
         session['current_project'] = project_name
         session['project_type'] = project_type
-    
+        session['available_outputs'] = OUTPUTS_FOR_PROJECT_TYPE[project_type]
 
-    @staticmethod
-    def list_projects_and_tables(username):
-        """
-        List all project names and structure files for the current user and update context.
-        
-        Args:
-            username (str): The username to get projects and tables for
+        # Update tables and files when project changes
+        if old_project != project_name:
+            username = session.get('username', 'default')
+            projects_dir = os.path.join('users', username, 'projects')
+            project_dir = os.path.join(projects_dir, project_name)
             
-        Returns:
-            tuple: (list of project names, list of table names) or (empty list, empty list) if none found
-        """
+            # Update tables
+            tables = []
+            structures_dir = os.path.join(project_dir, 'data', 'structures')
+            if os.path.exists(structures_dir):
+                tables = [f.replace('_structure.json', '') for f in os.listdir(structures_dir)
+                        if f.endswith('_structure.json')]
+            session['available_tables'] = tables
+            
+            # Update uploaded files
+            uploaded_files = []
+            uploads_dir = os.path.join(project_dir, 'uploads')
+            if os.path.exists(uploads_dir):
+                uploaded_files = [f for f in os.listdir(uploads_dir)
+                                if os.path.isfile(os.path.join(uploads_dir, f))]
+            session['uploaded_files'] = uploaded_files
+            
+            # Update context instance
+            context = ContextManager.get_instance()
+            context.available_tables = tables
+            context.uploaded_files = uploaded_files
+    
+    @staticmethod
+    def list_projects_tables_and_files(username):
         try:
             # Get projects
-            projects_dir = os.path.join('users', username, 'projects')
-            projects = []
-            if os.path.exists(projects_dir):
-                projects = [d for d in os.listdir(projects_dir) 
-                        if os.path.isdir(os.path.join(projects_dir, d))]
-                
+            projects = list_projects()
+            
             # Get structure files for current project
             tables = []
+            uploaded_files = []
             if session.get('current_project'):
-                structures_dir = os.path.join(projects_dir, session['current_project'], 'data', 'structures')
-                if os.path.exists(structures_dir):
-                    tables = [f.replace('_structure.json', '') for f in os.listdir(structures_dir)
-                            if f.endswith('_structure.json')]
+                # Get tables from S3
+                structures_path = get_project_structures_path()
+                if structures_path:
+                    # Get all files in structures directory
+                    structure_files = list_files_in_s3(structures_path)
+                    # Extract table names from structure files
+                    tables = [os.path.basename(f).replace('_structure.json', '') 
+                             for f in structure_files 
+                             if f.endswith('_structure.json')]
+                    
+                # Get uploaded files from S3
+                uploads_path = get_project_uploads_path()
+                if uploads_path:
+                    uploaded_files = [os.path.basename(f) 
+                                    for f in list_files_in_s3(uploads_path)]
             
             # Log changes
-            old_projects = session.get('available_projects', [])
             old_tables = session.get('available_tables', [])
-            
-            if set(old_projects) != set(projects):
-                logging.info(f"Available projects changed from {old_projects} to {projects}")
             if set(old_tables) != set(tables):
                 logging.info(f"Available tables changed from {old_tables} to {tables}")
             
-            # Update session and context instance
-            session['available_projects'] = projects
+            # Update session and context
             session['available_tables'] = tables
-            
             context = ContextManager.get_instance()
-            context.available_projects = projects
             context.available_tables = tables
             
-            return projects, tables
+            return projects, tables, uploaded_files, OUTPUTS_FOR_PROJECT_TYPE[session['project_type']]
             
         except Exception as e:
-            logging.error(f"Error listing projects and tables for user {username}: {str(e)}")
-            return [], []
+            logging.error(f"Error listing projects, tables and files: {str(e)}")
+            return [], [], []
 
 # Instead of creating the instance directly, provide a function to get it
 def get_user_context():

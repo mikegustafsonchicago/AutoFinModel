@@ -1,8 +1,13 @@
 {
     "comparable_companies": {
+        "display": {
+            "defaultLayout": "normal",
+            "allowToggle": true,
+            "frozen_column": true  
+        },
         "filename": "comparable_companies.json",
         "root_key": "comparable_companies", 
-        "description": "Stores comparable company metrics and multiples",
+        "ai_instructions": "Stores comparable company metrics and multiples",
         "version": "1.0",
         "structure": {
             "comparable_companies": {
@@ -17,58 +22,86 @@
                         "equity_beta",
                         "asset_beta",
                         "ev_ebitda_multiple",
-                        "source",
-                        "source_date"
+                        "metrics_source",
+                        "metrics_notes"
                     ],
                     "properties": {
                         "company_name": {
                             "type": "string",
-                            "description": "The name of the comparable company. This is not optional. If there is no company name, there is no comparable.",
+                            "ai_instructions": "The name of the comparable company. This is not optional. If there is no company name, there is no comparable.",
+                            "display_name": "Company Name",
                             "min_length": 1,
                             "max_length": 100,
                             "order": 1
                         },
                         "enterprise_value": {
                             "type": ["number", "string"],
-                            "description": "Total company value in millions (minimum 0). Optional. If no information is provided, write '-'",
+                            "ai_instructions": "Total company value in millions (minimum 0). Optional. If no information is provided, write '-'",
+                            "display_name": "Enterprise Value ($M)",
                             "minimum": 0,
                             "order": 2
                         },
                         "market_cap": {
                             "type": ["number", "string"],
-                            "description": "The market capitalization of the company in millions (minimum 0). Optional. If no information is provided, write '-'",
+                            "ai_instructions": "The market capitalization of the company in millions (minimum 0). Optional. If no information is provided, write '-'",
+                            "display_name": "Market Cap ($M)",
                             "minimum": 0,
                             "order": 3
                         },
                         "ebitda": {
                             "type": ["number", "string"],
-                            "description": "Earnings before interest, taxes, depreciation and amortization in millions. Optional. If no information is provided, write '-'",
+                            "ai_instructions": "Earnings before interest, taxes, depreciation and amortization in millions. Optional. If no information is provided, write '-'",
+                            "display_name": "EBITDA ($M)",
                             "order": 4
                         },
                         "equity_beta": {
                             "type": ["number", "string"],
-                            "description": "Stock volatility relative to market. Optional. If no information is provided, write '-'",
+                            "ai_instructions": "Stock volatility relative to market. Optional. If no information is provided, write '-'",
+                            "display_name": "Equity Beta",
                             "order": 5
                         },
                         "asset_beta": {
                             "type": ["number", "string"],
-                            "description": "Asset volatility measure. Optional. If no information is provided, write '-'",
+                            "ai_instructions": "Asset volatility measure. Optional. If no information is provided, write '-'",
+                            "display_name": "Asset Beta",
                             "order": 6
                         },
                         "ev_ebitda_multiple": {
                             "type": ["number", "string"],
-                            "description": "Enterprise value to EBITDA multiple. Optional. If no information is provided, write '-'",
+                            "ai_instructions": "Enterprise value to EBITDA multiple. Optional. If no information is provided, write '-'",
+                            "display_name": "EV/EBITDA Multiple",
                             "order": 7
                         },
-                        "source": {
-                            "type": "string",
-                            "description": "Source of the comparable data. Be extremely precise, ideally, explain the paragraph or page number from the uploaded document. This is never optional, but if you can't provide a referencable source, write 'No Source'",
-                            "order": 8
+                        "metrics_source": {
+                            "type": "source_object",
+                            "ai_instructions": "Source information for the company metrics. You must provide specific page numbers, paragraph numbers, or sections where the information was found. If no referenceable source exists, use '-No Source-' for all fields.",
+                            "display_name": "Metrics Source",
+                            "order": 8,
+                            "required": ["ai_instructions", "url", "text_context"],
+                            "properties": {
+                                "object_type": {
+                                    "type": "string",
+                                    "ai_instructions": "Must be 'source_object' for parsing purposes"
+                                },
+                                "display_value": {
+                                    "type": "string",
+                                    "ai_instructions": "Provide specific source details like 'Page 5, Paragraph 2' or 'Section 3.1'. If from an uploaded document, specify exact location. If no referenceable source, use '-No Source-'"
+                                },
+                                "url": {
+                                    "type": "string",
+                                    "ai_instructions": "Full URL to source. If from an uploaded document or no referenceable source, use '-No Source-'",
+                                    "format": "uri"
+                                },
+                                "text_context": {
+                                    "type": "string",
+                                    "ai_instructions": "Exact quote from source with page/paragraph reference. If no direct quote available, use '-No Source-'"
+                                }
+                            }
                         },
-                        "source_date": {
+                        "metrics_notes": {
                             "type": "string",
-                            "description": "Date the comparable data was sourced",
-                            "format": "date",
+                            "ai_instructions": "Additional context about how the metrics were determined",
+                            "display_name": "Metrics Notes",
                             "order": 9
                         }
                     }
@@ -85,8 +118,13 @@
                     "equity_beta": "-",
                     "asset_beta": "-",
                     "ev_ebitda_multiple": "-",
-                    "source": "No Source",
-                    "source_date": "2024-01-01"
+                    "metrics_source": {
+                        "object_type": "source_object",
+                        "display_value": "-No Source-",
+                        "url": "-No Source-",
+                        "text_context": "-No Source-"
+                    },
+                    "metrics_notes": "Sample comparable company metrics"
                 }
             ]
         }

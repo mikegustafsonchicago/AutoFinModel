@@ -17,3 +17,10 @@ session_logs/
 __pycache__/
 *.pyc
 .env
+
+static/json_structure_data/GRADING_business_description_structure.json
+static/json_structure_data/GRADING_FACES_structure.json
+static/json_structure_data/GRADING_MMMM_structure.json
+static/json_structure_data/GRADING_SUCCESS_structure.json
+
+flask_session_data/

@@ -2,9 +2,14 @@
     "revenue": {
         "filename": "revenue_build.json",
         "root_key": "revenue_sources", 
-        "description": "Stores revenue sources and pricing information",
+        "ai_instructions": "Stores revenue sources and pricing information",
         "version": "1.0",
-        "structure": {
+        "display": {
+            "defaultLayout": "normal",
+            "allowToggle": true,
+            "frozen_column": true
+            },
+            "structure": {
             "revenue_sources": {
                 "type": "array",
                 "items": {
@@ -12,65 +17,98 @@
                     "required": [
                         "revenue_source_name",
                         "revenue_source_price",
-                        "price_source", 
-                        "price_source_link",
+                        "price_source",
                         "price_notes",
-                        "monthly_transactions",
+                        "monthly_transactions", 
                         "frequency_notes",
-                        "frequency_source",
-                        "frequency_source_link"
+                        "frequency_source"
                     ],
                     "properties": {
                         "revenue_source_name": {
                             "type": "string",
-                            "description": "Name of the revenue stream or service being offered",
+                            "ai_instructions": "Name of the revenue stream or service being offered",
+                            "display_name": "Revenue Source",
                             "min_length": 1,
                             "max_length": 100,
                             "order": 1
                         },
                         "revenue_source_price": {
                             "type": "number",
-                            "description": "Price charged per unit/service",
+                            "ai_instructions": "Price charged per unit/service",
+                            "display_name": "Price per Unit ($)",
                             "minimum": 0,
                             "order": 2
                         },
                         "price_source": {
-                            "type": "string",
-                            "description": "Source of the pricing information. If the source was part of this api call, you must provide detail about what page this information was found on.",
-                            "order": 3
-                        },
-                        "price_source_link": {
-                            "type": "string", 
-                            "description": "URL link to source of pricing data. Must be provided as \"No source\" if the source was part of this api call or is not a website.",
-                            "format": "uri",
-                            "order": 4
+                            "type": "source_object",
+                            "ai_instructions": "Source information for the pricing data. You must provide specific page numbers, paragraph numbers, or sections where the information was found. If no referenceable source exists, use '-No Source-' for all fields.",
+                            "display_name": "Price Source",
+                            "order": 3,
+                            "required": ["ai_instructions", "url", "text_context"],
+                            "properties": {
+                                "object_type": {
+                                    "type": "string",
+                                    "ai_instructions": "Must be 'source_object' for parsing purposes"
+                                },
+                                "display_value": {
+                                    "type": "string",
+                                    "ai_instructions": "Provide specific source details like 'Page 5, Paragraph 2' or 'Section 3.1'. If from an uploaded document, specify exact location. If no referenceable source, use '-No Source-'"
+                                },
+                                "url": {
+                                    "type": "string",
+                                    "ai_instructions": "Full URL to source. If from an uploaded document or no referenceable source, use '-No Source-'",
+                                    "format": "uri"
+                                },
+                                "text_context": {
+                                    "type": "string",
+                                    "ai_instructions": "Exact quote from source with page/paragraph reference. If no direct quote available, use '-No Source-'"
+                                }
+                            }
                         },
                         "price_notes": {
                             "type": "string",
-                            "description": "Additional context and explanation about how the price was determined or calculated",
-                            "order": 5
+                            "ai_instructions": "Additional context about how the price was determined",
+                            "display_name": "Price Notes",
+                            "order": 4
                         },
                         "monthly_transactions": {
                             "type": "number",
-                            "description": "Number of transactions expected per month",
+                            "ai_instructions": "Number of transactions expected per month",
+                            "display_name": "Monthly Transactions",
                             "minimum": 0,
-                            "order": 6
+                            "order": 5
                         },
                         "frequency_notes": {
                             "type": "string",
-                            "description": "This note should precisely explain why the number of monthly transactions was chosen.",
-                            "order": 7
+                            "ai_instructions": "Explain why this frequency was chosen. If you don't have a referenceable justification, write 'assumption'",
+                            "display_name": "Frequency Notes",
+                            "order": 6
                         },
                         "frequency_source": {
-                            "type": "string",
-                            "description": "Source of the transaction frequency data. If the source was part of this api call, make sure to explain what page in the pdf the transaction frequency information was found on.",
-                            "order": 8
-                        },
-                        "frequency_source_link": {
-                            "type": "string",
-                            "description": "URL link to source of frequency data. Must be provided as \"No source\" if the source was part of this api call or is not a website.",
-                            "format": "uri",
-                            "order": 9
+                            "type": "source_object",
+                            "ai_instructions": "Source information for the frequency data. You must provide specific page numbers, paragraph numbers, or sections where the information was found. If no referenceable source exists, use '-No Source-' for all fields.",
+                            "display_name": "Frequency Source",
+                            "order": 7,
+                            "required": ["ai_instructions", "url", "text_context"],
+                            "properties": {
+                                "object_type": {
+                                    "type": "string",
+                                    "ai_instructions": "Must be 'source_object' for parsing purposes"
+                                },
+                                "display_value": {
+                                    "type": "string",
+                                    "ai_instructions": "Provide specific source details like 'Page 5, Paragraph 2' or 'Section 3.1'. If from an uploaded document, specify exact location. If no referenceable source, use '-No Source-'"
+                                },
+                                "url": {
+                                    "type": "string",
+                                    "ai_instructions": "Full URL to source. If from an uploaded document or no referenceable source, use '-No Source-'",
+                                    "format": "uri"
+                                },
+                                "text_context": {
+                                    "type": "string",
+                                    "ai_instructions": "Exact quote from source with page/paragraph reference. If no direct quote available, use '-No Source-'"
+                                }
+                            }
                         }
                     }
                 }
@@ -81,17 +119,23 @@
                 {
                     "revenue_source_name": "Sample Revenue Stream",
                     "revenue_source_price": 25.00,
-                    "price_source": "Industry Average",
-                    "price_source_link": "https://example.com/pricing", 
-                    "price_notes": "Price selected from historical data, page 3 of CIM",
+                    "price_source": {
+                        "object_type": "source_object",
+                        "display_value": "-No Source-",
+                        "url": "-No Source-",
+                        "text_context": "-No Source-"
+                    },
+                    "price_notes": "Price selected from historical data",
                     "monthly_transactions": 100,
                     "frequency_notes": "Frequency set to produce acceptable monthly revenue",
-                    "frequency_source": "Confidential Information Memorandum, Page 13, Section 3.1",
-                    "frequency_source_link": "https://example.com/research"
+                    "frequency_source": {
+                        "object_type": "source_object",
+                        "display_value": "-No Source-",
+                        "url": "-No Source-",
+                        "text_context": "-No Source-"
+                    }
                 }
             ]
         }
     }
 }
-
-

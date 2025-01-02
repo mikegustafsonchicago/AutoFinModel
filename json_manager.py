@@ -9,8 +9,17 @@ import os
 import json
 import logging
 from datetime import datetime
-from file_manager import get_project_data_path, ensure_directory_exists, get_project_structures_path
-from config import STRUCTURE_FILES_DIR, FINANCIALS_TABLE, REAL_ESTATE_TABLE, CATALYST_TABLE, DEFAULT_project_type
+from file_manager import (
+    get_project_data_path, get_project_structures_path,
+    read_json, write_json, read_file, write_file, 
+    upload_file_to_s3, download_file_from_s3,
+    s3_client, BUCKET_NAME
+)
+from config import (
+    STRUCTURE_FILES_DIR, 
+    FINANCIALS_TABLE, REAL_ESTATE_TABLE, CATALYST_TABLE, DEFAULT_PROJECT_METADATA,
+    OUTPUTS_FOR_PROJECT_TYPE, TA_GRADING_TABLE
+)
 from excel_generation.ingredients_code import Ingredient
 from context_manager import get_user_context
 
@@ -29,38 +38,49 @@ class JsonManager:
         logging.debug(f"initialize_json_files: Initializing JSON files for {data_path}")
 
         try:
-            # Get all structure files in the structures directory
-            structure_files = [f for f in os.listdir(structures_path) if f.endswith('_structure.json')]
+            # List structure files in S3
+            response = s3_client.list_objects_v2(
+                Bucket=BUCKET_NAME,
+                Prefix=f"{structures_path}/"
+            )
             
-            for structure_filename in structure_files:
-                # Load structure file
-                structure_path = os.path.join(structures_path, structure_filename)
-                
+            if 'Contents' not in response:
+                logging.error("No structure files found in S3")
+                return False
+
+            # Filter for structure files
+            structure_files = [obj['Key'] for obj in response['Contents'] 
+                             if obj['Key'].endswith('_structure.json')]
+            
+            for structure_path in structure_files:
                 try:
-                    with open(structure_path, 'r') as f:
-                        structure_data = json.load(f)
-                        
+                    # Read structure file from S3
+                    structure_data = read_json(structure_path)
+                    
                     # Get the table name from the first key in structure data
                     table_key = next(iter(structure_data))
                     file_info = structure_data[table_key]
                     
-                    # Create output filename by removing _structure from structure filename
-                    output_filename = structure_filename.replace('_structure.json', '.json')
-                    file_path = os.path.join(data_path, output_filename)
+                    # Create output S3 path by removing _structure from structure filename
+                    output_filename = structure_path.split('/')[-1].replace('_structure.json', '.json')
+                    output_path = f"{data_path}/{output_filename}"
                     
                     # Get default content and root key from structure
                     initial_data = {}
                     initial_data[file_info["root_key"]] = file_info["default_content"][file_info["root_key"]]
                     
-                    # Write the file
-                    with open(file_path, 'w') as json_file:
-                        json.dump(initial_data, json_file, indent=4)
-                    logging.info(f"Created file with default content: {output_filename}")
+                    # Write directly to S3
+                    write_json(output_path, initial_data)
+                    logging.info(f"Created file with default content in S3: {output_path}")
                     
                 except Exception as e:
-                    logging.error(f"Failed to process structure file {structure_filename}: {e}")
+                    logging.error(f"Failed to process structure file {structure_path}: {e}")
                     success = False
-                    
+            
+            # Create project metadata in S3
+            project_path = '/'.join(data_path.split('/')[:-1])  # Get parent path in S3
+            self.create_project_metadata(project_path, user_context.project_type)
+            
         except Exception as e:
             logging.error(f"Failed to initialize JSON files: {e}")
             success = False
@@ -78,40 +98,31 @@ class JsonManager:
             list: The loaded JSON data as a list of records
         """
         project_data_path = get_project_data_path()
-        
-        # Directly construct file path from table identifier
-        file_path = os.path.join(project_data_path, f"{table_identifier}.json")
+        file_path = f"{project_data_path}/{table_identifier}.json"
         
         try:
-            with open(file_path, 'r') as file:
-                table_data = json.load(file)
+            table_data = read_json(file_path)
+            
+            # If data is a dict with a single key containing a list, return the list
+            if isinstance(table_data, dict) and len(table_data) == 1:
+                return list(table_data.values())[0]
+            
+            # Otherwise return the data as-is (should be a list)
+            return table_data
                 
-                # If data is a dict with a single key containing a list, return the list
-                if isinstance(table_data, dict) and len(table_data) == 1:
-                    return list(table_data.values())[0]
-                
-                # Otherwise return the data as-is (should be a list)
-                return table_data
-                    
-        except FileNotFoundError:
-            logging.error(f"load_json_data: File not found at path: {file_path}")
-            return []
-        except json.JSONDecodeError as e:
-            logging.error(f"load_json_data: JSON parsing error for {file_path}: {e}")
-            return []
         except Exception as e:
-            logging.error(f"load_json_data: Unexpected error loading {file_path}: {e}")
+            logging.error(f"load_json_data: Error loading {file_path}: {e}")
             return []
-        
     
     def initialize_user_json_structures(self):
         """
-        Copy JSON structure files from static folder to project structure folder.
+        Copy JSON structure files from static folder to project structure folder in S3.
             
         Returns:
             bool: True if all files copied successfully, False if any errors occurred
         """
         user_context = get_user_context()
+
         # Get structure files list based on project type
         if user_context.project_type == "catalyst":
             structure_files = CATALYST_TABLE
@@ -119,37 +130,40 @@ class JsonManager:
             structure_files = REAL_ESTATE_TABLE
         elif user_context.project_type == "financial":
             structure_files = FINANCIALS_TABLE
+        elif user_context.project_type == "ta_grading":
+            structure_files = TA_GRADING_TABLE
         else:
             logging.error(f"initialize_user_json_structures: Invalid project type: {user_context.project_type}")
             return False
 
-        # Create destination structure directory if it doesn't exist
-        dest_dir = os.path.join('users', user_context.username, 'projects', 
-                               user_context.current_project, 'data', 'structures')
-        os.makedirs(dest_dir, exist_ok=True)
-
-        # Copy structure files
+        structures_path = get_project_structures_path()
         success = True
+        
+        # Copy structure files from local static folder to S3
         for structure_file in structure_files:
             try:
-                # Copy structure file
-                source_file = os.path.join(STRUCTURE_FILES_DIR, structure_file)
-                dest_file = os.path.join(dest_dir, structure_file)
+                source_file = f"static/json_structure_data/{structure_file}"
+                dest_key = f"{structures_path}/{structure_file}"
                 
-                if os.path.exists(source_file):
-                    with open(source_file, 'r') as src, open(dest_file, 'w') as dst:
-                        dst.write(src.read())
-                    logging.info(f"initialize_user_json_structures: Copied structure file {structure_file}")
+                # Check if source file exists
+                if not os.path.exists(source_file):
+                    logging.error(f"Source file does not exist: {source_file}")
+                    success = False
+                    continue
+                
+                # Upload file to S3
+                success = upload_file_to_s3(source_file, dest_key)
+                if success:
+                    logging.info(f"Successfully copied structure file {structure_file}")
                 else:
-                    logging.warning(f"initialize_user_json_structures: Source structure file not found: {source_file}")
+                    logging.warning(f"Failed to copy structure file {structure_file}")
                     success = False
 
             except Exception as e:
-                logging.error(f"initialize_user_json_structures: Error copying structure file {structure_file}: {e}")
+                logging.error(f"Error copying structure file {structure_file}: {str(e)}", exc_info=True)
                 success = False
 
         return success
-
 
     def update_json_files(self, json_data):
         """
@@ -157,13 +171,20 @@ class JsonManager:
         """
         user_context = get_user_context()
         project_data_path = get_project_data_path()
-        logging.debug(f"update_json_files: Updating JSON files for project {user_context.project_type} with data: {json_data}\n Project data path: {project_data_path}")
         
-        # Get list of existing table files in data directory
+        # List existing files in S3 data directory
+        response = s3_client.list_objects_v2(
+            Bucket=BUCKET_NAME,
+            Prefix=f"{project_data_path}/"
+        )
+        
         existing_tables = []
-        if os.path.exists(project_data_path):
-            existing_tables = [f.replace('.json', '') for f in os.listdir(project_data_path)
-                             if os.path.isfile(os.path.join(project_data_path, f)) and f.endswith('.json')]
+        if 'Contents' in response:
+            existing_tables = [
+                obj['Key'].split('/')[-1].replace('.json', '')
+                for obj in response['Contents']
+                if obj['Key'].endswith('.json')
+            ]
             
         for table_name, new_data in json_data.items():
             # Check if table exists in project data directory
@@ -171,16 +192,13 @@ class JsonManager:
                 logging.warning(f"update_json_files: Table {table_name} not found in project data directory")
                 continue
 
-            # Construct filename from table name
-            file_name = f"{table_name}.json"
-            file_path = os.path.join(project_data_path, file_name)
-
+            # Write updated data to S3
+            file_path = f"{project_data_path}/{table_name}.json"
             try:
-                with open(file_path, "w") as json_file:
-                    json.dump(new_data, json_file, indent=4)
-                logging.info(f"update_json_files: Successfully updated {file_name} for project {user_context.project_type}")
+                write_json(file_path, new_data)
+                logging.info(f"update_json_files: Successfully updated {table_name}.json for project {user_context.project_type}")
             except Exception as e:
-                logging.error(f"update_json_files: Failed to update {file_name} for project {user_context.project_type}: {e}")
+                logging.error(f"update_json_files: Failed to update {table_name}.json for project {user_context.project_type}: {e}")
 
     def fix_incomplete_json(self, json_string):
         """Fix incomplete JSON by adding missing brackets"""
@@ -197,54 +215,190 @@ class JsonManager:
         return json_string
 
     def save_json_to_file(self, json_data):
+        """Save JSON data to a timestamped file in S3"""
         user_context = get_user_context()
         project_data_path = get_project_data_path()
-
-        """Save JSON data to a timestamped file"""
-        os.makedirs(project_data_path, exist_ok=True)
+        save_directory = f"{project_data_path}/ai_responses"
 
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         file_name = f"openai_response_{timestamp}.json"
-        file_path = os.path.join(project_data_path, file_name)
+        file_path = f"{save_directory}/{file_name}"
 
-        with open(file_path, 'w') as json_file:
-            json.dump(json_data, json_file, indent=4)
-
-        logging.info(f"save_json_to_file: Saved JSON response to {file_path}")
-
+        try:
+            write_json(file_path, json_data)
+            logging.info(f"save_json_to_file: Saved JSON response to {file_path}")
+        except Exception as e:
+            logging.error(f"save_json_to_file: Failed to save JSON response: {e}")
 
     def get_table_schema(self, table_name):
         """
-        Get the schema (structure) of a given table.
+        Get the schema (structure) and display settings of a given table from S3.
         The schema defines the columns and their properties.
         
         Args:
             table_name (str): Name of the table to get schema for
             
         Returns:
-            dict: The schema if found, None if not found
+            dict: The schema and display settings if found, None if not found
         """
-
         try:
             structures_path = get_project_structures_path()
+            structure_path = f"{structures_path}/{table_name}_structure.json"
             
-            # Load structure file for table
-            structure_file = os.path.join(structures_path, f"{table_name}_structure.json")
-            
-            if os.path.exists(structure_file):
-                logging.debug(f"get_table_schema: Structure file found for {table_name}")
-                with open(structure_file, 'r') as f:
-                    structure_data = json.load(f)
-                    # Get just the structure field value
-                    schema = {"structure": structure_data[table_name].get('structure')}
-                    if schema["structure"]:
-                        return schema
-                    logging.debug(f"get_table_schema: No schema found in structure data for {table_name}")
-            else:
-                logging.debug(f"get_table_schema: No structure file found for {table_name}")
+            try:
+                structure_data = read_json(structure_path)
+                table_data = structure_data[table_name]
+                
+                schema = {
+                    "structure": table_data.get('structure'),
+                    "display": table_data.get('display')
+                }
+                
+                if schema["structure"]:
+                    return schema
+                
+            except Exception as inner_e:
+                pass
             
             return None
             
         except Exception as e:
             logging.error(f"Error retrieving schema for {table_name}: {str(e)}", exc_info=True)
             return None
+
+    def create_project_metadata(self, project_base, project_type):
+        """
+        Create a metadata JSON file for the project in S3 containing project information.
+        
+        Args:
+            project_base: Base directory path of the project
+            project_type: Type of project (financial, real_estate, etc.)
+            
+        Returns:
+            bool: True if metadata was created successfully, False otherwise
+        """
+        try:
+            current_time = datetime.now().isoformat()
+            user_context = get_user_context()
+            
+            # Start with default metadata from config
+            metadata = DEFAULT_PROJECT_METADATA.copy()
+            
+            # Update dynamic fields
+            metadata["project_type"] = project_type
+            metadata["created_at"] = current_time 
+            metadata["last_modified_at"] = current_time
+            metadata["project_owner"] = user_context.username
+            metadata["collaborators"] = [user_context.username]
+            metadata["access_level"] = {
+                user_context.username: "admin"
+            }
+            
+            metadata_path = f"{project_base}/project_metadata.json"
+            write_json(metadata_path, metadata)
+            logging.debug(f"Created project metadata at: {metadata_path}")
+            return True
+            
+        except Exception as e:
+            logging.error(f"Error creating project metadata: {str(e)}")
+            return False
+
+    def update_metadata_field(self, field, value):
+        """
+        Update a specific field in the project metadata.
+        
+        Args:
+            field: The metadata field to update
+            value: The new value for the field
+            
+        Returns:
+            bool: True if update was successful, False otherwise
+        """
+        try:
+            user_context = get_user_context()
+            metadata_path = f"users/{user_context.username}/projects/{user_context.current_project}/project_metadata.json"
+            
+            # Read existing metadata
+            metadata = read_json(metadata_path)
+            if not metadata:
+                logging.error("Could not read existing metadata")
+                return False
+            
+            # Validate field exists in default schema
+            if field not in DEFAULT_PROJECT_METADATA:
+                logging.error(f"Invalid metadata field: {field}")
+                return False
+            
+            # Update the specified field
+            metadata[field] = value
+            
+            # Always update last_modified_at when metadata changes
+            metadata["last_modified_at"] = datetime.now().isoformat()
+            
+            # Write back to S3
+            success = write_json(metadata_path, metadata)
+            if success:
+                logging.info(f"Successfully updated metadata field: {field}")
+                return True
+            
+            return False
+            
+        except Exception as e:
+            logging.error(f"Error updating metadata field {field}: {str(e)}")
+            return False
+
+    def increment_file_count(self, increment=1):
+        """
+        Increment or decrement the file count in project metadata.
+        
+        Args:
+            increment: Number to add to file count (negative to decrease)
+            
+        Returns:
+            bool: True if update was successful, False otherwise
+        """
+        try:
+            user_context = get_user_context()
+            metadata_path = f"users/{user_context.username}/projects/{user_context.current_project}/project_metadata.json"
+            
+            metadata = read_json(metadata_path)
+            if not metadata:
+                return False
+            
+            current_count = metadata.get("file_count", 0)
+            metadata["file_count"] = max(0, current_count + increment)  # Prevent negative count
+            metadata["last_modified_at"] = datetime.now().isoformat()
+            
+            return write_json(metadata_path, metadata)
+            
+        except Exception as e:
+            logging.error(f"Error updating file count: {str(e)}")
+            return False
+
+    def update_last_output(self, output_type):
+        """
+        Update the last_output_generated timestamp and type.
+        Validates output type against allowed outputs for project type.
+        
+        Args:
+            output_type: Type of output generated (excel_model, powerpoint_overview, etc.)
+            
+        Returns:
+            bool: True if update was successful, False otherwise
+        """
+        try:
+            user_context = get_user_context()
+            project_type = user_context.project_type
+            
+            # Validate output type is allowed for this project type
+            if output_type not in OUTPUTS_FOR_PROJECT_TYPE.get(project_type, []):
+                logging.error(f"Invalid output type {output_type} for project type {project_type}")
+                return False
+                
+            return self.update_metadata_field("last_output_generated", {
+                "timestamp": datetime.now().isoformat(),
+                "type": output_type
+            })
+        except Exception as e:
+            logging.error(f"Error updating last output: {str(e)}")
+            return False

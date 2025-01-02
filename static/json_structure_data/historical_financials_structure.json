@@ -1,104 +1,488 @@
 {
     "historical_financials": {
+        "display": {
+            "defaultLayout": "normal",
+            "allowToggle": true,
+            "frozen_column": true  
+        },
         "filename": "hist_IS.json",
         "root_key": "historical_financials",
-        "description": "The Historical Income Statement table contains historical financial performance data organized by year. It follows a standard income statement format, breaking down revenue, costs, and various profit metrics.",
+        "ai_instructions": "The Historical Income Statement table contains historical financial performance data organized by year. It follows a standard income statement format, breaking down revenue, costs, and various profit metrics.",
         "version": "1.0",
-        "explanation_file": "historical_financials_explanation.txt", 
-        "default_content": {
-            "historical_financials": [
-                {
-                    "year": 2023,
-                    "revenue": 1000000.0,
-                    "cost_of_sales": 600000.0,
-                    "operating_expenses": 200000.0,
-                    "ebitda": 200000.0,
-                    "depreciation": 50000.0,
-                    "ebit": 150000.0,
-                    "interest_expense": 10000.0,
-                    "income_taxes": 35000.0,
-                    "net_income": 105000.0
-                }
-            ]
-        },
+        "explanation_file": "historical_financials_explanation.txt",
         "structure": {
             "historical_financials": {
                 "type": "array",
-                "description": "Each item represents a full year's income statement data",
+                "ai_instructions": "Each item represents a full year's income statement data",
                 "items": {
                     "type": "object",
                     "required": [
                         "year",
                         "revenue",
-                        "cost_of_sales", 
+                        "revenue_source",
+                        "revenue_notes",
+                        "cost_of_sales",
+                        "cost_of_sales_source",
+                        "cost_of_sales_notes",
                         "operating_expenses",
+                        "operating_expenses_source", 
+                        "operating_expenses_notes",
                         "ebitda",
+                        "ebitda_source",
+                        "ebitda_notes",
                         "depreciation",
+                        "depreciation_source",
+                        "depreciation_notes",
                         "ebit",
-                        "interest_expense", 
+                        "ebit_source",
+                        "ebit_notes",
+                        "interest_expense",
+                        "interest_expense_source",
+                        "interest_expense_notes",
                         "income_taxes",
-                        "net_income"
+                        "income_taxes_source",
+                        "income_taxes_notes",
+                        "net_income",
+                        "net_income_source",
+                        "net_income_notes"
                     ],
                     "properties": {
                         "year": {
                             "type": "number",
-                            "description": "The fiscal year for the income statement data",
+                            "ai_instructions": "The fiscal year for the income statement data",
+                            "display_name": "Year",
                             "order": 1
                         },
                         "revenue": {
-                            "type": "number", 
-                            "description": "Total revenue/sales for the year",
+                            "type": "number",
+                            "ai_instructions": "Total revenue/sales for the year",
+                            "display_name": "Revenue",
                             "minimum": 0,
                             "order": 2
                         },
+                        "revenue_source": {
+                            "type": "source_object",
+                            "ai_instructions": "Source information for the revenue data. You must provide specific page numbers, paragraph numbers, or sections where the information was found. If no referenceable source exists, use '-No Source-' for all fields.",
+                            "display_name": "Revenue Source",
+                            "order": 3,
+                            "required": ["ai_instructions", "url", "text_context"],
+                            "properties": {
+                                "object_type": {
+                                    "type": "string",
+                                    "ai_instructions": "Must be 'source_object' for parsing purposes"
+                                },
+                                "display_value": {
+                                    "type": "string",
+                                    "ai_instructions": "Provide specific source details like 'Page 5, Paragraph 2' or 'Section 3.1'. If from an uploaded document, specify exact location. If no referenceable source, use '-No Source-'"
+                                },
+                                "url": {
+                                    "type": "string", 
+                                    "ai_instructions": "Full URL to source. If from an uploaded document or no referenceable source, use '-No Source-'",
+                                    "format": "uri"
+                                },
+                                "text_context": {
+                                    "type": "string",
+                                    "ai_instructions": "Exact quote from source with page/paragraph reference. If no direct quote available, use '-No Source-'"
+                                }
+                            }
+                        },
+                        "revenue_notes": {
+                            "type": "string",
+                            "ai_instructions": "Additional context about how the revenue was determined",
+                            "display_name": "Revenue Notes",
+                            "order": 4
+                        },
                         "cost_of_sales": {
                             "type": "number",
-                            "description": "Direct costs of goods/services sold",
+                            "ai_instructions": "Direct costs of goods/services sold",
+                            "display_name": "Cost of Sales",
                             "minimum": 0,
-                            "order": 3
+                            "order": 5
+                        },
+                        "cost_of_sales_source": {
+                            "type": "source_object",
+                            "ai_instructions": "Source information for the cost of sales data. You must provide specific page numbers, paragraph numbers, or sections where the information was found. If no referenceable source exists, use '-No Source-' for all fields.",
+                            "display_name": "Cost of Sales Source",
+                            "order": 6,
+                            "required": ["ai_instructions", "url", "text_context"],
+                            "properties": {
+                                "object_type": {
+                                    "type": "string",
+                                    "ai_instructions": "Must be 'source_object' for parsing purposes"
+                                },
+                                "display_value": {
+                                    "type": "string",
+                                    "ai_instructions": "Provide specific source details like 'Page 5, Paragraph 2' or 'Section 3.1'. If from an uploaded document, specify exact location. If no referenceable source, use '-No Source-'"
+                                },
+                                "url": {
+                                    "type": "string",
+                                    "ai_instructions": "Full URL to source. If from an uploaded document or no referenceable source, use '-No Source-'",
+                                    "format": "uri"
+                                },
+                                "text_context": {
+                                    "type": "string",
+                                    "ai_instructions": "Exact quote from source with page/paragraph reference. If no direct quote available, use '-No Source-'"
+                                }
+                            }
+                        },
+                        "cost_of_sales_notes": {
+                            "type": "string", 
+                            "ai_instructions": "Additional context about how the cost of sales was determined",
+                            "display_name": "Cost of Sales Notes",
+                            "order": 7
                         },
                         "operating_expenses": {
                             "type": "number",
-                            "description": "Operating expenses excluding depreciation",
-                            "minimum": 0,
-                            "order": 4
-                        },
-                        "ebitda": {
-                            "type": "number",
-                            "description": "Earnings before interest, taxes, depreciation & amortization",
-                            "order": 5
-                        },
-                        "depreciation": {
-                            "type": "number",
-                            "description": "Depreciation & amortization expense",
-                            "minimum": 0,
-                            "order": 6
-                        },
-                        "ebit": {
-                            "type": "number",
-                            "description": "Earnings before interest and taxes",
-                            "order": 7
-                        },
-                        "interest_expense": {
-                            "type": "number",
-                            "description": "Interest expense for the year",
+                            "ai_instructions": "Operating expenses excluding depreciation",
+                            "display_name": "Operating Expenses",
                             "minimum": 0,
                             "order": 8
                         },
+                        "operating_expenses_source": {
+                            "type": "source_object",
+                            "ai_instructions": "Source information for the operating expenses data. You must provide specific page numbers, paragraph numbers, or sections where the information was found. If no referenceable source exists, use '-No Source-' for all fields.",
+                            "display_name": "Operating Expenses Source",
+                            "order": 9,
+                            "required": ["ai_instructions", "url", "text_context"],
+                            "properties": {
+                                "object_type": {
+                                    "type": "string",
+                                    "ai_instructions": "Must be 'source_object' for parsing purposes"
+                                },
+                                "display_value": {
+                                    "type": "string",
+                                    "ai_instructions": "Provide specific source details like 'Page 5, Paragraph 2' or 'Section 3.1'. If from an uploaded document, specify exact location. If no referenceable source, use '-No Source-'"
+                                },
+                                "url": {
+                                    "type": "string",
+                                    "ai_instructions": "Full URL to source. If from an uploaded document or no referenceable source, use '-No Source-'",
+                                    "format": "uri"
+                                },
+                                "text_context": {
+                                    "type": "string",
+                                    "ai_instructions": "Exact quote from source with page/paragraph reference. If no direct quote available, use '-No Source-'"
+                                }
+                            }
+                        },
+                        "operating_expenses_notes": {
+                            "type": "string",
+                            "ai_instructions": "Additional context about how operating expenses were determined",
+                            "display_name": "Operating Expenses Notes",
+                            "order": 10
+                        },
+                        "ebitda": {
+                            "type": "number",
+                            "ai_instructions": "Earnings before interest, taxes, depreciation & amortization",
+                            "display_name": "EBITDA",
+                            "order": 11
+                        },
+                        "ebitda_source": {
+                            "type": "source_object",
+                            "ai_instructions": "Source information for the EBITDA data. You must provide specific page numbers, paragraph numbers, or sections where the information was found. If no referenceable source exists, use '-No Source-' for all fields.",
+                            "display_name": "EBITDA Source",
+                            "order": 12,
+                            "required": ["ai_instructions", "url", "text_context"],
+                            "properties": {
+                                "object_type": {
+                                    "type": "string",
+                                    "ai_instructions": "Must be 'source_object' for parsing purposes"
+                                },
+                                "display_value": {
+                                    "type": "string",
+                                    "ai_instructions": "Provide specific source details like 'Page 5, Paragraph 2' or 'Section 3.1'. If from an uploaded document, specify exact location. If no referenceable source, use '-No Source-'"
+                                },
+                                "url": {
+                                    "type": "string",
+                                    "ai_instructions": "Full URL to source. If from an uploaded document or no referenceable source, use '-No Source-'",
+                                    "format": "uri"
+                                },
+                                "text_context": {
+                                    "type": "string",
+                                    "ai_instructions": "Exact quote from source with page/paragraph reference. If no direct quote available, use '-No Source-'"
+                                }
+                            }
+                        },
+                        "ebitda_notes": {
+                            "type": "string",
+                            "ai_instructions": "Additional context about how EBITDA was determined",
+                            "display_name": "EBITDA Notes",
+                            "order": 13
+                        },
+                        "depreciation": {
+                            "type": "number",
+                            "ai_instructions": "Depreciation & amortization expense",
+                            "display_name": "Depreciation",
+                            "minimum": 0,
+                            "order": 14
+                        },
+                        "depreciation_source": {
+                            "type": "source_object",
+                            "ai_instructions": "Source information for the depreciation data. You must provide specific page numbers, paragraph numbers, or sections where the information was found. If no referenceable source exists, use '-No Source-' for all fields.",
+                            "display_name": "Depreciation Source",
+                            "order": 15,
+                            "required": ["ai_instructions", "url", "text_context"],
+                            "properties": {
+                                "object_type": {
+                                    "type": "string",
+                                    "ai_instructions": "Must be 'source_object' for parsing purposes"
+                                },
+                                "display_value": {
+                                    "type": "string",
+                                    "ai_instructions": "Provide specific source details like 'Page 5, Paragraph 2' or 'Section 3.1'. If from an uploaded document, specify exact location. If no referenceable source, use '-No Source-'"
+                                },
+                                "url": {
+                                    "type": "string",
+                                    "ai_instructions": "Full URL to source. If from an uploaded document or no referenceable source, use '-No Source-'",
+                                    "format": "uri"
+                                },
+                                "text_context": {
+                                    "type": "string",
+                                    "ai_instructions": "Exact quote from source with page/paragraph reference. If no direct quote available, use '-No Source-'"
+                                }
+                            }
+                        },
+                        "depreciation_notes": {
+                            "type": "string",
+                            "ai_instructions": "Additional context about how depreciation was determined",
+                            "display_name": "Depreciation Notes",
+                            "order": 16
+                        },
+                        "ebit": {
+                            "type": "number",
+                            "ai_instructions": "Earnings before interest and taxes",
+                            "display_name": "EBIT",
+                            "order": 17
+                        },
+                        "ebit_source": {
+                            "type": "source_object",
+                            "ai_instructions": "Source information for the EBIT data. You must provide specific page numbers, paragraph numbers, or sections where the information was found. If no referenceable source exists, use '-No Source-' for all fields.",
+                            "display_name": "EBIT Source",
+                            "order": 18,
+                            "required": ["ai_instructions", "url", "text_context"],
+                            "properties": {
+                                "object_type": {
+                                    "type": "string",
+                                    "ai_instructions": "Must be 'source_object' for parsing purposes"
+                                },
+                                "display_value": {
+                                    "type": "string",
+                                    "ai_instructions": "Provide specific source details like 'Page 5, Paragraph 2' or 'Section 3.1'. If from an uploaded document, specify exact location. If no referenceable source, use '-No Source-'"
+                                },
+                                "url": {
+                                    "type": "string",
+                                    "ai_instructions": "Full URL to source. If from an uploaded document or no referenceable source, use '-No Source-'",
+                                    "format": "uri"
+                                },
+                                "text_context": {
+                                    "type": "string",
+                                    "ai_instructions": "Exact quote from source with page/paragraph reference. If no direct quote available, use '-No Source-'"
+                                }
+                            }
+                        },
+                        "ebit_notes": {
+                            "type": "string",
+                            "ai_instructions": "Additional context about how EBIT was determined",
+                            "display_name": "EBIT Notes",
+                            "order": 19
+                        },
+                        "interest_expense": {
+                            "type": "number",
+                            "ai_instructions": "Interest expense for the year",
+                            "display_name": "Interest Expense",
+                            "minimum": 0,
+                            "order": 20
+                        },
+                        "interest_expense_source": {
+                            "type": "source_object",
+                            "ai_instructions": "Source information for the interest expense data. You must provide specific page numbers, paragraph numbers, or sections where the information was found. If no referenceable source exists, use '-No Source-' for all fields.",
+                            "display_name": "Interest Expense Source",
+                            "order": 21,
+                            "required": ["ai_instructions", "url", "text_context"],
+                            "properties": {
+                                "object_type": {
+                                    "type": "string",
+                                    "ai_instructions": "Must be 'source_object' for parsing purposes"
+                                },
+                                "display_value": {
+                                    "type": "string",
+                                    "ai_instructions": "Provide specific source details like 'Page 5, Paragraph 2' or 'Section 3.1'. If from an uploaded document, specify exact location. If no referenceable source, use '-No Source-'"
+                                },
+                                "url": {
+                                    "type": "string",
+                                    "ai_instructions": "Full URL to source. If from an uploaded document or no referenceable source, use '-No Source-'",
+                                    "format": "uri"
+                                },
+                                "text_context": {
+                                    "type": "string",
+                                    "ai_instructions": "Exact quote from source with page/paragraph reference. If no direct quote available, use '-No Source-'"
+                                }
+                            }
+                        },
+                        "interest_expense_notes": {
+                            "type": "string",
+                            "ai_instructions": "Additional context about how interest expense was determined",
+                            "display_name": "Interest Expense Notes",
+                            "order": 22
+                        },
                         "income_taxes": {
                             "type": "number",
-                            "description": "Income tax expense",
+                            "ai_instructions": "Income tax expense",
+                            "display_name": "Income Taxes",
                             "minimum": 0,
-                            "order": 9
+                            "order": 23
+                        },
+                        "income_taxes_source": {
+                            "type": "source_object",
+                            "ai_instructions": "Source information for the income taxes data. You must provide specific page numbers, paragraph numbers, or sections where the information was found. If no referenceable source exists, use '-No Source-' for all fields.",
+                            "display_name": "Income Taxes Source",
+                            "order": 24,
+                            "required": ["ai_instructions", "url", "text_context"],
+                            "properties": {
+                                "object_type": {
+                                    "type": "string",
+                                    "ai_instructions": "Must be 'source_object' for parsing purposes"
+                                },
+                                "display_value": {
+                                    "type": "string",
+                                    "ai_instructions": "Provide specific source details like 'Page 5, Paragraph 2' or 'Section 3.1'. If from an uploaded document, specify exact location. If no referenceable source, use '-No Source-'"
+                                },
+                                "url": {
+                                    "type": "string",
+                                    "ai_instructions": "Full URL to source. If from an uploaded document or no referenceable source, use '-No Source-'",
+                                    "format": "uri"
+                                },
+                                "text_context": {
+                                    "type": "string",
+                                    "ai_instructions": "Exact quote from source with page/paragraph reference. If no direct quote available, use '-No Source-'"
+                                }
+                            }
+                        },
+                        "income_taxes_notes": {
+                            "type": "string",
+                            "ai_instructions": "Additional context about how income taxes were determined",
+                            "display_name": "Income Taxes Notes",
+                            "order": 25
                         },
                         "net_income": {
                             "type": "number",
-                            "description": "Final net income/profit after all expenses",
-                            "order": 10
+                            "ai_instructions": "Final net income/profit after all expenses",
+                            "display_name": "Net Income",
+                            "order": 26
+                        },
+                        "net_income_source": {
+                            "type": "source_object",
+                            "ai_instructions": "Source information for the net income data. You must provide specific page numbers, paragraph numbers, or sections where the information was found. If no referenceable source exists, use '-No Source-' for all fields.",
+                            "display_name": "Net Income Source",
+                            "order": 27,
+                            "required": ["ai_instructions", "url", "text_context"],
+                            "properties": {
+                                "object_type": {
+                                    "type": "string",
+                                    "ai_instructions": "Must be 'source_object' for parsing purposes"
+                                },
+                                "display_value": {
+                                    "type": "string",
+                                    "ai_instructions": "Provide specific source details like 'Page 5, Paragraph 2' or 'Section 3.1'. If from an uploaded document, specify exact location. If no referenceable source, use '-No Source-'"
+                                },
+                                "url": {
+                                    "type": "string",
+                                    "ai_instructions": "Full URL to source. If from an uploaded document or no referenceable source, use '-No Source-'",
+                                    "format": "uri"
+                                },
+                                "text_context": {
+                                    "type": "string",
+                                    "ai_instructions": "Exact quote from source with page/paragraph reference. If no direct quote available, use '-No Source-'"
+                                }
+                            }
+                        },
+                        "net_income_notes": {
+                            "type": "string",
+                            "ai_instructions": "Additional context about how net income was determined",
+                            "display_name": "Net Income Notes",
+                            "order": 28
                         }
                     }
                 }
             }
+        },
+        "default_content": {
+            "historical_financials": [
+                {
+                    "year": 2023,
+                    "revenue": 1000000.0,
+                    "revenue_source": {
+                        "object_type": "source_object",
+                        "display_value": "-No Source-",
+                        "url": "-No Source-",
+                        "text_context": "-No Source-"
+                    },
+                    "revenue_notes": "Historical revenue data from financial statements",
+                    "cost_of_sales": 600000.0,
+                    "cost_of_sales_source": {
+                        "object_type": "source_object",
+                        "display_value": "-No Source-",
+                        "url": "-No Source-",
+                        "text_context": "-No Source-"
+                    },
+                    "cost_of_sales_notes": "Direct costs associated with revenue generation",
+                    "operating_expenses": 200000.0,
+                    "operating_expenses_source": {
+                        "object_type": "source_object",
+                        "display_value": "-No Source-",
+                        "url": "-No Source-",
+                        "text_context": "-No Source-"
+                    },
+                    "operating_expenses_notes": "Operating costs excluding depreciation",
+                    "ebitda": 200000.0,
+                    "ebitda_source": {
+                        "object_type": "source_object",
+                        "display_value": "-No Source-",
+                        "url": "-No Source-",
+                        "text_context": "-No Source-"
+                    },
+                    "ebitda_notes": "Calculated as revenue less costs and operating expenses",
+                    "depreciation": 50000.0,
+                    "depreciation_source": {
+                        "object_type": "source_object",
+                        "display_value": "-No Source-",
+                        "url": "-No Source-",
+                        "text_context": "-No Source-"
+                    },
+                    "depreciation_notes": "Annual depreciation of assets",
+                    "ebit": 150000.0,
+                    "ebit_source": {
+                        "object_type": "source_object",
+                        "display_value": "-No Source-",
+                        "url": "-No Source-",
+                        "text_context": "-No Source-"
+                    },
+                    "ebit_notes": "EBITDA less depreciation",
+                    "interest_expense": 10000.0,
+                    "interest_expense_source": {
+                        "object_type": "source_object",
+                        "display_value": "-No Source-",
+                        "url": "-No Source-",
+                        "text_context": "-No Source-"
+                    },
+                    "interest_expense_notes": "Interest paid on debt",
+                    "income_taxes": 35000.0,
+                    "income_taxes_source": {
+                        "object_type": "source_object",
+                        "display_value": "-No Source-",
+                        "url": "-No Source-",
+                        "text_context": "-No Source-"
+                    },
+                    "income_taxes_notes": "Income tax expense for the year",
+                    "net_income": 105000.0,
+                    "net_income_source": {
+                        "object_type": "source_object",
+                        "display_value": "-No Source-",
+                        "url": "-No Source-",
+                        "text_context": "-No Source-"
+                    },
+                    "net_income_notes": "Final profit after all expenses"
+                }
+            ]
         }
     }
 }

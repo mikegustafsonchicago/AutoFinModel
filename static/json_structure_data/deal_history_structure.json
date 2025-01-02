@@ -1,61 +1,126 @@
 {
     "deal_history": {
+        "display": {
+            "defaultLayout": "normal",
+            "allowToggle": true,
+            "frozen_column": true  
+        },
         "filename": "deal_history.json",
         "root_key": "deals",
-        "description": "The Deal History table tracks the firm's investment history, including details about portfolio companies, investment amounts, realization status, and co-investment partners",
+        "ai_instructions": "The Deal History table tracks the firm's investment history, including details about portfolio companies, investment amounts, realization status, and co-investment partners",
         "version": "1.0",
         "explanation_file": "deal_history_explanation.txt",
         "structure": {
             "deals": {
                 "type": "array",
-                "description": "Array of deal history entries. The data must be returned as a flat list of deals.",
+                "ai_instructions": "Array of deal history entries. The data must be returned as a flat list of deals.",
                 "items": {
                     "type": "object",
                     "required": [
                         "date",
                         "firm", 
                         "amount",
+                        "amount_source",
+                        "amount_notes",
                         "realized",
                         "syndicate_partners",
-                        "source_string",
-                        "source_link"
+                        "syndicate_source",
+                        "syndicate_notes"
                     ],
                     "properties": {
                         "date": {
                             "type": "string",
-                            "description": "The date when the investment was made",
+                            "ai_instructions": "The date when the investment was made",
+                            "display_name": "Investment Date",
                             "order": 1
                         },
                         "firm": {
-                            "type": "string",
-                            "description": "Name of the portfolio company or investment target",
+                            "type": "string", 
+                            "ai_instructions": "Name of the portfolio company or investment target",
+                            "display_name": "Portfolio Company",
                             "order": 2
                         },
                         "amount": {
                             "type": "string",
-                            "description": "Investment amount deployed by the firm",
+                            "ai_instructions": "Investment amount deployed by the firm",
+                            "display_name": "Investment Amount",
                             "order": 3
+                        },
+                        "amount_source": {
+                            "type": "source_object",
+                            "ai_instructions": "Source information for the investment amount. You must provide specific page numbers, paragraph numbers, or sections where the information was found. If no referenceable source exists, use '-No Source-' for all fields.",
+                            "display_name": "Amount Source",
+                            "order": 4,
+                            "required": ["ai_instructions", "url", "text_context"],
+                            "properties": {
+                                "object_type": {
+                                    "type": "string",
+                                    "ai_instructions": "Must be 'source_object' for parsing purposes"
+                                },
+                                "display_value": {
+                                    "type": "string",
+                                    "ai_instructions": "Provide specific source details like 'Page 5, Paragraph 2' or 'Section 3.1'. If from an uploaded document, specify exact location. If no referenceable source, use '-No Source-'"
+                                },
+                                "url": {
+                                    "type": "string", 
+                                    "ai_instructions": "Full URL to source. If from an uploaded document or no referenceable source, use '-No Source-'",
+                                    "format": "uri"
+                                },
+                                "text_context": {
+                                    "type": "string",
+                                    "ai_instructions": "Exact quote from source with page/paragraph reference. If no direct quote available, use '-No Source-'"
+                                }
+                            }
+                        },
+                        "amount_notes": {
+                            "type": "string",
+                            "ai_instructions": "Additional context about how the investment amount was determined",
+                            "display_name": "Amount Notes",
+                            "order": 5
                         },
                         "realized": {
                             "type": "string",
-                            "description": "Whether the investment has been realized/exited ('Yes'/'No')",
-                            "order": 4
+                            "ai_instructions": "Whether the investment has been realized/exited ('Yes'/'No')",
+                            "display_name": "Realized",
+                            "order": 6
                         },
                         "syndicate_partners": {
                             "type": "string",
-                            "description": "Names of co-investors or syndicate partners in the deal",
-                            "order": 5
-                        },
-                        "source_string": {
-                            "type": "string",
-                            "description": "Source of the deal information. If the source was part of this api call, you must provide detail about what page this information was found on.",
-                            "order": 6
-                        },
-                        "source_link": {
-                            "type": "string",
-                            "description": "URL link to source of deal data. Must be provided as \"No source\" if the source was part of this api call or is not a website.",
-                            "format": "uri",
+                            "ai_instructions": "Names of co-investors or syndicate partners in the deal",
+                            "display_name": "Co-Investors",
                             "order": 7
+                        },
+                        "syndicate_source": {
+                            "type": "source_object",
+                            "ai_instructions": "Source information for the syndicate partners. You must provide specific page numbers, paragraph numbers, or sections where the information was found. If no referenceable source exists, use '-No Source-' for all fields.",
+                            "display_name": "Syndicate Source",
+                            "order": 8,
+                            "required": ["ai_instructions", "url", "text_context"],
+                            "properties": {
+                                "object_type": {
+                                    "type": "string",
+                                    "ai_instructions": "Must be 'source_object' for parsing purposes"
+                                },
+                                "display_value": {
+                                    "type": "string",
+                                    "ai_instructions": "Provide specific source details like 'Page 5, Paragraph 2' or 'Section 3.1'. If from an uploaded document, specify exact location. If no referenceable source, use '-No Source-'"
+                                },
+                                "url": {
+                                    "type": "string",
+                                    "ai_instructions": "Full URL to source. If from an uploaded document or no referenceable source, use '-No Source-'",
+                                    "format": "uri"
+                                },
+                                "text_context": {
+                                    "type": "string",
+                                    "ai_instructions": "Exact quote from source with page/paragraph reference. If no direct quote available, use '-No Source-'"
+                                }
+                            }
+                        },
+                        "syndicate_notes": {
+                            "type": "string",
+                            "ai_instructions": "Additional context about the syndicate partners",
+                            "display_name": "Syndicate Notes",
+                            "order": 9
                         }
                     }
                 }
@@ -64,13 +129,25 @@
         "default_content": {
             "deals": [
                 {
-                    "date": "Placeholder Date",
-                    "firm": "Placeholder Firm", 
-                    "amount": "$0",
+                    "date": "2023-01-01",
+                    "firm": "Sample Portfolio Company",
+                    "amount": "$10,000,000",
+                    "amount_source": {
+                        "object_type": "source_object",
+                        "display_value": "-No Source-",
+                        "url": "-No Source-",
+                        "text_context": "-No Source-"
+                    },
+                    "amount_notes": "Sample investment amount",
                     "realized": "No",
-                    "syndicate_partners": "Placeholder Partners",
-                    "source_string": "Placeholder Source",
-                    "source_link": "https://example.com"
+                    "syndicate_partners": "Partner A, Partner B",
+                    "syndicate_source": {
+                        "object_type": "source_object",
+                        "display_value": "-No Source-",
+                        "url": "-No Source-",
+                        "text_context": "-No Source-"
+                    },
+                    "syndicate_notes": "Sample syndicate arrangement"
                 }
             ]
         }

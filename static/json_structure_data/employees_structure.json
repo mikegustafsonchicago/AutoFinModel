@@ -1,24 +1,14 @@
 {
     "employees": {
+        "display": {
+            "defaultLayout": "normal",
+            "allowToggle": true,
+            "frozen_column": true
+        },
         "filename": "employees.json",
         "root_key": "employees", 
-        "description": "Stores employee information and wages",
+        "ai_instructions": "Stores employee information and wages",
         "version": "1.0",
-        "explanation_file": "employees_explanation.txt",
-        "default_content": {
-            "employees": [
-                {
-                    "role": "Sample Role",
-                    "number": 1,
-                    "wage": 15.0,
-                    "wage_type": "hourly", 
-                    "monthly_hours": 160,
-                    "notes": "Sample employee role - justify the chosen values for role, wage, quantity, or monthly hours",
-                    "source_link": "",
-                    "source_string": "No source"
-                }
-            ]
-        },
         "structure": {
             "employees": {
                 "type": "array",
@@ -29,61 +19,141 @@
                         "number",
                         "wage",
                         "wage_type",
-                        "monthly_hours", 
-                        "notes",
-                        "source_link",
-                        "source_string"
+                        "monthly_hours",
+                        "wage_source",
+                        "wage_notes",
+                        "hours_source",
+                        "hours_notes"
                     ],
                     "properties": {
                         "role": {
                             "type": "string",
-                            "description": "Job title or role, 1-100 characters",
+                            "ai_instructions": "Job title or role",
+                            "display_name": "Role",
                             "min_length": 1,
                             "max_length": 100,
                             "order": 1
                         },
                         "number": {
                             "type": "number",
-                            "description": "Number of employees in this role (minimum 0)",
+                            "ai_instructions": "Number of employees in this role",
+                            "display_name": "Number of Employees", 
                             "minimum": 0,
                             "order": 2
                         },
                         "wage": {
                             "type": "number",
-                            "description": "Wage amount in dollars (minimum 0)",
+                            "ai_instructions": "Wage amount in dollars",
+                            "display_name": "Wage ($)",
                             "minimum": 0,
                             "order": 3
                         },
                         "wage_type": {
                             "type": "string",
-                            "description": "Must be either 'hourly' or 'salary'",
+                            "ai_instructions": "Must be either 'hourly' or 'salary'",
+                            "display_name": "Wage Type",
                             "enum": ["hourly", "salary"],
                             "order": 4
                         },
-                        "monthly_hours": {
-                            "type": "number",
-                            "description": "Expected work hours per month (minimum 0)",
-                            "minimum": 0,
-                            "order": 5
+                        "wage_source": {
+                            "type": "source_object",
+                            "ai_instructions": "Source information for the wage data. You must provide specific page numbers, paragraph numbers, or sections where the information was found. If no referenceable source exists, use '-No Source-' for all fields.",
+                            "display_name": "Wage Source",
+                            "order": 5,
+                            "required": ["ai_instructions", "url", "text_context"],
+                            "properties": {
+                                "object_type": {
+                                    "type": "string",
+                                    "ai_instructions": "Must be 'source_object' for parsing purposes"
+                                },
+                                "display_value": {
+                                    "type": "string",
+                                    "ai_instructions": "Provide specific source details like 'Page 5, Paragraph 2' or 'Section 3.1'. If from an uploaded document, specify exact location. If no referenceable source, use '-No Source-'"
+                                },
+                                "url": {
+                                    "type": "string",
+                                    "ai_instructions": "Full URL to source. If from an uploaded document or no referenceable source, use '-No Source-'",
+                                    "format": "uri"
+                                },
+                                "text_context": {
+                                    "type": "string",
+                                    "ai_instructions": "Exact quote from source with page/paragraph reference. If no direct quote available, use '-No Source-'"
+                                }
+                            }
                         },
-                        "notes": {
+                        "wage_notes": {
                             "type": "string",
-                            "description": "These notes should be to justify the chosen value for role, wage, quantity, or monthly hours. Don't describe the role further.",
+                            "ai_instructions": "Additional context about how the wage was determined",
+                            "display_name": "Wage Notes",
                             "order": 6
                         },
-                        "source_link": {
-                            "type": "string",
-                            "description": "URL to wage/role source information. This is optional. If the source was part of this api call, or is not a website, leave this blank.",
+                        "monthly_hours": {
+                            "type": "number",
+                            "ai_instructions": "Expected work hours per month",
+                            "display_name": "Monthly Hours",
+                            "minimum": 0,
                             "order": 7
                         },
-                        "source_string": {
-                            "type": "string", 
-                            "description": "Description of wage/role source. This is not optional. If you don't have a source, write 'No source'",
-                            "order": 8
+                        "hours_source": {
+                            "type": "source_object",
+                            "ai_instructions": "Source information for the hours data. You must provide specific page numbers, paragraph numbers, or sections where the information was found. If no referenceable source exists, use '-No Source-' for all fields.",
+                            "display_name": "Hours Source",
+                            "order": 8,
+                            "required": ["ai_instructions", "url", "text_context"],
+                            "properties": {
+                                "object_type": {
+                                    "type": "string",
+                                    "ai_instructions": "Must be 'source_object' for parsing purposes"
+                                },
+                                "display_value": {
+                                    "type": "string",
+                                    "ai_instructions": "Provide specific source details like 'Page 5, Paragraph 2' or 'Section 3.1'. If from an uploaded document, specify exact location. If no referenceable source, use '-No Source-'"
+                                },
+                                "url": {
+                                    "type": "string",
+                                    "ai_instructions": "Full URL to source. If from an uploaded document or no referenceable source, use '-No Source-'",
+                                    "format": "uri"
+                                },
+                                "text_context": {
+                                    "type": "string",
+                                    "ai_instructions": "Exact quote from source with page/paragraph reference. If no direct quote available, use '-No Source-'"
+                                }
+                            }
+                        },
+                        "hours_notes": {
+                            "type": "string",
+                            "ai_instructions": "Additional context about how the monthly hours were determined",
+                            "display_name": "Hours Notes",
+                            "order": 9
                         }
                     }
                 }
             }
+        },
+        "default_content": {
+            "employees": [
+                {
+                    "role": "Sample Role",
+                    "number": 1,
+                    "wage": 15.0,
+                    "wage_type": "hourly",
+                    "wage_source": {
+                        "object_type": "source_object",
+                        "display_value": "-No Source-",
+                        "url": "-No Source-",
+                        "text_context": "-No Source-"
+                    },
+                    "wage_notes": "Sample wage based on market research",
+                    "monthly_hours": 160,
+                    "hours_source": {
+                        "object_type": "source_object",
+                        "display_value": "-No Source-",
+                        "url": "-No Source-",
+                        "text_context": "-No Source-"
+                    },
+                    "hours_notes": "Standard full-time monthly hours"
+                }
+            ]
         }
     }
 }

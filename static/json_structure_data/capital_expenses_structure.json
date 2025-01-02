@@ -1,8 +1,13 @@
 {
     "capital_expenses": {
+        "display": {
+            "defaultLayout": "normal",
+            "allowToggle": true,
+            "frozen_column": true  
+        },
         "filename": "capital_expenses.json",
-        "root_key": "expenses",
-        "description": "Stores capital expenditure (CAPEX) information",
+        "root_key": "expenses", 
+        "ai_instructions": "Stores capital expenditure (CAPEX) information",
         "version": "1.0",
         "structure": {
             "expenses": {
@@ -13,63 +18,96 @@
                         "expense_name",
                         "amount",
                         "amount_source",
-                        "amount_source_link",
-                        "amount_notes",
+                        "amount_notes", 
                         "frequency",
-                        "frequency_notes", 
-                        "frequency_source",
-                        "frequency_source_link"
+                        "frequency_notes",
+                        "frequency_source"
                     ],
                     "properties": {
                         "expense_name": {
                             "type": "string",
-                            "description": "Name of the capital expenditure item",
+                            "ai_instructions": "Name of the capital expenditure item",
+                            "display_name": "Expense Name",
                             "min_length": 1,
                             "max_length": 100,
                             "order": 1
                         },
                         "amount": {
                             "type": "number",
-                            "description": "Cost of the capital item in dollars",
+                            "ai_instructions": "Cost of the capital item in dollars",
+                            "display_name": "Amount ($)",
                             "minimum": 0,
                             "order": 2
                         },
                         "amount_source": {
-                            "type": "string",
-                            "description": "Source of the cost information. If the source was part of this api call, you must provide detail about what page this information was found on.",
-                            "order": 3
-                        },
-                        "amount_source_link": {
-                            "type": "string",
-                            "description": "URL link to source of cost data. Must be provided as \"No source\" if the source was part of this api call or is not a website.",
-                            "format": "uri",
-                            "order": 4
+                            "type": "source_object",
+                            "ai_instructions": "Source information for the cost data. Write '-No Source-' if no referenceable source exists. If you have a referenceable source, provide specific page numbers, paragraph numbers, or sections where the information was found.",
+                            "display_name": "Amount Source",
+                            "order": 3,
+                            "required": ["ai_instructions", "url", "text_context"],
+                            "properties": {
+                                "object_type": {
+                                    "type": "string",
+                                    "ai_instructions": "Must be 'source_object' for parsing purposes"
+                                },
+                                "display_value": {
+                                    "type": "string",
+                                    "ai_instructions": "Provide specific source details like 'Page 5, Paragraph 2' or 'Section 3.1'. If from an uploaded document, specify exact location. If no referenceable source, use '-No Source-'"
+                                },
+                                "url": {
+                                    "type": "string",
+                                    "ai_instructions": "Full URL to source. If from an uploaded document or no referenceable source, use '-No Source-'",
+                                    "format": "uri"
+                                },
+                                "text_context": {
+                                    "type": "string",
+                                    "ai_instructions": "Exact quote from source with page/paragraph reference. If no direct quote available, use '-No Source-'"
+                                }
+                            }
                         },
                         "amount_notes": {
-                            "type": "string", 
-                            "description": "Additional context and explanation about how the cost was determined or calculated",
-                            "order": 5
+                            "type": "string",
+                            "ai_instructions": "Additional context about how the cost was determined",
+                            "display_name": "Amount Notes",
+                            "order": 4
                         },
                         "frequency": {
                             "type": "string",
-                            "description": "Timing or frequency of the expenditure (e.g. One-time, Annual, etc)",
-                            "order": 6
+                            "ai_instructions": "Timing or frequency of the expenditure (e.g., One-time, Annual)",
+                            "display_name": "Frequency",
+                            "order": 5
                         },
                         "frequency_notes": {
                             "type": "string",
-                            "description": "This note should precisely explain why this frequency was chosen.",
-                            "order": 7
+                            "ai_instructions": "Explain why this frequency was chosen. If you don't have a referenceable justification, write 'assumption'",
+                            "display_name": "Frequency Notes",
+                            "order": 6
                         },
                         "frequency_source": {
-                            "type": "string",
-                            "description": "Source of the frequency information. If the source was part of this api call, make sure to explain what page in the pdf the frequency information was found on.",
-                            "order": 8
-                        },
-                        "frequency_source_link": {
-                            "type": "string",
-                            "description": "URL link to source of frequency data. Must be provided as \"No source\" if the source was part of this api call or is not a website.",
-                            "format": "uri",
-                            "order": 9
+                            "type": "source_object",
+                            "ai_instructions": "Source information for the frequency data. You must provide specific page numbers, paragraph numbers, or sections where the information was found. If no referenceable source exists, use '-No Source-' for all fields.",
+                            "display_name": "Frequency Source",
+                            "order": 7,
+                            "required": ["ai_instructions", "url", "text_context"],
+                            "properties": {
+                                "object_type": {
+                                    "type": "string",
+                                    "ai_instructions": "Must be 'source_object' for parsing purposes"
+                                },
+                                "display_value": {
+                                    "type": "string",
+                                    "ai_instructions": "Provide specific source details like 'Page 5, Paragraph 2' or 'Section 3.1'. If from an uploaded document, specify exact location. If no referenceable source, use '-No Source-'"
+                                },
+                                "url": {
+                                    "type": "string",
+                                    "ai_instructions": "Full URL to source. If from an uploaded document or no referenceable source, use '-No Source-'",
+                                    "format": "uri"
+                                },
+                                "text_context": {
+                                    "type": "string",
+                                    "ai_instructions": "Exact quote from source with page/paragraph reference. If no direct quote available, use '-No Source-'"
+                                }
+                            }
                         }
                     }
                 }
@@ -79,14 +117,22 @@
             "expenses": [
                 {
                     "expense_name": "Sample Capital Expenditure",
-                    "amount": 50000.00,
-                    "amount_source": "Industry Average",
-                    "amount_source_link": "https://example.com/costs",
+                    "amount": 50000,
+                    "amount_source": {
+                        "object_type": "source_object",
+                        "display_value": "-No Source-",
+                        "url": "-No Source-",
+                        "text_context": "-No Source-"
+                    },
                     "amount_notes": "Cost selected based on market research",
                     "frequency": "One-time",
                     "frequency_notes": "One-time purchase needed for initial setup",
-                    "frequency_source": "Confidential Information Memorandum, Page 15, Section 4.2",
-                    "frequency_source_link": "https://example.com/research"
+                    "frequency_source": {
+                        "object_type": "source_object",
+                        "display_value": "-No Source-",
+                        "url": "-No Source-",
+                        "text_context": "-No Source-"
+                    }
                 }
             ]
         }

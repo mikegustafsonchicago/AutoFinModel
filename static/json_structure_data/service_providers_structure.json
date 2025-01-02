@@ -1,42 +1,70 @@
 {
     "service_providers": {
+        "display": {
+            "defaultLayout": "transposed",
+            "allowToggle": true,
+            "frozen_column": true  
+        },
         "filename": "service_providers.json",
         "root_key": "providers",
-        "description": "Tracks key service providers and vendors that support the firm's operations, including legal counsel, auditors, fund administrators, and other professional service firms",
+        "ai_instructions": "Tracks key service providers and vendors that support the firm's operations, including legal counsel, auditors, fund administrators, and other professional service firms",
         "version": "1.0",
         "explanation_file": "service_providers_explanation.txt",
         "structure": {
             "providers": {
                 "type": "array",
-                "description": "Array of service provider entries. The AI should return data in exactly this structure, with all fields populated according to the specifications.",
+                "ai_instructions": "Array of service provider entries. The AI should return data in exactly this structure, with all fields populated according to the specifications.",
                 "items": {
                     "type": "object",
                     "required": [
                         "service_type",
-                        "firm_name", 
-                        "source_string",
-                        "source_link"
+                        "firm_name",
+                        "firm_source",
+                        "firm_notes"
                     ],
                     "properties": {
                         "service_type": {
                             "type": "string",
-                            "description": "The type of service provided (e.g., 'Legal Counsel', 'Fund Administrator', 'Auditor')",
+                            "ai_instructions": "The type of service provided (e.g., 'Legal Counsel', 'Fund Administrator', 'Auditor')",
+                            "display_name": "Service Type",
                             "order": 1
                         },
                         "firm_name": {
                             "type": "string",
-                            "description": "Name of the service provider firm",
+                            "ai_instructions": "Name of the service provider firm",
+                            "display_name": "Firm Name",
                             "order": 2
                         },
-                        "source_string": {
-                            "type": "string",
-                            "description": "Description or source title for validation",
-                            "order": 3
+                        "firm_source": {
+                            "type": "source_object",
+                            "ai_instructions": "Source information for the firm data. You must provide specific page numbers, paragraph numbers, or sections where the information was found. If no referenceable source exists, use '-No Source-' for all fields.",
+                            "display_name": "Firm Source",
+                            "order": 3,
+                            "required": ["ai_instructions", "url", "text_context"],
+                            "properties": {
+                                "object_type": {
+                                    "type": "string",
+                                    "ai_instructions": "Must be 'source_object' for parsing purposes"
+                                },
+                                "display_value": {
+                                    "type": "string",
+                                    "ai_instructions": "Provide specific source details like 'Page 5, Paragraph 2' or 'Section 3.1'. If from an uploaded document, specify exact location. If no referenceable source, use '-No Source-'"
+                                },
+                                "url": {
+                                    "type": "string",
+                                    "ai_instructions": "Full URL to source. If from an uploaded document or no referenceable source, use '-No Source-'",
+                                    "format": "uri"
+                                },
+                                "text_context": {
+                                    "type": "string",
+                                    "ai_instructions": "Exact quote from source with page/paragraph reference. If no direct quote available, use '-No Source-'"
+                                }
+                            }
                         },
-                        "source_link": {
+                        "firm_notes": {
                             "type": "string",
-                            "description": "URL linking to source documentation",
-                            "format": "uri",
+                            "ai_instructions": "Additional context about the service provider",
+                            "display_name": "Firm Notes",
                             "order": 4
                         }
                     }
@@ -48,8 +76,13 @@
                 {
                     "service_type": "Placeholder Service",
                     "firm_name": "Placeholder Firm",
-                    "source_string": "Placeholder Source",
-                    "source_link": "https://example.com"
+                    "firm_source": {
+                        "object_type": "source_object",
+                        "display_value": "-No Source-",
+                        "url": "-No Source-",
+                        "text_context": "-No Source-"
+                    },
+                    "firm_notes": "Sample service provider entry"
                 }
             ]
         }
