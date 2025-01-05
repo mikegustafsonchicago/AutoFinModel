@@ -16,7 +16,12 @@ from os import getenv
 from dotenv import load_dotenv
 from flask import session
 # Local imports
-from config import MAX_TOKENS_PER_CALL, RUNNING_SUMMARY_FILE, OPENAI_MODEL, DEFAULT_project_type, CATALYST_TABLE, FINANCIALS_TABLE, REAL_ESTATE_TABLE
+from config import (
+    OPENAI_API_KEY,
+    MAX_TOKENS_PER_CALL, 
+    OPENAI_MODEL, 
+    DEFAULT_project_type, 
+)
 from pdf_processing import get_page_token_counts, get_pdf_content_by_page_indices
 from prompt_builder import PromptBuilder
 from file_manager import get_project_data_path, list_s3_directory_contents, write_file
@@ -446,9 +451,8 @@ def make_openai_api_call(system_prompt, user_prompt):
     tuple (dict, int)
         The OpenAI response JSON and HTTP status code.
     """
-    load_dotenv()
-    api_key = getenv('OPENAI_API_KEY')
-    if not api_key:
+    
+    if not OPENAI_API_KEY:
         raise ValueError("OPENAI_API_KEY not found in environment variables.")
 
     payload = {
@@ -461,7 +465,7 @@ def make_openai_api_call(system_prompt, user_prompt):
     }
 
     headers = {
-        'Authorization': f'Bearer {api_key}',
+        'Authorization': f'Bearer {OPENAI_API_KEY}',
         'Content-Type': 'application/json'
     }
 

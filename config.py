@@ -7,11 +7,30 @@ Created on Fri Oct 25 21:54:45 2024
 
 import os
 
+#=============================================================
+#Development Environment Configuration
+#=============================================================
+DEVELOPMENT_ENVIRONMENT = "DEBUG"
+
+#Port hosting
+LOCAL_PORT = 5000
+HOSTED_PORT = 8080
+
+#=============================================================
+#OpenAI Configuration
+#=============================================================
 MAX_TOKENS_PER_CALL = 14984
 OPENAI_MODEL = 'gpt-4o-mini'
 OPENAI_COST_PER_INPUT_TOKEN = 2.5/1000000
 OPENAI_COST_PER_OUTPUT_TOKEN = 10/1000000
+if DEVELOPMENT_ENVIRONMENT == "DEBUG":
+    OPENAI_API_KEY = os.getenv('OPENAI_API_KEY') #Works on local machine
+else:
+    OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY') #Works on hosted server
 
+#=============================================================
+#Default Configuration
+#=============================================================
 DEFAULT_project_type = "financials"
 
 SESSION_LOG_FOLDER = os.path.join(os.getcwd(), 'session_logs')

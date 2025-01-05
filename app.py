@@ -20,11 +20,17 @@ from prompt_builder import PromptBuilder
 from excel_generation.catalyst_partners_page import make_catalyst_summary
 from powerpoint_generation.ppt_financial import generate_ppt
 from config import (  
+    DEVELOPMENT_ENVIRONMENT,
     ALLOWABLE_PROJECT_TYPES, 
-    OUTPUTS_FOR_PROJECT_TYPE
+    OUTPUTS_FOR_PROJECT_TYPE,
+    LOCAL_PORT,
+    HOSTED_PORT
 )
 from context_manager import initialize_session_context, get_application_context, get_or_create_user_id, initialize_empty_project_context, load_project_context
 from middleware import inject_context
+
+
+
 
 
 #=============================================================
@@ -664,7 +670,12 @@ if __name__ == '__main__':
     
     load_dotenv()
     
-    # Get port from environment variables, fallback to 8080 if not found
-    port = int(os.getenv('LOCAL_PORT', 5000))
+    # Use local port for development, hosted port for production
+    if DEVELOPMENT_ENVIRONMENT == "DEBUG":
+        port = int(LOCAL_PORT)
+        debug = True
+    else:
+        port = int(HOSTED_PORT)
+        debug = False
     
-    app.run(host='0.0.0.0', port=port, debug=True)
+    app.run(host='0.0.0.0', port=port, debug=debug)
