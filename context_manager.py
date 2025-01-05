@@ -1,4 +1,7 @@
 # context_manager.py
+# This module manages user context and project state throughout the application.
+# It provides functionality for managing user sessions, project data, and file access in S3.
+
 from dataclasses import dataclass
 from flask import session
 from typing import Optional
@@ -7,8 +10,11 @@ import os
 import boto3
 from botocore.exceptions import ClientError
 from config import ALLOWABLE_PROJECT_TYPES, OUTPUTS_FOR_PROJECT_TYPE
+from file_manager import list_projects, get_project_metadata, get_available_structure_files, get_uploads_contents, get_gallery_contents, ensure_user_exists, get_user_path
+from datetime import datetime as dt
 
-# Configure S3 client
+# Configure S3 client for AWS access
+# Uses environment variables for secure credential management
 s3_client = boto3.client(
     's3',
     aws_access_key_id=os.getenv('AWS_ACCESS_KEY_ID'),
@@ -17,189 +23,214 @@ s3_client = boto3.client(
 )
 BUCKET_NAME = os.getenv('AWS_BUCKET_NAME')
 
-# File management helper functions
-def list_files_in_s3(prefix):
-    """List files in S3 with given prefix"""
-    try:
-        response = s3_client.list_objects_v2(Bucket=BUCKET_NAME, Prefix=prefix)
-        if 'Contents' in response:
-            return [obj['Key'] for obj in response['Contents']]
-        return []
-    except ClientError as e:
-        logging.error(f"Error listing files in S3: {str(e)}")
-        return []
 
-def get_project_structures_path():
-    """Get S3 path to project's structures directory"""
+def initialize_session_context():
+    """
+    Initializes the context for the current user session.
+    Ensures all required session keys exist.
+    """
     try:
-        username = session.get('username', 'default')
-        current_project = session.get('current_project')
-        return f"users/{username}/projects/{current_project}/data/structures"
-    except Exception as e:
-        logging.error(f"Error getting project structures path: {str(e)}")
-        return None
-
-def get_project_uploads_path():
-    """Get S3 path to project's uploads directory"""
-    try:
-        username = session.get('username', 'default')
-        current_project = session.get('current_project')
-        return f"users/{username}/projects/{current_project}/uploads"
-    except Exception as e:
-        logging.error(f"Error getting project uploads path: {str(e)}")
-        return None
-
-def list_projects():
-    """List all projects for current user from S3"""
-    try:
-        username = session.get('username', 'default')
-        prefix = f"users/{username}/projects/"
+        # Ensure all required session keys exist
+        if 'user' not in session:
+            session['user'] = {
+                'username': get_or_create_user_id(),
+                'is_authenticated': True,
+                'portfolio': {
+                    'projects': []
+                }
+            }
         
-        response = s3_client.list_objects_v2(
-            Bucket=BUCKET_NAME,
-            Prefix=prefix,
-            Delimiter="/"
+        # Always ensure current_project exists
+        if 'current_project' not in session:
+            session['current_project'] = {
+                'name': None,
+                'type': None,
+                'metadata': None,
+                'available_tables': [],
+                'uploaded_files': [],
+                'available_outputs': [],
+                'gallery': []
+            }
+            logging.debug("[initialize_session_context] Created new current_project in session")
+        
+        if 'application' not in session:
+            session['application'] = {
+                'available_project_types': ALLOWABLE_PROJECT_TYPES,
+                'is_initialized': False
+            }
+            
+        username = session['user']['username']
+        
+        if not username:
+            logging.error("[initialize_session_context] No username found in session")
+            raise ValueError("No username found in session")
+            
+        # Ensure user folder structure exists
+        if not ensure_user_exists(username):
+            logging.error(f"[initialize_session_context] Failed to create/verify user structure: {username}")
+            raise Exception(f"Failed to create or verify user structure for: {username}")
+            
+        return get_application_context()
+        
+    except Exception as e:
+        logging.error(f"[initialize_session_context] Error initializing session context: {str(e)}")
+        raise
+
+def get_application_context():
+    """Get the complete application context including user, project, and system data."""
+    try:
+        # Get fresh list of all projects from S3
+        available_projects = list_projects()
+        context = {
+            'user': get_user_context(available_projects),
+            'current_project': get_project_context(),
+            'application': get_system_context()
+        }
+        
+        # Update session portfolio to match S3
+        session['user']['portfolio']['projects'] = available_projects
+        # Format context for readable logging
+        context_str = (
+            f"\n[get_application_context] Generated context:"
+            f"\n  user:"
+            f"\n    username: {context['user']['username']}\t\tis_authenticated: {context['user']['is_authenticated']}\t\tprojects: {context['user']['portfolio']['projects']}"
+            f"\n  current_project:"
+            f"\n    name: {context['current_project']['name']}\t\ttype: {context['current_project']['type']}"
+            f"\n    tables: {context['current_project']['available_tables']}"
+            f"\n    files: {context['current_project']['uploaded_files']}"
+            f"\n    outputs: {context['current_project']['available_outputs']}"
+            f"\n    gallery: {context['current_project']['gallery']}"
+            f"\n  application:"
+            f"\n    project_types: {context['application']['available_project_types']}\t\t initialized: {context['application']['is_initialized']}"
         )
+        #logging.debug(context_str)
+        return context
         
-        projects = []
-        if 'CommonPrefixes' in response:
-            for prefix in response['CommonPrefixes']:
-                # Extract project name from prefix
-                project = prefix['Prefix'].split('/')[-2]
-                if project:
-                    projects.append(project)
-                    
-        return projects
+    except Exception as e:
+        logging.error(f"[get_application_context] Error building context: {str(e)}", exc_info=True)
+        raise
 
-    except ClientError as e:
-        logging.error(f"Error listing projects: {str(e)}")
-        return []
-
-@dataclass
-class UserContext:
-    username: str
-    current_project: Optional[str] = None
-    project_type: Optional[str] = None
-    available_projects: list[str] = None
-    available_tables: list[str] = None
-    new_project_types = ALLOWABLE_PROJECT_TYPES
-    uploaded_files: list[str] = None
-    available_outputs: list[str] = None
-
-class ContextManager:
-    _instance = None  # Class variable to store the singleton instance
-
-    @classmethod
-    def get_instance(cls):
-        if cls._instance is None:
-            username = session.get('username', 'default')  # Get from session or use default
-            cls._instance = UserContext(username=username)
-            logging.info(f"Created new context instance - username: {username}, project: {cls._instance.current_project}, type: {cls._instance.project_type}, available_projects: {cls._instance.available_projects}, available_tables: {cls._instance.available_tables}")
-        cls._instance.current_project = session.get('current_project')
-        cls._instance.project_type = session.get('project_type')
-        cls._instance.available_projects = session.get('available_projects', [])
-        cls._instance.available_tables = session.get('available_tables', [])
-        cls._instance.available_outputs = session.get('available_outputs', [])
-
-        return cls._instance
-
-    @staticmethod
-    def initialize_session(username):
-        old_username = session.get('username')
-        if old_username != username:
-            logging.info(f"Username changed from {old_username} to {username}")
-        session['username'] = username
-        
-        old_projects = session.get('available_projects', [])
-        if old_projects != []:
-            logging.info(f"Available projects reset from {old_projects} to []")
-        session['available_projects'] = []
-        session['available_tables'] = []
-        session['available_outputs'] = []
-
-    @staticmethod
-    def set_project_context(project_name, project_type):
-        old_project = session.get('current_project')
-        old_type = session.get('project_type')
-        
-        if old_project != project_name:
-            logging.info(f"Current project changed from {old_project} to {project_name}")
-        if old_type != project_type:
-            logging.info(f"Project type changed from {old_type} to {project_type}")
-            
-        session['current_project'] = project_name
-        session['project_type'] = project_type
-        session['available_outputs'] = OUTPUTS_FOR_PROJECT_TYPE[project_type]
-
-        # Update tables and files when project changes
-        if old_project != project_name:
-            username = session.get('username', 'default')
-            projects_dir = os.path.join('users', username, 'projects')
-            project_dir = os.path.join(projects_dir, project_name)
-            
-            # Update tables
-            tables = []
-            structures_dir = os.path.join(project_dir, 'data', 'structures')
-            if os.path.exists(structures_dir):
-                tables = [f.replace('_structure.json', '') for f in os.listdir(structures_dir)
-                        if f.endswith('_structure.json')]
-            session['available_tables'] = tables
-            
-            # Update uploaded files
-            uploaded_files = []
-            uploads_dir = os.path.join(project_dir, 'uploads')
-            if os.path.exists(uploads_dir):
-                uploaded_files = [f for f in os.listdir(uploads_dir)
-                                if os.path.isfile(os.path.join(uploads_dir, f))]
-            session['uploaded_files'] = uploaded_files
-            
-            # Update context instance
-            context = ContextManager.get_instance()
-            context.available_tables = tables
-            context.uploaded_files = uploaded_files
+def get_user_context(available_projects):
+    """Get user-specific context including portfolio."""
+    # Always get fresh project list from S3 instead of session
+    current_projects = list_projects()
     
-    @staticmethod
-    def list_projects_tables_and_files(username):
-        try:
-            # Get projects
-            projects = list_projects()
-            
-            # Get structure files for current project
-            tables = []
-            uploaded_files = []
-            if session.get('current_project'):
-                # Get tables from S3
-                structures_path = get_project_structures_path()
-                if structures_path:
-                    # Get all files in structures directory
-                    structure_files = list_files_in_s3(structures_path)
-                    # Extract table names from structure files
-                    tables = [os.path.basename(f).replace('_structure.json', '') 
-                             for f in structure_files 
-                             if f.endswith('_structure.json')]
-                    
-                # Get uploaded files from S3
-                uploads_path = get_project_uploads_path()
-                if uploads_path:
-                    uploaded_files = [os.path.basename(f) 
-                                    for f in list_files_in_s3(uploads_path)]
-            
-            # Log changes
-            old_tables = session.get('available_tables', [])
-            if set(old_tables) != set(tables):
-                logging.info(f"Available tables changed from {old_tables} to {tables}")
-            
-            # Update session and context
-            session['available_tables'] = tables
-            context = ContextManager.get_instance()
-            context.available_tables = tables
-            
-            return projects, tables, uploaded_files, OUTPUTS_FOR_PROJECT_TYPE[session['project_type']]
-            
-        except Exception as e:
-            logging.error(f"Error listing projects, tables and files: {str(e)}")
-            return [], [], []
+    return {
+        'username': session['user']['username'],
+        'is_authenticated': True,
+        'portfolio': {
+            'projects': current_projects  # Use S3 source of truth
+        }
+    }
 
-# Instead of creating the instance directly, provide a function to get it
-def get_user_context():
-    return ContextManager.get_instance()
+def get_project_context():
+    """Get current project context including metadata and available resources."""
+    current_project = session['current_project']
+    return {
+        'name': session['current_project']['name'],
+        'type': session['current_project']['type'],
+        'metadata': get_project_metadata() if current_project else None,
+        'available_tables': get_available_structure_files() or [],
+        'uploaded_files': get_uploads_contents(),
+        'available_outputs': OUTPUTS_FOR_PROJECT_TYPE.get(session['current_project']['type'], []),
+        'gallery': get_gallery_contents() or []
+    }
+
+def get_system_context():
+    """Get system-wide context including configuration and state."""
+    return {
+        'available_project_types': ALLOWABLE_PROJECT_TYPES,
+        'is_initialized': session['application']['is_initialized']
+    }
+
+def get_or_create_user_id():
+    """Get existing user ID or create a new one and initialize their context."""
+    from datetime import datetime
+    import uuid
+    from file_manager import ensure_user_exists
+    
+    if 'user' in session and 'username' in session['user']:
+        return session['user']['username']
+    
+    # Generate new unique ID
+    unique_id = f"user_{datetime.now().strftime('%Y%m%d')}_{str(uuid.uuid4())[:8]}"
+    
+    # Initialize user session structure
+    if 'user' not in session:
+        session['user'] = {
+            'username': unique_id,
+            'is_authenticated': True,
+            'portfolio': {
+                'projects': []
+            }
+        }
+    else:
+        session['user']['username'] = unique_id
+    
+    # Ensure S3 folder structure exists
+    if not ensure_user_exists(unique_id):
+        logging.error(f"[get_or_create_user_id] Failed to create S3 structure for: {unique_id}")
+        raise Exception("Failed to initialize user storage")
+    
+    logging.info(f"[get_or_create_user_id] Created new user: {unique_id}")
+    return unique_id
+
+def initialize_empty_project_context(project_name, project_type):
+    """Initialize context for a new project."""
+    logging.debug(f"[initialize_empty_project_context] Starting initialization for project: {project_name}, type: {project_type}")
+    
+    project_context = {
+        'name': project_name,
+        'type': project_type,
+        'metadata': {
+            'created_at': dt.now().isoformat(),
+            'last_modified_at': dt.now().isoformat(),
+            'project_type': project_type  # Add this to ensure type is stored
+        },
+        'available_tables': [],
+        'uploaded_files': [],
+        'available_outputs': OUTPUTS_FOR_PROJECT_TYPE.get(project_type, []),
+        'gallery': []
+    }
+    
+    # Update session with new project context
+    session['current_project'] = project_context
+    logging.debug(f"[initialize_empty_project_context] Updated session project context: {session['current_project']}")
+    
+    # Don't maintain portfolio in session, just get fresh list when needed
+    current_projects = [] #This is empty because we haven't created the project yet
+    
+    return project_context
+
+def load_project_context(project_name):
+    """
+    Load context for an existing project.
+    Returns the loaded project context dictionary.
+    """
+    logging.info("[load_project_context] Loading project context")
+    
+    # Validate project existence
+    available_projects = list_projects()
+    if project_name not in available_projects:
+        raise ValueError(f"Project does not exist: {project_name}")
+
+    # Get metadata
+    metadata = get_project_metadata()
+    if not metadata:
+        raise ValueError("Failed to retrieve project metadata")
+
+    project_type = metadata.get('project_type', 'real_estate')
+    
+    project_context = {
+        'name': project_name,
+        'type': project_type,
+        'metadata': metadata,
+        'available_outputs': OUTPUTS_FOR_PROJECT_TYPE.get(project_type, [])
+    }
+    
+    session['current_project'] = project_context
+    
+    return project_context
+
+
+

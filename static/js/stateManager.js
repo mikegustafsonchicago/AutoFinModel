@@ -10,24 +10,34 @@ export class StateManager {
      * Sets up empty listeners Set for pub/sub pattern
      */
     constructor() {
-        // Core application state
+        // Core application state matching backend session structure
         this.state = {
-            initialized: false, // Whether app has completed initialization
-            loading: true,     // Whether app is currently loading data
-            error: null,       // Any error messages to display
-            user: null         // Current user information
+            user: {
+                username: null,
+                is_authenticated: false,
+                portfolio: {
+                    projects: []
+                }
+            },
+            current_project: {
+                name: null,
+                type: null,
+                metadata: null,
+                available_tables: [],
+                uploaded_files: [],
+                available_outputs: [],
+                gallery: []
+            },
+            application: {
+                available_project_types: [],
+                is_initialized: false,
+                loading: false,
+                error: null
+            }
         };
+
         // Set of subscriber callbacks to notify of state changes
         this.listeners = new Set();
-        
-        // Project state
-        this.currentProject = null;
-        this.projectType = null;
-        this.availableOutputs = [];
-        this.errorContainer = document.getElementById('errorContainer');
-        
-        // Add valid project types
-        this.validProjectTypes = ['financial', 'real_estate', 'catalyst'];
     }
 
     /**
@@ -35,7 +45,7 @@ export class StateManager {
      * @returns {Object} Copy of current state
      */
     getState() {
-        return {...this.state};
+        return JSON.parse(JSON.stringify(this.state));
     }
 
     /**
@@ -43,20 +53,32 @@ export class StateManager {
      * @param {Object} updates - Object with state properties to update
      */
     setState(updates) {
-        // Validate updates before applying
-        if (updates.hasOwnProperty('user') && !updates.user) {
-            console.warn('Attempting to set null user');
-        }
-
-        if (updates.hasOwnProperty('initialized') && 
-            updates.initialized && 
-            !this.validateStateConsistency()) {
-            console.error('Cannot initialize with invalid state');
-            return;
-        }
-
-        this.state = { ...this.state, ...updates };
+        // Deep merge updates with current state
+        this.state = this.deepMerge(this.state, updates);
         this.notifyListeners();
+    }
+
+    /**
+     * Deep merge two objects
+     * @private
+     */
+    deepMerge(target, source) {
+        // If target is null/undefined, return a copy of source
+        if (target === null || target === undefined) {
+            return source instanceof Object ? { ...source } : source;
+        }
+        
+        const output = { ...target };
+        
+        for (const key in source) {
+            if (source[key] instanceof Object) {
+                output[key] = this.deepMerge(target[key], source[key]);
+            } else {
+                output[key] = source[key];
+            }
+        }
+        
+        return output;
     }
 
     /**
@@ -66,33 +88,27 @@ export class StateManager {
      */
     subscribe(listener) {
         this.listeners.add(listener);
-        // Return cleanup function
         return () => this.listeners.delete(listener);
     }
 
     /**
      * Notify all listeners of state change
-     * Passes current state to each listener
      */
     notifyListeners() {
         this.listeners.forEach(listener => listener(this.state));
     }
 
-    
-
     /**
      * Get current project information
-     * @returns {Object} Object containing project name and type
+     * @returns {Object} Current project info
      */
     getCurrentProject() {
-        return this.currentProject || {};
+        return this.state.current_project;
     }
 
     /**
-     * Update current project and refresh UI
-     * @param {string} projectName - Project name
-     * @param {string} projectType - Project type
-     * @param {Array} outputs - Available outputs for this project type
+     * Update current project
+     * @param {Object} project - Project data to set
      */
     setCurrentProject(project) {
         const validation = this.validateProject(project);
@@ -104,109 +120,93 @@ export class StateManager {
         }
 
         try {
-            this.currentProject = {
-                name: project.name,
-                type: project.type,
-                outputs: project.outputs || []
-            };
+            this.setState({
+                current_project: {
+                    name: project.name,
+                    type: project.type,
+                    metadata: project.metadata || null,
+                    available_tables: project.available_tables || [],
+                    uploaded_files: project.uploaded_files || [],
+                    available_outputs: project.outputs || [],
+                    gallery: project.gallery || []
+                }
+            });
             
-            // Validate state consistency
-            if (!this.validateStateConsistency()) {
-                this.clearCurrentProject();
-                return false;
-            }
-            
-            console.log('Project set:', this.currentProject);
             return true;
         } catch (error) {
             console.error('Error setting project:', error);
-            this.updateErrorUI('Failed to set project: ' + error.message);
+            this.setState({
+                application: {
+                    error: 'Failed to set project: ' + error.message
+                }
+            });
             return false;
         }
     }
 
     /**
-     * Clear current project information
+     * Clear current project
      */
     clearCurrentProject() {
-        this.currentProject = null;
-        this.projectType = null;
         this.setState({
-            initialized: false,
-            loading: false,
-            error: null
+            current_project: {
+                name: null,
+                type: null,
+                metadata: null,
+                available_tables: [],
+                uploaded_files: [],
+                available_outputs: [],
+                gallery: []
+            },
+            application: {
+                is_initialized: false,
+                loading: false,
+                error: null
+            }
         });
     }
 
+    /**
+     * Initialize state from backend data
+     */
     async initialize() {
         console.log('StateManager: Starting initialization');
         try {
-            // Use ApiService instead of direct fetch
             const context = await ApiService.fetchContext();
+            console.log("StateManager: initialize", "context", context);
             
-            // Set username in state
+            // Update entire state to match backend structure
             this.setState({
-                ...this.state,
-                user: context.username
+                user: context.user,
+                current_project: context.current_project,
+                application: {
+                    ...context.application,
+                    loading: false,
+                    error: null
+                }
             });
             
-            // Set initial state if there's a current project and it exists
-            if (context.current_project) {
-                if (context.available_projects.includes(context.current_project)) {
-                    this.currentProject = {
-                        name: context.current_project,
-                        type: context.project_info?.type,
-                        outputs: context.available_outputs || []
-                    };
-                } else {
-                    console.warn(`Current project ${context.current_project} not found in available projects`);
-                    // Fall back to first available project if any exist
-                    if (context.available_projects.length > 0) {
-                        const fallbackProject = context.available_projects[0];
-                        console.log(`Falling back to project: ${fallbackProject}`);
-                        // Use ApiService.loadProject instead of direct fetch
-                        const projectInfo = await ApiService.loadProject(fallbackProject);
-                        
-                        this.currentProject = {
-                            name: fallbackProject,
-                            type: projectInfo.type,
-                            outputs: projectInfo.available_outputs || []
-                        };
-                    }
-                }
-            }
-
             return context;
         } catch (error) {
             console.error('StateManager: Initialization failed:', error);
+            this.setState({
+                application: {
+                    error: 'Initialization failed: ' + error.message,
+                    loading: false
+                }
+            });
             throw error;
         }
     }
 
-    updateErrorUI(message) {
-        if (!this.errorContainer) {
-            console.error('Error container not found');
-            return;
-        }
-
-        this.errorContainer.textContent = message;
-        this.errorContainer.style.display = 'block';
-
-        // Hide after 5 seconds
-        setTimeout(() => {
-            this.errorContainer.style.display = 'none';
-        }, 5000);
-    }
-
     /**
-     * Validates project data before setting
+     * Validate project data before setting
      * @param {Object} project - Project data to validate
-     * @returns {Object} - { isValid: boolean, errors: string[] }
+     * @returns {Object} Validation result
      */
-    async validateProject(project) {
+    validateProject(project) {
         const errors = [];
         
-        // Check required fields
         if (!project) {
             errors.push('Project data is required');
             return { isValid: false, errors };
@@ -218,23 +218,8 @@ export class StateManager {
         
         if (!project.type) {
             errors.push('Project type is required');
-        } else if (!this.validProjectTypes.includes(project.type)) {
-            errors.push(`Invalid project type. Must be one of: ${this.validProjectTypes.join(', ')}`);
-        }
-        
-        if (!Array.isArray(project.outputs)) {
-            errors.push('Project outputs must be an array');
-        }
-
-        // Verify project exists in projects folder by checking context
-        try {
-            const context = await ApiService.fetchContext();
-            if (!context.available_projects.includes(project.name)) {
-                errors.push('Project does not exist in projects folder');
-            }
-        } catch (error) {
-            console.error('Error validating project existence:', error);
-            errors.push('Could not verify project existence');
+        } else if (!this.state.application.available_project_types.includes(project.type)) {
+            errors.push(`Invalid project type. Must be one of: ${this.state.application.available_project_types.join(', ')}`);
         }
         
         return {
@@ -244,27 +229,15 @@ export class StateManager {
     }
 
     /**
-     * Validate consistency between different state properties
+     * Update UI error state
+     * @param {string} errorMessage - Error message to display
      */
-    validateStateConsistency() {
-        if (!this.currentProject) {
-            return true; // No project is a valid state
-        }
-
-        // Check project type matches available outputs
-        if (this.currentProject.type === 'financial' && 
-            !this.currentProject.outputs.some(output => 
-                ['income_statement', 'balance_sheet', 'cash_flow'].includes(output))) {
-            this.updateErrorUI('Financial project must have financial statement outputs');
-            return false;
-        }
-
-        // Check user permissions (example)
-        if (!this.state.user) {
-            this.updateErrorUI('No user logged in');
-            return false;
-        }
-
-        return true;
+    updateErrorUI(errorMessage) {
+        this.setState({
+            application: {
+                ...this.state.application,
+                error: errorMessage
+            }
+        });
     }
 }

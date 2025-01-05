@@ -5,11 +5,11 @@ import logging
 from typing import List
 from config import MAX_TOKENS_PER_CALL, OPENAI_MODEL, BUCKET_NAME
 from file_manager import get_project_uploads_path
-from context_manager import get_user_context
 from upload_file_manager import count_tokens
 from boto3 import client
 from botocore.exceptions import ClientError
 import tempfile
+from flask import session
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
@@ -30,10 +30,10 @@ def extract_pdf_pages(file_name) -> List[str]:
     Returns:
     List[str]: A list of strings where each string is the text content of a page.
     """
-    user_context = get_user_context()
+    username = session.get('username')
     uploads_dir = get_project_uploads_path()
     if not uploads_dir:
-        logging.error(f"Could not find uploads directory for user {user_context.username}")
+        logging.error(f"Could not find uploads directory for user {username}")
         return []
         
     pdf_path = f"{uploads_dir}/{file_name}".replace('\\', '/')
@@ -71,11 +71,12 @@ def get_page_token_counts(file_name) -> List[int]:
     List[int]: A list of integers where each integer is the token count for a page.
     """
     
-    user_context = get_user_context()
+    username = session.get('username')
+    current_project = session.get('current_project')
     # Get the full path to the PDF file
     uploads_dir = get_project_uploads_path()
     if not uploads_dir:
-        logging.error(f"Could not find uploads directory for user {user_context.username} and project {user_context.current_project}")
+        logging.error(f"Could not find uploads directory for user {username} and project {current_project}")
         return []
     
     # Ensure consistent forward slashes for S3 paths
@@ -113,11 +114,12 @@ def get_pdf_content_by_page_indices(file_name, start_page: int, end_page: int) -
     Returns:
     str: Combined text content of the specified pages with page boundary markers
     """
-    user_context = get_user_context()
+    username = session.get('username')
+    current_project = session.get('current_project')
     # Get the full path to the PDF file
     uploads_dir = get_project_uploads_path()
     if not uploads_dir:
-        logging.error(f"Could not find uploads directory for user {user_context.username} and project {user_context.current_project}")
+        logging.error(f"Could not find uploads directory for user {username} and project {current_project}")
         return ""
         
     # Ensure consistent forward slashes for S3 paths

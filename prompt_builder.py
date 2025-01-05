@@ -22,13 +22,13 @@ from file_manager import (
     write_file, 
     get_project_data_path, 
     copy_prompt_to_project,
-    list_files_in_one_s3_directory,
+    list_s3_directory_contents,
     read_file,
     read_json
 )
 from config import OPENAI_COST_PER_INPUT_TOKEN, OPENAI_COST_PER_OUTPUT_TOKEN, BASE_PROMPT_DIR
 from pdf_processing import count_tokens
-from context_manager import get_user_context
+from flask import session
 
 
 class PromptBuilder:
@@ -70,8 +70,9 @@ class PromptBuilder:
         Load the base prompt file from the project's data directory based on project type.
         If the prompt file does not exist, attempts to copy it from a base directory.
         """
-        context = get_user_context()
-        self.project_type = context.project_type
+        username = session.get('username')
+        current_project = session.get('current_project')
+        self.project_type = session.get('project_type')
         prompt_path = get_project_data_path()
 
         # Determine prompt filename from project type
@@ -111,27 +112,29 @@ class PromptBuilder:
         Initialize the base system prompt by copying a corresponding prompt file
         from BASE_PROMPT_DIR into the project's data directory, if available.
         """
-        context = get_user_context()
+        username = session.get('username')
+        current_project = session.get('current_project')
+        project_type = session.get('project_type')
 
         # Determine source prompt file based on project type
-        if context.project_type == "catalyst":
+        if project_type == "catalyst":
             source_file = os.path.join(BASE_PROMPT_DIR, "catalyst_prompt.txt")
             dest_filename = "catalyst_prompt.txt"
-        elif context.project_type == "real_estate":
+        elif project_type == "real_estate":
             source_file = os.path.join(BASE_PROMPT_DIR, "real_estate_prompt.txt")
             dest_filename = "real_estate_prompt.txt"
-        elif context.project_type == "financial":
+        elif project_type == "financial":
             source_file = os.path.join(BASE_PROMPT_DIR, "prompt.txt")
             dest_filename = "prompt.txt"
-        elif context.project_type == "ta_grading":
+        elif project_type == "ta_grading":
             source_file = os.path.join(BASE_PROMPT_DIR, "ta_grading_prompt.txt")
             dest_filename = "ta_grading_prompt.txt"
         else:
-            logging.error(f"Invalid project type: {context.project_type}")
+            logging.error(f"Invalid project type: {project_type}")
             return False
 
         # Construct S3 destination path
-        dest_path = f"users/{context.username}/projects/{context.current_project}/data/{dest_filename}"
+        dest_path = f"users/{username}/projects/{current_project}/data/{dest_filename}"
 
         try:
             # Read from local static folder
@@ -194,7 +197,7 @@ class PromptBuilder:
             summary_file = f"{data_path}/running_summary.txt"
             
             # Check if file exists in S3 by listing files with prefix
-            if list_files_in_one_s3_directory(summary_file):
+            if list_s3_directory_contents(summary_file):
                 # Read summary from S3
                 self.running_summary = read_file(summary_file)
             else:

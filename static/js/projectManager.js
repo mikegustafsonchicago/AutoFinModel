@@ -11,120 +11,241 @@ export class ProjectManager {
     // Load an existing project
     async loadProject(projectName) {
         if (!projectName) {
-            alert('Please select a project');
-            return;
+            throw new Error('Please select a project');
         }
 
         try {
+            // Update loading state
+            this.stateManager.setState({
+                application: {
+                    loading: true,
+                    error: null
+                }
+            });
+
             // Use ApiService to load project
             const data = await ApiService.loadProject(projectName);
 
             if (data.error) {
-                alert(data.error);
-                return;
+                throw new Error(data.error);
             }
 
-            // Get available outputs based on project type
-            const outputs = this.miscManager.getAvailableOutputs(data.projectType);
-            
-            // Update state with project info and available outputs
-            this.stateManager.setCurrentProject({
-                name: data.projectName,
-                type: data.projectType,
-                outputs: outputs
+            // Get current state to preserve user data
+            const currentState = this.stateManager.getState();
+
+            // Update state with complete project structure
+            this.stateManager.setState({
+                current_project: {
+                    name: data.projectName,
+                    type: data.projectType,
+                    metadata: data.metadata || {
+                        created_at: new Date().toISOString(),
+                        last_modified_at: new Date().toISOString()
+                    },
+                    available_tables: data.available_tables || [],
+                    uploaded_files: data.uploaded_files || [],
+                    available_outputs: data.available_outputs || [],
+                    gallery: data.gallery || []
+                },
+                application: {
+                    ...currentState.application,
+                    loading: false,
+                    error: null
+                }
             });
             
-            // Update loading state and refresh UI elements
-            this.miscManager.updateLoadingUI(false);
-            window.location.reload();
-
-            // Return success - let app.js handle UI updates
             return true;
         } catch (error) {
-            console.error('loadProject: Error:', error);
-            throw error; // Let app.js handle error display
+            this.stateManager.setState({
+                application: {
+                    loading: false,
+                    error: `Failed to load project: ${error.message}`
+                }
+            });
+            throw error;
         }
     }
 
     // Create a new project
-    async createNewProject() {
-        const projectName = document.getElementById('newProjectName').value;
-        const projectType = document.getElementById('projectType').value;
+    async createNewProject(projectName, projectType) {
         if (!projectName) {
-            alert('Please enter a project name');
-            return;
+            throw new Error('Please enter a project name');
+        }
+
+        if (!projectType) {
+            throw new Error('Please select a project type');
         }
 
         try {
-            const response = await fetch('/api/projects/new', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ projectName, projectType })
-            });
-            const data = await response.json();
+            // Get current state to check for duplicate names
+            const currentState = this.stateManager.getState();
+            const existingProjects = Array.isArray(currentState.user?.portfolio?.projects) 
+                ? currentState.user.portfolio.projects 
+                : [];
 
-            if (data.error) {
-                alert(data.error);
-                return;
+            // Check for duplicate project name
+            if (existingProjects.includes(projectName)) {
+                throw new Error('A project with this name already exists. Please choose a different name.');
             }
 
-            // Get available outputs based on project type
-            const outputs = this.miscManager.getAvailableOutputs(projectType);
-            
-            // Update state with project info and available outputs
-            this.stateManager.setCurrentProject(projectName, projectType, outputs);
-            
-            const modal = bootstrap.Modal.getInstance(document.getElementById('newProjectModal'));
-            if (modal) modal.hide();
+            // Update loading state
+            this.stateManager.setState({
+                application: {
+                    loading: true,
+                    error: null
+                }
+            });
 
-            // Refresh the page to update all UI elements
-            window.location.reload();
+            const response = await ApiService.createProject({
+                projectName,
+                projectType
+            });
+
+            if (response.error) {
+                throw new Error(response.error);
+            }
+
+            // Update state with new project and add to portfolio
+            this.stateManager.setState({
+                current_project: {
+                    name: projectName,
+                    type: projectType,
+                    metadata: {
+                        created_at: new Date().toISOString(),
+                        last_modified_at: new Date().toISOString()
+                    },
+                    available_tables: [],
+                    uploaded_files: [],
+                    available_outputs: [],
+                    gallery: []
+                },
+                user: {
+                    ...currentState.user,
+                    portfolio: {
+                        ...currentState.user.portfolio,
+                        projects: [...existingProjects, projectName]
+                    }
+                },
+                application: {
+                    ...currentState.application,
+                    loading: false,
+                    error: null
+                }
+            });
+
+            return true;
         } catch (error) {
-            console.error('createNewProject: Error:', error);
-            this.miscView.showErrorMessage('Error creating project');
+            this.stateManager.setState({
+                application: {
+                    loading: false,
+                    error: `Failed to create project: ${error.message}`
+                }
+            });
+            throw error;
         }
     }
 
-    // Add this new method
+    // Delete a project
     async deleteProject(projectName) {
         if (!projectName) {
-            alert('Please select a project to delete');
-            return;
+            throw new Error('Please select a project to delete');
         }
 
         // Confirm deletion with user
         if (!confirm(`Are you sure you want to delete project "${projectName}"? This cannot be undone.`)) {
-            return;
+            return false;
         }
 
         try {
-            const response = await fetch('/api/projects/delete', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ 
-                    items: [{
-                        type: 'project',
-                        name: projectName
-                    }]
-                })
+            // Update loading state
+            this.stateManager.setState({
+                application: {
+                    loading: true,
+                    error: null
+                }
             });
-            const data = await response.json();
 
-            if (data.error) {
-                alert(data.error);
-                return;
+            const response = await ApiService.deleteProject({
+                items: [{
+                    type: 'project',
+                    name: projectName
+                }]
+            });
+
+            if (response.error) {
+                throw new Error(response.error);
             }
+
+            // Get current state
+            const currentState = this.stateManager.getState();
 
             // Clear current project if it was the one deleted
-            if (this.stateManager.getCurrentProject()?.name === projectName) {
+            if (currentState.current_project?.name === projectName) {
                 this.stateManager.clearCurrentProject();
             }
+            
+            // Get existing projects object
+            const existingProjects = currentState.user.portfolio.projects || {};
+            
+            // Create new projects object without the deleted project
+            const updatedProjects = {...existingProjects};
+            delete updatedProjects[projectName];
 
-            // Refresh the page to update all UI elements
-            window.location.reload();
+            // Update user's portfolio with new projects object
+            this.stateManager.setState({
+                user: {
+                    ...currentState.user,
+                    portfolio: {
+                        ...currentState.user.portfolio,
+                        projects: updatedProjects
+                    }
+                },
+                application: {
+                    ...currentState.application,
+                    loading: false,
+                    error: null
+                }
+            });
+
+            return true;
         } catch (error) {
-            console.error('deleteProject: Error:', error);
-            this.stateManager.updateErrorUI('Error deleting project');
+            this.stateManager.setState({
+                application: {
+                    loading: false,
+                    error: `Failed to delete project: ${error.message}`
+                }
+            });
+            throw error;
+        }
+    }
+
+    /**
+     * Fetches and processes project data from the server context API endpoint.
+     */
+    async getProjectsData() {
+        try {
+            const contextData = await ApiService.fetchContext();
+            
+            return {
+                projects: contextData.user.portfolio.projects,
+                metadata: contextData.current_project?.metadata || null,
+                projectTypes: contextData.application.available_project_types
+            };
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    /**
+     * Fetches available project types from the context API
+     * @returns {Promise<string[]>} Array of project type strings
+     */
+    async getProjectTypes() {
+        try {
+            const contextData = await ApiService.fetchContext();
+            return contextData.application.available_project_types || [];
+        } catch (error) {
+            throw error;
         }
     }
 }

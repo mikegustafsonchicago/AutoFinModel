@@ -14,11 +14,6 @@ OPENAI_COST_PER_OUTPUT_TOKEN = 10/1000000
 
 DEFAULT_project_type = "financials"
 
-# Top-level folder for the data
-USER_DATA_FOLDER = os.path.join(os.getcwd(), 'users')
-UPLOAD_FOLDER = "uploads"
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)  # Create the folder if it doesn't exist
-
 SESSION_LOG_FOLDER = os.path.join(os.getcwd(), 'session_logs')
 
 ALLOWED_EXTENSIONS = {'.pdf', '.txt'}

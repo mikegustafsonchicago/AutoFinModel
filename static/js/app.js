@@ -17,19 +17,19 @@ import { MiscManager } from './miscManager.js';
 class App {
     constructor() {
         // Initialize managers first
-        this.stateManager = new StateManager(); // Initialize stateManager
+        this.stateManager = new StateManager(); // Initialize stateManager first
         this.miscManager = new MiscManager();
         this.projectManager = new ProjectManager(this.stateManager, this.miscManager);
         this.tableManager = new TableManager();
-        this.uploadManager = new UploadManager();
-        this.galleryManager = new GalleryManager(this.stateManager); // Pass stateManager to GalleryManager
+        this.uploadManager = new UploadManager(this.stateManager);  // Pass stateManager here
+        this.galleryManager = new GalleryManager(this.stateManager);
 
         // Initialize views with their dependencies
         this.miscView = new MiscView(this.miscManager, this.stateManager);
         this.projectView = new ProjectView(this.projectManager);
         this.uploadView = new UploadView(this.uploadManager, this.stateManager);
         this.tableView = new TableView(this.tableManager);
-        this.galleryView = new GalleryView(this.galleryManager, this.stateManager); // Pass stateManager to GalleryView
+        this.galleryView = new GalleryView(this.galleryManager, this.stateManager);
     }
 
     async initialize() {
@@ -41,6 +41,11 @@ class App {
         }
 
         try {
+            // Get initial data from /api/init endpoint
+            const initData = await ApiService.getInitData();
+            console.log('Received init data:', initData);
+
+            // Get context data
             const context = await this.stateManager.initialize();
             
             if (context.current_project) {
@@ -68,6 +73,7 @@ class App {
             await this.projectView.initialize();
             await this.uploadView.initialize();
             await this.galleryView.initialize();
+            await this.galleryView.loadExistingGalleryImages();
             await this.tableView.initializeTables();
         } catch (error) {
             this.miscView.showErrorMessage('Initialization error: ' + error.message);
@@ -78,14 +84,15 @@ class App {
     async initializeNewSession(initData) {
         try {
             await this.uploadView.initialize();
+            await this.projectView.initialize();
+            await this.projectView.populateProjectsTable();
+            await this.galleryView.initialize();
+            this.miscView.updateProjectNameHeader();
+            this.miscView.initialize();
         } catch (error) {
-            this.miscView.showErrorMessage('Failed to initialize file upload functionality');
+            this.miscView.showErrorMessage('Failed to initialize new session');
+            console.error('Error initializing new session:', error);
         }
-        this.projectView.showNewProjectModal();
-        await this.projectView.populateProjectsTable();
-        await this.galleryView.loadExistingGalleryImages();
-        this.miscView.updateProjectNameHeader();
-        this.miscView.initialize();
     }
 }
 

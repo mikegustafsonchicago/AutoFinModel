@@ -8,75 +8,183 @@
 import { ApiService } from './apiService.js';
 
 export class UploadManager {
-    constructor() {
-        // Initialize any required properties
+    constructor(stateManager) {
+        this.stateManager = stateManager;
     }
 
-    async loadExistingFiles() {
-        try {
-            const files = await ApiService.fetchUploadedFiles();
-            
-            if (files.length > 0) {
-                this.view.clearTable();
-                files.forEach(filename => {
-                    const row = this.view.createFileRow({name: filename});
-                    this.view.addRowToTable(row);
-                });
-            }
-        } catch (error) {
-            console.error('Error loading existing files');
-        }
-    }
-
-    async handlePdfUpload(file, projectName) {
-        try {
-            if (!file) {
-                throw new Error('File is required');
-            }
-
-            return await ApiService.uploadFile(file, projectName, 'uploads');
-        } catch (error) {
-            throw error;
-        }
-    }
-
-    async deleteFile(filename, projectName) {
-        try {
-            if (!filename) {
-                throw new Error('Filename is required');
-            }
-
-            return await ApiService.deleteFile(filename, projectName, 'uploads');
-        } catch (error) {
-            throw error;
-        }
-    }
     /**
-     * Send a file to the OpenAI API for processing
-     * @param {string} filename - Name of the file to process
-     * @param {string} projectName - Current project name
-     * @returns {Promise} - Resolves when AI processing is complete
+     * Get uploaded files from current project context
+     * @returns {Array} List of uploaded files
      */
-    async sendFileToAI(filename, projectName) {
+    getUploadedFiles() {
+        const state = this.stateManager.getState();
+        const files = state.current_project?.uploaded_files || {};
+        
+        // If it's already an object with numeric keys, return as is
+        if (typeof files === 'object' && !Array.isArray(files)) {
+            return files;
+        }
+        
+        // If it's an array, convert to object with numeric keys
+        if (Array.isArray(files)) {
+            return files.reduce((acc, file, index) => {
+                acc[index] = file;
+                return acc;
+            }, {});
+        }
+        
+        return {};
+    }
+
+    /**
+     * Handle PDF file upload
+     * @param {File} file - File to upload
+     * @param {string} projectName - Current project name
+     * @param {string} projectType - Current project type
+     */
+    async handlePdfUpload(file, projectName, projectType) {
+        try {
+            if (!file || !projectName) {
+                throw new Error('File and project name are required');
+            }
+
+            this.stateManager.setState({
+                application: { loading: true, error: null }
+            });
+
+            const response = await ApiService.uploadFile(file, projectName, 'uploads');
+            
+            // Get current state
+            const currentState = this.stateManager.getState();
+            
+            // Get existing files and ensure it's an object
+            const currentFiles = currentState.current_project?.uploaded_files || {};
+            
+            // Convert to array if needed
+            const filesArray = Array.isArray(currentFiles) ? currentFiles : Object.values(currentFiles);
+            
+            // Add new file
+            const updatedFiles = [...filesArray, file.name];
+            
+            // Convert back to object format with numeric keys
+            const updatedFilesObject = updatedFiles.reduce((acc, file, index) => {
+                acc[index] = file;
+                return acc;
+            }, {});
+
+            // Update state with new files object
+            this.stateManager.setState({
+                current_project: {
+                    ...currentState.current_project,
+                    uploaded_files: updatedFilesObject
+                },
+                application: { loading: false, error: null }
+            });
+
+            return response;
+        } catch (error) {
+            this.stateManager.setState({
+                application: { 
+                    loading: false, 
+                    error: `Upload failed: ${error.message}` 
+                }
+            });
+            throw error;
+        }
+    }
+
+    /**
+     * Delete a file from the current project
+     * @param {string} filename - Name of file to delete
+     * @param {string} projectName - Current project name
+     */
+    async deleteFile(filename, projectName) {
         try {
             if (!filename || !projectName) {
                 throw new Error('Filename and project name are required');
             }
 
-            // Extract filename string if filename is an object
-            const filenameStr = typeof filename === 'object' ? filename.name : filename;
+            this.stateManager.setState({
+                application: { loading: true, error: null }
+            });
 
+            await ApiService.deleteFile(filename, projectName, 'uploads');
+
+            // Get current state
+            const currentState = this.stateManager.getState();
+
+            // Convert uploaded_files object to array if needed
+            const currentFiles = currentState.current_project?.uploaded_files || {};
+            const filesArray = Array.isArray(currentFiles) ? currentFiles : Object.values(currentFiles);
+            
+            // Filter out the deleted file and remove duplicates
+            const uniqueFiles = [...new Set(filesArray)].filter(f => f !== filename);
+            
+            // Create fresh object with sequential numeric keys
+            const updatedFilesObject = uniqueFiles.reduce((acc, file, index) => {
+                acc[index] = file;
+                return acc;
+            }, {});
+
+            // Update state with new files object
+            this.stateManager.setState({
+                current_project: {
+                    ...currentState.current_project,
+                    uploaded_files: updatedFilesObject
+                },
+                application: { loading: false, error: null }
+            });
+
+            return true;
+        } catch (error) {
+            this.stateManager.setState({
+                application: { 
+                    loading: false, 
+                    error: `Delete failed: ${error.message}` 
+                }
+            });
+            throw error;
+        }
+    }
+
+    /**
+     * Send a file to the AI for processing
+     * @param {Object|string} file - File object or filename
+     * @param {HTMLTableRowElement} row - Table row for updating UI
+     */
+    async sendFileToAI(file, row) {
+        try {
+            const currentProject = this.stateManager.getCurrentProject();
+            if (!currentProject?.name) {
+                throw new Error('No project selected');
+            }
+
+            this.stateManager.setState({
+                application: { loading: true, error: null }
+            });
+
+            const filenameStr = typeof file === 'object' ? file.name : file;
             const payload = {
                 fileName: filenameStr,
-                businessDescription: '', // Can be empty for now
-                userPrompt: '', // Can be empty for now
+                projectName: currentProject.name,
+                projectType: currentProject.type,
                 updateScope: 'all'
             };
 
-            return await ApiService.sendToAI(payload);
+            await ApiService.sendToAI(payload);
 
+            this.stateManager.setState({
+                application: { loading: false, error: null }
+            });
+
+            return true;
         } catch (error) {
-            console.error('Error sending file to AI:', error);
+            this.stateManager.setState({
+                application: { 
+                    loading: false, 
+                    error: `AI processing failed: ${error.message}` 
+                }
+            });
             throw error;
         }
     }

@@ -16,8 +16,7 @@ import os
 import json
 import logging
 import datetime
-from config import RUNNING_SUMMARY_FILE, USER_DATA_FOLDER
-from context_manager import get_user_context
+from flask import session
 import boto3
 from botocore.exceptions import ClientError
 
@@ -60,7 +59,6 @@ BUCKET_NAME = os.getenv('AWS_BUCKET_NAME')
 def upload_file_to_s3(file_path, s3_path):
     """Upload a file to S3"""
     logger = logging.getLogger(__name__)
-    logger.debug(f"Attempting to upload file {file_path} to s3://{BUCKET_NAME}/{s3_path}")
     
     try:
         # Verify file exists locally
@@ -72,7 +70,6 @@ def upload_file_to_s3(file_path, s3_path):
         
         # Attempt upload
         s3_client.upload_file(file_path, BUCKET_NAME, s3_path)
-        logger.info(f"Successfully uploaded {file_path} to s3://{BUCKET_NAME}/{s3_path}")
         
         # Verify upload succeeded
         try:
@@ -94,10 +91,11 @@ def upload_to_s3_gallery(local_file_path, gallery_name, file_name):
     logger = logging.getLogger(__name__)
     
     try:
-        context = get_user_context()
+        username = session['user']['username']
+        current_project = session['current_project']['name']
         
         # Update the path construction to match your S3 structure
-        s3_path = f"users/{context.username}/projects/{context.current_project}/gallery/{file_name}"
+        s3_path = f"users/{username}/projects/{current_project}/gallery/{file_name}"
         logger.debug(f"upload_to_s3_gallery: Uploading {file_name} to {s3_path}")
         
         success = upload_file_to_s3(local_file_path, s3_path)
@@ -156,25 +154,75 @@ def delete_file_from_s3(s3_path):
         logger.debug(f"Full error response: {e.response['Error']}")
         return False
 
-def list_files_in_one_s3_directory(prefix):
-    """List files in S3 with given prefix, only in the immediate directory"""
+def list_s3_directory_contents(prefix, create_if_missing=True):
+    """
+    List files in an S3 directory. Optionally create directory if missing.
+    Returns:
+        - List of filenames (without path prefix)
+        - Empty list if directory is empty or on error
+    """
     try:
-        # Ensure prefix ends with '/' to treat it as a directory
-        if not prefix.endswith('/'):
-            prefix += '/'
-            
+        # First check if directory exists
+        response = s3_client.list_objects_v2(
+            Bucket=BUCKET_NAME,
+            Prefix=prefix,
+            MaxKeys=1
+        )
+        
+        # If directory doesn't exist and we should create it
+        if 'Contents' not in response and create_if_missing:
+            try:
+                s3_client.put_object(Bucket=BUCKET_NAME, Key=prefix)
+                logging.info(f"Created directory: {prefix}")
+            except ClientError as e:
+                logging.error(f"Failed to create directory: {str(e)}")
+                return []
+        
+        # Get all contents
         response = s3_client.list_objects_v2(Bucket=BUCKET_NAME, Prefix=prefix)
-        if 'Contents' in response:
-            # Only include files that are directly in this folder
-            # (don't have any additional '/' after the prefix)
-            return [
-                obj['Key'] for obj in response['Contents']
-                if '/' not in obj['Key'].replace(prefix, '', 1)
-            ]
-        return []
+        files = [
+            obj['Key'].split('/')[-1] 
+            for obj in response.get('Contents', [])
+            if not obj['Key'].endswith('/')
+        ]
+        
+        return files
+        
     except ClientError as e:
-        logging.error(f"Error listing files in S3: {str(e)}")
+        logging.error(f"Error accessing directory {prefix}: {str(e)}")
         return []
+
+def get_project_path(path_type):
+    """
+    Get S3 path for different project directories.
+    Args:
+        path_type: One of 'data', 'uploads', 'outputs', 'gallery', 'structures'
+    Returns:
+        Full S3 path or None on error
+    """
+    try:
+        username = session['user']['username']
+        current_project = session['current_project']['name']
+        
+        base_path = f"users/{username}/projects/{current_project}"
+        
+        paths = {
+            'data': f"{base_path}/data",
+            'uploads': f"{base_path}/uploads",
+            'outputs': f"{base_path}/outputs",
+            'gallery': f"{base_path}/gallery",
+            'structures': f"{base_path}/data/structures"
+        }
+        
+        if path_type not in paths:
+            logging.error(f"Invalid path type requested: {path_type}")
+            return None
+            
+        return paths[path_type]
+        
+    except Exception as e:
+        logging.error(f"Error getting project path: {str(e)}")
+        return None
 
 # =============================================================================
 # Basic File Operations
@@ -225,7 +273,6 @@ def write_json(s3_path, data):
 
 def initialize_session_files(json_manager):
     """Initialize session-specific files and structures in S3"""
-    user_context = get_user_context()  
     data_path = get_project_data_path()
     if data_path is None:
         logging.error("initialize_session_files: data_path is None, cannot initialize files")
@@ -242,10 +289,10 @@ def create_new_user():
     Create new user structure in S3.
     Returns a dictionary of the created paths.
     """
-    user_context = get_user_context()
-    
+    username = session['user']['username']
+    logging.debug(f"create_new_user: username = {username}")
     # Define S3 paths
-    user_prefix = f"users/{user_context.username}"
+    user_prefix = f"users/{username}"
     user_info_prefix = f"{user_prefix}/user_info"
     projects_prefix = f"{user_prefix}/projects"
     
@@ -267,8 +314,8 @@ def create_new_user():
 def create_new_project(project_name):
     """Create new project structure in S3"""
     try:
-        user_context = get_user_context()
-        project_base = f"users/{user_context.username}/projects/{project_name}"
+        username = session['user']['username']
+        project_base = f"users/{username}/projects/{project_name}"
         
         # Define project directories as S3 prefixes
         project_dirs = [
@@ -321,9 +368,8 @@ def list_users():
 def list_projects():
     """List all projects for current user from S3"""
     try:
-        user_context = get_user_context()
-        prefix = f"users/{user_context.username}/projects/"
-        
+        username = session['user']['username']
+        prefix = f"users/{username}/projects/"
         response = s3_client.list_objects_v2(
             Bucket=BUCKET_NAME,
             Prefix=prefix,
@@ -333,7 +379,6 @@ def list_projects():
         projects = []
         if 'CommonPrefixes' in response:
             for prefix in response['CommonPrefixes']:
-                # Extract project name from prefix
                 project = prefix['Prefix'].split('/')[-2]
                 if project:
                     projects.append(project)
@@ -346,14 +391,15 @@ def list_projects():
     
 def get_project_metadata():
     """
-    Get project metadata from project_metadata.json in the project directory.
+    Get project metadata from project_metadata.json
     Returns:
         - Dict containing metadata if file exists and is valid JSON
         - Empty dict if file doesn't exist or has invalid JSON
     """
     try:
-        user_context = get_user_context()
-        metadata_path = f"users/{user_context.username}/projects/{user_context.current_project}/project_metadata.json"
+        username = session['user']['username']
+        current_project = session['current_project']['name']
+        metadata_path = f"users/{username}/projects/{current_project}/project_metadata.json"
         
         try:
             response = s3_client.get_object(Bucket=BUCKET_NAME, Key=metadata_path)
@@ -377,12 +423,11 @@ def get_project_metadata():
 # Directory Content Retrieval
 # =============================================================================
 
-
-
 def get_project_data_contents():
     """List files in project's data directory from S3"""
-    user_context = get_user_context()
-    prefix = f"users/{user_context.username}/projects/{user_context.current_project}/data/"
+    username = session['user']['username']
+    current_project = session['current_project']['name']
+    prefix = f"users/{username}/projects/{current_project}/data/"
     
     try:
         response = s3_client.list_objects_v2(Bucket=BUCKET_NAME, Prefix=prefix)
@@ -415,84 +460,18 @@ def get_available_project_data_tables():
 
 
 def get_gallery_contents():
-    """
-    List files in project's gallery directory from S3.
-    Returns:
-        - List of filenames if directory exists and contains files
-        - Empty list if directory exists but is empty
-        - None if directory does not exist
-    """
-    user_context = get_user_context()
-    prefix = f"users/{user_context.username}/projects/{user_context.current_project}/gallery/"
-    
-    try:
-        # First check if directory exists by looking for the prefix
-        response = s3_client.list_objects_v2(
-            Bucket=BUCKET_NAME,
-            Prefix=prefix,
-            MaxKeys=1
-        )
-        
-        # If no objects found with prefix, directory doesn't exist
-        if 'Contents' not in response:
-            logging.info(f"Gallery directory does not exist: {prefix}")
-            return None
-            
-        # Directory exists, get all contents
-        response = s3_client.list_objects_v2(Bucket=BUCKET_NAME, Prefix=prefix)
-        files = [obj['Key'].split('/')[-1] for obj in response.get('Contents', [])
-                if not obj['Key'].endswith('/')]
-                
-        if not files:
-            logging.info(f"Gallery directory exists but is empty: {prefix}")
-        else:
-            logging.info(f"Found {len(files)} files in gallery directory")
-            
-        return files
-        
-    except ClientError as e:
-        logging.error(f"Error reading gallery directory: {str(e)}")
-        return None
-    
+    """List files in project's gallery directory."""
+    gallery_path = get_project_path('gallery')
+    if not gallery_path:
+        return []
+    return list_s3_directory_contents(f"{gallery_path}/")
+
 def get_uploads_contents():
-    """
-    List files in project's uploads directory from S3.
-    Returns:
-        - List of filenames if directory exists and contains files
-        - Empty list if directory exists but is empty
-        - None if directory does not exist
-    """
-    user_context = get_user_context()
-    prefix = f"users/{user_context.username}/projects/{user_context.current_project}/uploads/"
-    
-    try:
-        # First check if directory exists by looking for the prefix
-        response = s3_client.list_objects_v2(
-            Bucket=BUCKET_NAME,
-            Prefix=prefix,
-            MaxKeys=1
-        )
-        
-        # If no objects found with prefix, directory doesn't exist
-        if 'Contents' not in response:
-            logging.info(f"Uploads directory does not exist: {prefix}")
-            return None
-            
-        # Directory exists, get all contents
-        response = s3_client.list_objects_v2(Bucket=BUCKET_NAME, Prefix=prefix)
-        files = [obj['Key'].split('/')[-1] for obj in response.get('Contents', [])
-                if not obj['Key'].endswith('/')]
-                
-        if not files:
-            logging.info(f"Uploads directory exists but is empty: {prefix}")
-        else:
-            logging.info(f"Found {len(files)} files in uploads directory")
-            
-        return files
-        
-    except ClientError as e:
-        logging.error(f"Error reading uploads directory: {str(e)}")
-        return None
+    """List files in project's uploads directory."""
+    uploads_path = get_project_path('uploads')
+    if not uploads_path:
+        return []
+    return list_s3_directory_contents(f"{uploads_path}/")
 
 # =============================================================================
 # Delete Functions
@@ -503,12 +482,12 @@ def delete_project(project_name):
     if not project_name:
         raise ValueError("Project name cannot be empty")
         
-    user_context = get_user_context()
-    if not user_context or not user_context.username:
-        logging.error("Could not get valid user context")
+    username = session['user']['username']
+    if not username:
+        logging.error("Could not get valid username")
         return False
         
-    prefix = f"users/{user_context.username}/projects/{project_name}/"
+    prefix = f"users/{username}/projects/{project_name}/"
     
     try:
         # List all objects in project
@@ -536,8 +515,9 @@ def delete_project(project_name):
 def get_project_data_path():
     """Get S3 path to project's data directory"""
     try:
-        user_context = get_user_context()
-        return f"users/{user_context.username}/projects/{user_context.current_project}/data"
+        username = session['user']['username']
+        current_project = session['current_project']['name']
+        return f"users/{username}/projects/{current_project}/data"
     except Exception as e:
         logging.error(f"Error getting project data path: {str(e)}")
         return None
@@ -545,8 +525,9 @@ def get_project_data_path():
 def get_project_uploads_path():
     """Get S3 path to project's uploads directory"""
     try:
-        user_context = get_user_context()
-        return f"users/{user_context.username}/projects/{user_context.current_project}/uploads"
+        username = session['user']['username']
+        current_project = session['current_project']['name']
+        return f"users/{username}/projects/{current_project}/uploads"
     except Exception as e:
         logging.error(f"Error getting project uploads path: {str(e)}")
         return None
@@ -554,8 +535,9 @@ def get_project_uploads_path():
 def get_project_outputs_path():
     """Get S3 path to project's outputs directory"""
     try:
-        user_context = get_user_context()
-        return f"users/{user_context.username}/projects/{user_context.current_project}/outputs"
+        username = session['user']['username']
+        current_project = session['current_project']['name']
+        return f"users/{username}/projects/{current_project}/outputs"
     except Exception as e:
         logging.error(f"Error getting project outputs path: {str(e)}")
         return None
@@ -563,8 +545,9 @@ def get_project_outputs_path():
 def get_project_gallery_path():
     """Get S3 path to project's gallery directory"""
     try:
-        user_context = get_user_context()
-        return f"users/{user_context.username}/projects/{user_context.current_project}/gallery"
+        username = session['user']['username']
+        current_project = session['current_project']['name']
+        return f"users/{username}/projects/{current_project}/gallery"
     except Exception as e:
         logging.error(f"Error getting project gallery path: {str(e)}")
         return None
@@ -572,8 +555,9 @@ def get_project_gallery_path():
 def get_project_structures_path():
     """Get S3 path to project's structures directory"""
     try:
-        user_context = get_user_context()
-        return f"users/{user_context.username}/projects/{user_context.current_project}/data/structures"
+        username = session['user']['username']
+        current_project = session['current_project']['name']
+        return f"users/{username}/projects/{current_project}/data/structures"
     except Exception as e:
         logging.error(f"Error getting project structures path: {str(e)}")
         return None
@@ -581,8 +565,8 @@ def get_project_structures_path():
 def get_projects_path():
     """Get S3 path to user's projects directory"""
     try:
-        user_context = get_user_context()
-        return f"users/{user_context.username}/projects"
+        username = session['user']['username']
+        return f"users/{username}/projects"
     except Exception as e:
         logging.error(f"Error getting projects path: {str(e)}")
         return None
@@ -594,24 +578,25 @@ def get_projects_path():
 def copy_prompt_to_project():
     """Copy prompt file from local static folder to project's data directory in S3"""
     try:
-        user_context = get_user_context()
-
+        username = session['user']['username']
+        current_project = session['current_project']['name']
+        project_type = session['current_project']['type']
         # Determine the source prompt file based on project type
-        if user_context.project_type == "financial":
+        if project_type == "financial":
             src_prompt = "prompt.txt"
-        elif user_context.project_type == "catalyst":
+        elif project_type == "catalyst":
             src_prompt = "catalyst_prompt.txt"
-        elif user_context.project_type == "real_estate":
+        elif project_type == "real_estate":
             src_prompt = "real_estate_prompt.txt"
-        elif user_context.project_type == "ta_grading":
+        elif project_type == "ta_grading":
             src_prompt = "ta_grading_prompt.txt"
         else:
-            logging.error(f"Invalid project type: {user_context.project_type} - cannot copy prompt")
+            logging.error(f"Invalid project type: {project_type} - cannot copy prompt")
             return False
 
         # Read from local static folder
         src_path = os.path.join('static', 'prompts', src_prompt)
-        dest_key = f"users/{user_context.username}/projects/{user_context.current_project}/data/{src_prompt}"
+        dest_key = f"users/{username}/projects/{current_project}/data/{src_prompt}"
 
         # Check if source prompt file exists locally
         if not os.path.exists(src_path):
@@ -629,32 +614,50 @@ def copy_prompt_to_project():
     except Exception as e:
         logging.error(f"Error copying prompt file: {str(e)}")
         return False
-
 def get_available_structure_files():
+    """Get list of structure files."""
+    structures_path = get_project_path('structures')
+    if not structures_path:
+        logger.warning("Could not get structures path")
+        return []
+        
+    files = list_s3_directory_contents(f"{structures_path}/")
+    structure_files = [f.replace('.json', '') for f in files if f.endswith('_structure.json')]
+    
+    return structure_files
+
+def get_user_path(username=None):
+    """Get S3 path to user's root directory"""
+    try:
+        if username is None:
+            username = session['user']['username']
+        return f"users/{username}"
+    except Exception as e:
+        logging.error(f"Error getting user path: {str(e)}")
+        return None
+
+def ensure_user_exists(username):
     """
-    Get list of structure files from project's structures directory.
-    Returns list of structure filenames without .json extension.
+    Ensures the user folder structure exists in S3.
+    Creates it if it doesn't exist.
+    Returns True if the structure exists or was created successfully.
     """
     try:
-        user_context = get_user_context()
-        structures_path = f"users/{user_context.username}/projects/{user_context.current_project}/data/structures/"
+        user_prefix = f"users/{username}/"
         
-        # List objects in structures directory
-        response = s3_client.list_objects_v2(
-            Bucket=BUCKET_NAME,
-            Prefix=structures_path
-        )
-        
-        structure_files = []
-        if 'Contents' in response:
-            for obj in response['Contents']:
-                filename = obj['Key'].split('/')[-1]
-                if filename.endswith('_structure.json'):
-                    # Remove .json extension and keep _structure suffix
-                    structure_files.append(filename.replace('.json', ''))
-        
-        return structure_files
-        
+        # Check if user folder exists
+        try:
+            s3_client.head_object(Bucket=BUCKET_NAME, Key=user_prefix)
+            return True
+        except ClientError as e:
+            if e.response['Error']['Code'] == '404':
+                # User folder doesn't exist, create it
+                logging.info(f"Creating new user folder structure for {username}")
+                return create_new_user()
+            else:
+                logging.error(f"Error checking user folder: {str(e)}")
+                return False
+                
     except Exception as e:
-        logging.error(f"Error getting structure files: {str(e)}")
-        return []
+        logging.error(f"Error ensuring user exists: {str(e)}")
+        return False

@@ -21,6 +21,7 @@ export class UploadView {
         this.handleFiles = this.handleFiles.bind(this);
         this.preventDefaults = this.preventDefaults.bind(this);
         this.setupEventListeners = this.setupEventListeners.bind(this);
+        this.updateFileList = this.updateFileList.bind(this);
     }
 
     async initialize() {
@@ -31,7 +32,6 @@ export class UploadView {
             this.tableBody = document.getElementById('uploadedDocsTable')?.querySelector('tbody');
 
             if (!this.uploadZone || !this.pdfInput || !this.tableBody) {
-                console.error('Required upload elements not found');
                 throw new Error('Required upload elements not found');
             }
 
@@ -41,12 +41,18 @@ export class UploadView {
             // After UI is set up, add event listeners
             await this.setupEventListeners();
             
+            // Subscribe to state changes AFTER DOM elements are ready
+            this.stateManager.subscribe((state) => {
+                if (state.current_project?.uploaded_files) {
+                    this.updateFileList(state.current_project.uploaded_files);
+                }
+            });
+            
             // Finally, load any existing files
             await this.loadExistingFiles();
             
             return true;
         } catch (error) {
-            console.error('UploadView: Initialization failed:', error);
             return false;
         }
     }
@@ -57,7 +63,6 @@ export class UploadView {
      */
     setupUploadZoneUI() {
         if (!this.uploadZone) {
-            console.error('Upload zone element not found');
             return;
         }
         
@@ -80,27 +85,12 @@ export class UploadView {
      */
     async loadExistingFiles() {
         try {
-            const context = await fetch('/api/context').then(response => response.json());
-            
-            // Only process if there are uploaded files in the context
-            if (context.uploaded_files && context.uploaded_files.length > 0) {
-                if (!this.tableBody) {
-                    console.error('Table body element not found');
-                    return;
-                }
-
-                this.tableBody.innerHTML = ''; // Clear existing rows
-                
-                // Create a table row for each existing file
-                context.uploaded_files
-                    .filter(filename => filename && filename.trim() !== '') // Filter out empty filenames
-                    .forEach(filename => {
-                        const row = this.createFileRow({name: filename});
-                        this.tableBody.appendChild(row);
-                    });
-            }
+            const files = this.uploadManager.getUploadedFiles();
+            this.updateFileList(files);
         } catch (error) {
-            console.error('Error getting context:', error);
+            this.stateManager.setState({
+                application: { error: 'Error loading existing files' }
+            });
         }
     }
 
@@ -114,7 +104,6 @@ export class UploadView {
     setupEventListeners() {
         // Double-check elements exist
         if (!this.uploadZone || !this.pdfInput) {
-            console.error('Required elements missing for event listeners');
             return;
         }
 
@@ -166,8 +155,7 @@ export class UploadView {
         try {
             const currentProject = this.stateManager.getCurrentProject();
             
-            if (!currentProject.name) {
-                console.error('No project selected');
+            if (!currentProject?.name) {
                 this.stateManager.updateErrorUI('Please select a project first');
                 return;
             }
@@ -175,22 +163,31 @@ export class UploadView {
             for (const file of Array.from(files)) {
                 if (file.type === 'application/pdf') {
                     try {
+                        // Upload the file
                         await this.uploadManager.handlePdfUpload(
                             file,
                             currentProject.name,
                             currentProject.type
                         );
                         
-                        // Refresh the table after successful upload
-                        await this.loadExistingFiles();
+                        // Get fresh state after upload
+                        const newState = this.stateManager.getState();
+                        
+                        // Force refresh the file list
+                        const uploadedFiles = this.uploadManager.getUploadedFiles();
+                        
+                        // Update the UI
+                        this.updateFileList(uploadedFiles);
+                        
+                        // Add visual feedback
+                        this.addSuccessIndicator(file.name);
+                        
                     } catch (error) {
-                        console.error('Failed to upload file:', error);
                         this.stateManager.updateErrorUI(`Failed to upload ${file.name}: ${error.message}`);
                     }
                 }
             }
         } catch (error) {
-            console.error('Error handling files:', error);
             this.stateManager.updateErrorUI('Error handling files');
         }
     }
@@ -227,7 +224,7 @@ export class UploadView {
         uploadCell.appendChild(uploadButton);
         row.appendChild(uploadCell);
 
-        // Column 3: Status check indicator (empty by default)
+        // Column 3: Status check indicator
         const checkCell = document.createElement('td');
         checkCell.classList.add("check-cell");
         row.appendChild(checkCell);
@@ -240,20 +237,110 @@ export class UploadView {
         removeButton.onclick = async () => {
             try {
                 const currentProject = this.stateManager.getCurrentProject();
-                if (!currentProject.name) {
+                if (!currentProject?.name) {
                     throw new Error('No project selected');
                 }
                 
+                // Show loading state
+                removeButton.disabled = true;
+                removeButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+                
+                // Delete the file
                 await this.uploadManager.deleteFile(file.name, currentProject.name);
-                row.remove();
+                
+                // Get fresh list of files and update UI
+                const updatedFiles = this.uploadManager.getUploadedFiles();
+                this.updateFileList(updatedFiles);
+                
             } catch (error) {
-                console.error('Failed to delete file:', error);
                 this.stateManager.updateErrorUI(`Failed to delete file: ${error.message}`);
+                
+                // Reset button state
+                removeButton.disabled = false;
+                removeButton.innerHTML = '<i class="fas fa-times"></i>';
             }
         };
         removeCell.appendChild(removeButton);
         row.appendChild(removeCell);
 
         return row;
+    }
+
+    // Add visual feedback for successful deletion
+    showDeleteSuccess(filename) {
+        const successMessage = document.createElement('div');
+        successMessage.className = 'alert alert-success alert-dismissible fade show mt-2';
+        successMessage.innerHTML = `
+            Successfully deleted: ${filename}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        
+        // Add to page (adjust selector as needed)
+        document.querySelector('#uploadZone').appendChild(successMessage);
+        
+        // Remove after 3 seconds
+        setTimeout(() => {
+            successMessage.remove();
+        }, 3000);
+    }
+
+    // Update the updateFileList method to be more robust
+    updateFileList(files) {
+        if (!this.tableBody) {
+            return;
+        }
+        
+        // Clear existing rows
+        this.tableBody.innerHTML = '';
+        
+        // Convert input to array and remove duplicates
+        let fileArray;
+        if (Array.isArray(files)) {
+            fileArray = [...new Set(files)];
+        } else if (typeof files === 'object' && files !== null) {
+            fileArray = [...new Set(Object.values(files))];
+        } else {
+            fileArray = [];
+        }
+        
+        if (fileArray.length === 0) {
+            this.showEmptyState();
+            return;
+        }
+        
+        fileArray.forEach(filename => {
+            if (filename && typeof filename === 'string') {
+                const row = this.createFileRow({name: filename});
+                this.tableBody.appendChild(row);
+            }
+        });
+    }
+
+    showEmptyState() {
+        const emptyRow = document.createElement('tr');
+        emptyRow.innerHTML = `
+            <td colspan="4" class="text-center text-muted">
+                No files uploaded yet
+            </td>
+        `;
+        this.tableBody.appendChild(emptyRow);
+    }
+
+    // Add visual feedback for successful upload
+    addSuccessIndicator(filename) {
+        // Find the row for this file
+        const row = Array.from(this.tableBody.querySelectorAll('tr'))
+            .find(row => row.querySelector('td')?.textContent === filename);
+        
+        if (row) {
+            const checkCell = row.querySelector('.check-cell');
+            if (checkCell) {
+                checkCell.innerHTML = '<i class="fas fa-check text-success"></i>';
+                // Remove the indicator after 3 seconds
+                setTimeout(() => {
+                    checkCell.innerHTML = '';
+                }, 3000);
+            }
+        }
     }
 }

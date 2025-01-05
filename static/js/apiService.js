@@ -14,13 +14,11 @@ export class ApiService {
 
     static async fetchSchema(tableName) {
         try {
-            console.log('Fetching schema for:', tableName);
             const response = await fetch(`/api/schema/${tableName}`);
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
             const data = await response.json();
-            console.log('Received schema:', data);
             if (data.structure && data.display) {
                 return {
                     structure: data.structure,
@@ -37,13 +35,11 @@ export class ApiService {
 
     static async fetchTableData(tableName) {
         try {
-            console.log('Fetching data for:', tableName);
             const response = await fetch(`/api/table_data/${tableName}`);
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
             const data = await response.json();
-            console.log('Received data:', data);
             return data.data || [];
         } catch (error) {
             console.error(`Error fetching data for ${tableName}:`, error);
@@ -128,13 +124,11 @@ export class ApiService {
 
     static async fetchGalleryImages() {
         try {
-            console.log('Fetching gallery images...');
             const response = await fetch('/api/gallery');
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
             const data = await response.json();
-            console.log('Received gallery images:', data);
             return data || [];
         } catch (error) {
             console.error('Error fetching gallery images:', error);
@@ -212,6 +206,75 @@ export class ApiService {
                 return 'pptx';
             default:
                 return 'txt';
+        }
+    }
+
+    static async createProject(projectData) {
+        try {
+            const response = await fetch('/api/projects/new', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    projectName: projectData.projectName,
+                    projectType: projectData.projectType
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error(`Failed to create project: ${response.status}`);
+            }
+
+            return await response.json();
+        } catch (error) {
+            console.error('Error creating project:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Delete a project and its associated resources
+     * @param {Object} payload - The deletion payload
+     * @param {Array} payload.items - Array of items to delete
+     * @returns {Promise<Object>} Response from the server
+     */
+    static async deleteProject(payload) {
+        try {
+            const response = await fetch('/api/projects/delete', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            });
+
+            if (!response.ok) {
+                throw new Error(`Failed to delete project: ${response.status}`);
+            }
+
+            return await response.json();
+        } catch (error) {
+            console.error('Error deleting project:', error);
+            throw error;
+        }
+    }
+    /**
+     * Get initialization data for the frontend application
+     * @returns {Promise<Object>} Response containing initialization data
+     */
+    static async getInitData() {
+        try {
+            const response = await fetch('/api/init');
+
+            if (!response.ok) {
+                throw new Error(`Failed to get init data: ${response.status}`);
+            }
+
+            return await response.json();
+        } catch (error) {
+            console.error('Error getting init data:', error);
+            throw error;
         }
     }
 }

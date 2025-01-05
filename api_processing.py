@@ -14,13 +14,12 @@ import logging
 from logging.handlers import RotatingFileHandler  # Import RotatingFileHandler
 from os import getenv
 from dotenv import load_dotenv
-
+from flask import session
 # Local imports
 from config import MAX_TOKENS_PER_CALL, RUNNING_SUMMARY_FILE, OPENAI_MODEL, DEFAULT_project_type, CATALYST_TABLE, FINANCIALS_TABLE, REAL_ESTATE_TABLE
 from pdf_processing import get_page_token_counts, get_pdf_content_by_page_indices
 from prompt_builder import PromptBuilder
-from context_manager import get_user_context
-from file_manager import get_project_data_path, list_files_in_one_s3_directory, write_file
+from file_manager import get_project_data_path, list_s3_directory_contents, write_file
 from upload_file_manager import count_tokens
 
 #=============================================================
@@ -157,7 +156,7 @@ def initialize_module_logging():
 def get_tables_data(data_path, json_manager, update_scope="all"):
     all_tables = []
     # List files in S3 with data_path prefix
-    s3_files = list_files_in_one_s3_directory(data_path)
+    s3_files = list_s3_directory_contents(data_path)
     if s3_files:
         all_tables = [
             os.path.splitext(os.path.basename(f))[0] for f in s3_files 

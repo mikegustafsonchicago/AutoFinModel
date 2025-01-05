@@ -17,14 +17,16 @@ export class GalleryManager {
 
     // Get current project from state manager
     getCurrentProject() {
-        console.log('GalleryManager: Getting current project from state:', this.stateManager.currentProject);
-        // If currentProject is an object, return its name, otherwise return the value
-        const projectName = typeof this.stateManager.currentProject === 'object' 
-            ? this.stateManager.currentProject.name 
-            : this.stateManager.currentProject;
-            
-        console.log('GalleryManager: Found project name:', projectName);
-        return projectName;
+        const state = this.stateManager.getState();
+        const currentProject = state.current_project;
+        
+        console.log('GalleryManager: Getting current project from state:', currentProject);
+        
+        if (!currentProject || !currentProject.name) {
+            throw new Error('No project selected');
+        }
+        
+        return currentProject.name;
     }
 
     /**
@@ -69,7 +71,7 @@ export class GalleryManager {
             const result = await ApiService.uploadFile(file, currentProject, 'gallery');
             return {
                 success: true,
-                filename: result.filename
+                filename: file.name
             };
         } catch (error) {
             console.error('GalleryManager: Failed to upload image:', error);
@@ -89,12 +91,8 @@ export class GalleryManager {
      */
     async deleteImage(filename) {
         try {
-            const currentProject = this.stateManager.getCurrentProject();
-            if (!currentProject.name) {
-                throw new Error('No project selected');
-            }
-
-            return await this.removeFromGallery(filename, currentProject.name);
+            const projectName = this.getCurrentProject();
+            return await this.removeFromGallery(filename, projectName);
         } catch (error) {
             console.error('GalleryManager: Failed to delete image:', error);
             throw error;

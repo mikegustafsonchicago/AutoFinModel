@@ -42,22 +42,11 @@ export class TableView {
      * @returns {Object} Tabulator table instance
      */
     async createDynamicTable(containerId, tableId, schema, data = [], title) {
-        console.log(`[createDynamicTable] Starting creation of table ${tableId}`, {
-            containerId,
-            schema: !!schema,
-            dataLength: data?.length,
-            data: data?.[0],
-            title
-        });
-
         title = this.formatTitle(title);
-        console.log(`[createDynamicTable] Formatted title: ${title}`);
 
         // Create container structure if it doesn't exist
         let container = document.getElementById(containerId);
         if (!container) {
-            console.log(`[createDynamicTable] Container ${containerId} not found, creating new container`);
-            
             container = document.createElement('div');
             container.id = containerId;
             container.className = 'table-container mb-4';
@@ -88,60 +77,29 @@ export class TableView {
 
             const tablesSection = document.getElementById('dynamicTables');
             if (tablesSection) {
-                console.log('[createDynamicTable] Appending new container to tables section');
                 tablesSection.appendChild(container);
             } else {
-                console.error('[createDynamicTable] Dynamic tables section not found');
                 return null;
             }
-        } else {
-            console.log(`[createDynamicTable] Container ${containerId} already exists`);
         }
 
         try {
-            console.log(`[createDynamicTable] Creating dynamic table for ${tableId}`, {
-                schemaProvided: !!schema,
-                dataLength: data?.length
-            });
-
             const { columns, display } = this.tableManager.generateColumnsFromStructure(schema);
-            console.log('[createDynamicTable] Generated table configuration:', {
-                columnCount: columns?.length,
-                isTransposed: display?.isTransposed,
-                allowToggle: display?.allowToggle,
-                frozenColumn: display?.frozen_column
-            });
-
             const processedData = this.tableManager.transposeTableData(data, schema, display.isTransposed);
-            console.log('[createDynamicTable] Processed table data:', {
-                rowCount: processedData?.length,
-                sampleRow: processedData?.[0]
-            });
             
             if (display.isTransposed) {
-                console.log(`[createDynamicTable] Creating Bootstrap table for ${tableId} in transposed view`);
                 return this.createBootstrapTable(tableId, processedData, display);
             } else {
-                console.log(`[createDynamicTable] Creating Tabulator table for ${tableId} in standard view`);
-                console.log('[createDynamicTable] Tabulator table configuration:', {
-                    data: processedData,
-                    columns: columns,
-                    layout: "fitDataFill",
-                    height: "400px",
-                    responsiveLayout: false,
-                    maxHeight: "400px",
-                    resizableColumns: true,
-                    tooltips: true
-                });
                 return new Tabulator(`#${tableId}`, {
                     data: processedData,
-                    columns: columns,
+                    columns: columns.map(col => ({
+                        ...col,
+                        tooltip: true
+                    })),
                     layout: "fitDataFill",
                     height: "400px",
                     responsiveLayout: false,
-                    maxHeight: "400px",
-                    resizableColumns: true,
-                    tooltips: true
+                    maxHeight: "400px"
                 });
             }
         } catch (error) {

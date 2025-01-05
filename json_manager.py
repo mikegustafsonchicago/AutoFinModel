@@ -4,7 +4,7 @@ Created on Sat Oct 12 09:27:46 2024
 
 @author: mikeg
 """
-import sys
+
 import os
 import json
 import logging
@@ -21,7 +21,8 @@ from config import (
     OUTPUTS_FOR_PROJECT_TYPE, TA_GRADING_TABLE
 )
 from excel_generation.ingredients_code import Ingredient
-from context_manager import get_user_context
+from flask import session
+
 
 class JsonManager:
     def __init__(self):
@@ -31,9 +32,10 @@ class JsonManager:
                           handlers=[logging.StreamHandler()])
         
     def initialize_json_files(self, data_path):
-        """Initialize JSON files with default content based on project type."""
+        """Initialize JSON structure and data files with default content based on project type."""
         success = True
-        user_context = get_user_context()
+        username = session.get('username')
+        current_project = session.get('current_project')
         structures_path = get_project_structures_path()
         logging.debug(f"initialize_json_files: Initializing JSON files for {data_path}")
 
@@ -79,7 +81,8 @@ class JsonManager:
             
             # Create project metadata in S3
             project_path = '/'.join(data_path.split('/')[:-1])  # Get parent path in S3
-            self.create_project_metadata(project_path, user_context.project_type)
+            project_type = session.get('project_type')
+            self.create_project_metadata(project_path, project_type)
             
         except Exception as e:
             logging.error(f"Failed to initialize JSON files: {e}")
@@ -121,29 +124,45 @@ class JsonManager:
         Returns:
             bool: True if all files copied successfully, False if any errors occurred
         """
-        user_context = get_user_context()
+        logging.debug("[initialize_user_json_structures] Starting initialize_user_json_structures")
+        
+        username = session['user']['username']
+        current_project = session['current_project']['name']
+        project_type = session['current_project']['type']
+        
+        logging.debug(f"[initialize_user_json_structures] User: {username}, Project: {current_project}, Type: {project_type}")
 
         # Get structure files list based on project type
-        if user_context.project_type == "catalyst":
+        if project_type == "catalyst":
             structure_files = CATALYST_TABLE
-        elif user_context.project_type == "real_estate":
+            logging.debug(f"Using CATALYST_TABLE with {len(CATALYST_TABLE)} files")
+        elif project_type == "real_estate":
             structure_files = REAL_ESTATE_TABLE
-        elif user_context.project_type == "financial":
+            logging.debug(f"Using REAL_ESTATE_TABLE with {len(REAL_ESTATE_TABLE)} files")
+        elif project_type == "financial":
             structure_files = FINANCIALS_TABLE
-        elif user_context.project_type == "ta_grading":
+            logging.debug(f"Using FINANCIALS_TABLE with {len(FINANCIALS_TABLE)} files")
+        elif project_type == "ta_grading":
             structure_files = TA_GRADING_TABLE
+            logging.debug(f"Using TA_GRADING_TABLE with {len(TA_GRADING_TABLE)} files")
         else:
-            logging.error(f"initialize_user_json_structures: Invalid project type: {user_context.project_type}")
+            logging.error(f"initialize_user_json_structures: Invalid project type: {project_type}")
             return False
 
         structures_path = get_project_structures_path()
+        logging.debug(f"Structures path: {structures_path}")
         success = True
         
         # Copy structure files from local static folder to S3
+        logging.debug(f"Starting copy of {len(structure_files)} structure files")
         for structure_file in structure_files:
             try:
                 source_file = f"static/json_structure_data/{structure_file}"
                 dest_key = f"{structures_path}/{structure_file}"
+                
+                logging.debug(f"Processing file: {structure_file}")
+                logging.debug(f"Source: {source_file}")
+                logging.debug(f"Destination: {dest_key}")
                 
                 # Check if source file exists
                 if not os.path.exists(source_file):
@@ -163,13 +182,16 @@ class JsonManager:
                 logging.error(f"Error copying structure file {structure_file}: {str(e)}", exc_info=True)
                 success = False
 
+        logging.debug(f"initialize_user_json_structures completed with success={success}")
         return success
 
     def update_json_files(self, json_data):
         """
         Update JSON files with the complete json data from the openai response. This is called once per openai response.
         """
-        user_context = get_user_context()
+        username = session.get('username')
+        current_project = session.get('current_project')
+        project_type = session.get('project_type')
         project_data_path = get_project_data_path()
         
         # List existing files in S3 data directory
@@ -196,9 +218,9 @@ class JsonManager:
             file_path = f"{project_data_path}/{table_name}.json"
             try:
                 write_json(file_path, new_data)
-                logging.info(f"update_json_files: Successfully updated {table_name}.json for project {user_context.project_type}")
+                logging.info(f"update_json_files: Successfully updated {table_name}.json for project {project_type}")
             except Exception as e:
-                logging.error(f"update_json_files: Failed to update {table_name}.json for project {user_context.project_type}: {e}")
+                logging.error(f"update_json_files: Failed to update {table_name}.json for project {project_type}: {e}")
 
     def fix_incomplete_json(self, json_string):
         """Fix incomplete JSON by adding missing brackets"""
@@ -216,7 +238,8 @@ class JsonManager:
 
     def save_json_to_file(self, json_data):
         """Save JSON data to a timestamped file in S3"""
-        user_context = get_user_context()
+        username = session.get('username')
+        current_project = session.get('current_project')
         project_data_path = get_project_data_path()
         save_directory = f"{project_data_path}/ai_responses"
 
@@ -279,7 +302,7 @@ class JsonManager:
         """
         try:
             current_time = datetime.now().isoformat()
-            user_context = get_user_context()
+            username = session.get('username')
             
             # Start with default metadata from config
             metadata = DEFAULT_PROJECT_METADATA.copy()
@@ -288,10 +311,10 @@ class JsonManager:
             metadata["project_type"] = project_type
             metadata["created_at"] = current_time 
             metadata["last_modified_at"] = current_time
-            metadata["project_owner"] = user_context.username
-            metadata["collaborators"] = [user_context.username]
+            metadata["project_owner"] = username
+            metadata["collaborators"] = [username]
             metadata["access_level"] = {
-                user_context.username: "admin"
+                username: "admin"
             }
             
             metadata_path = f"{project_base}/project_metadata.json"
@@ -315,8 +338,9 @@ class JsonManager:
             bool: True if update was successful, False otherwise
         """
         try:
-            user_context = get_user_context()
-            metadata_path = f"users/{user_context.username}/projects/{user_context.current_project}/project_metadata.json"
+            username = session.get('username')
+            current_project = session.get('current_project')
+            metadata_path = f"users/{username}/projects/{current_project}/project_metadata.json"
             
             # Read existing metadata
             metadata = read_json(metadata_path)
@@ -358,8 +382,9 @@ class JsonManager:
             bool: True if update was successful, False otherwise
         """
         try:
-            user_context = get_user_context()
-            metadata_path = f"users/{user_context.username}/projects/{user_context.current_project}/project_metadata.json"
+            username = session.get('username')
+            current_project = session.get('current_project')
+            metadata_path = f"users/{username}/projects/{current_project}/project_metadata.json"
             
             metadata = read_json(metadata_path)
             if not metadata:
@@ -387,8 +412,7 @@ class JsonManager:
             bool: True if update was successful, False otherwise
         """
         try:
-            user_context = get_user_context()
-            project_type = user_context.project_type
+            project_type = session.get('project_type')
             
             # Validate output type is allowed for this project type
             if output_type not in OUTPUTS_FOR_PROJECT_TYPE.get(project_type, []):

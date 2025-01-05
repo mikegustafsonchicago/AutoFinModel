@@ -1,9 +1,6 @@
 // This file contains miscellaneous views that don't fit into other categories
 // Handles UI elements like error messages, project headers, download buttons and sidebar
 
-import { StateManager } from './stateManager.js';
-
-
 export class MiscView {
     constructor(miscManager, stateManager) {
         // Store references to managers that handle business logic
@@ -16,6 +13,16 @@ export class MiscView {
             powerpoint_overview: "Download Investment Overview (pptx)", 
             excel_overview: "Download Overview (xlsx)"
         };
+
+        // Bind methods that will be used as event handlers
+        this.updateProjectNameHeader = this.updateProjectNameHeader.bind(this);
+        this.updateDownloadButtons = this.updateDownloadButtons.bind(this);
+
+        // Subscribe to state changes
+        this.stateManager.subscribe((state) => {
+            this.updateProjectNameHeader();
+            this.updateDownloadButtons();
+        });
     }
 
     initialize() {
@@ -25,7 +32,7 @@ export class MiscView {
             this.updateDownloadButtons();
             this.setupSidebarToggle();
         } catch (error) {
-            console.error('MiscView: Initialization failed:', error);
+            this.showErrorMessage('Failed to initialize UI components');
         }
     }
 
@@ -34,6 +41,13 @@ export class MiscView {
         const errorContainer = document.getElementById('errorContainer') || this.createErrorContainer();
         errorContainer.textContent = message;
         errorContainer.style.display = 'block';
+
+        // Update application state to reflect error
+        this.stateManager.setState({
+            application: {
+                error: message
+            }
+        });
     }
 
     // Create error container if it doesn't exist
@@ -49,34 +63,45 @@ export class MiscView {
     updateProjectNameHeader() {
         const projectNameHeader = document.getElementById('projectNameHeader');
         if (projectNameHeader) {
-            const { name } = this.stateManager.getCurrentProject();
-            projectNameHeader.textContent = name || '';
+            const currentProject = this.stateManager.getCurrentProject();
+            projectNameHeader.textContent = currentProject?.name || '';
         }
     }
 
-    // Refresh download buttons based on available outputs for current project
+    /**
+     * Updates the download buttons container based on available outputs for the current project.
+     * This method handles three main cases:
+     * 1. No container found - logs warning and exits
+     * 2. No current project - displays welcome message
+     * 3. Has current project - creates download buttons for each available output type
+     */
     updateDownloadButtons() {
         const container = document.getElementById('downloadButtonsContainer');
         if (!container) {
-            console.warn('MiscView: Download buttons container not found');
             return;
         }
 
-        // Clear existing buttons
         container.innerHTML = '';
-        
         const currentProject = this.stateManager.getCurrentProject();
-        if (!currentProject) {
-            console.warn('MiscView: No current project found');
+        
+        if (!currentProject?.name) {
+            const message = document.createElement('p');
+            message.className = 'text-muted';
+            message.textContent = 'Create a project to get started';
+            container.appendChild(message);
             return;
         }
 
-        // Get list of available output types for this project type
-        const availableOutputs = currentProject.outputs;
+        // Get available outputs and convert to array if needed
+        const availableOutputs = currentProject.available_outputs || {};
 
-        if (availableOutputs.length > 0) {
-            // Create a download button for each available output type
-            availableOutputs.forEach(outputType => {
+        // Convert to array if it's an object
+        const outputsArray = Array.isArray(availableOutputs) 
+            ? availableOutputs 
+            : Object.values(availableOutputs);
+
+        if (outputsArray && outputsArray.length > 0) {
+            outputsArray.forEach(outputType => {
                 const buttonLabel = this.OUTPUT_BUTTON_LABELS[outputType] || outputType;
                 this.addDownloadButton(
                     container, 
@@ -86,7 +111,6 @@ export class MiscView {
                 );
             });
         } else {
-            // Show message if no outputs are available
             const message = document.createElement('p');
             message.className = 'text-muted';
             message.textContent = 'Generate outputs to enable downloads';
@@ -104,6 +128,13 @@ export class MiscView {
         // Handle click event to download the file
         button.addEventListener('click', async () => {
             try {
+                // Update loading state
+                this.stateManager.setState({
+                    application: {
+                        loading: true
+                    }
+                });
+
                 // Get file blob and suggested filename from miscManager
                 const { blob, filename } = await this.miscManager.handleDownload(projectName, outputType);
                 
@@ -118,9 +149,24 @@ export class MiscView {
                 // Clean up
                 window.URL.revokeObjectURL(url);
                 a.remove();
+
+                // Clear loading state
+                this.stateManager.setState({
+                    application: {
+                        loading: false,
+                        error: null
+                    }
+                });
             } catch (error) {
-                console.error(`MiscView: Download failed for ${outputType}:`, error);
                 this.showErrorMessage('Failed to download file');
+                
+                // Update error state
+                this.stateManager.setState({
+                    application: {
+                        loading: false,
+                        error: `Failed to download ${outputType}: ${error.message}`
+                    }
+                });
             }
         });
 
@@ -133,7 +179,11 @@ export class MiscView {
         const sidebarToggle = document.getElementById('sidebarToggle');
         const mainContent = document.getElementById('mainContent');
         
-        sidebarToggle?.addEventListener('click', () => {
+        if (!sidebar || !sidebarToggle || !mainContent) {
+            return;
+        }
+
+        sidebarToggle.addEventListener('click', () => {
             sidebar.classList.toggle('collapsed');
             // Adjust main content padding based on sidebar state
             mainContent.style.paddingLeft = sidebar.classList.contains('collapsed') ? '60px' : '20px';

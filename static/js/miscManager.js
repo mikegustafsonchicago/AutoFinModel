@@ -1,6 +1,5 @@
 // This file is used to manage miscellaneous tasks that don't fit into the other managers. Supports miscView.js
 
-
 import { StateManager } from './stateManager.js';
 import { ApiService } from './apiService.js';
 
@@ -17,14 +16,15 @@ export class MiscManager {
     }   
 
     getAvailableOutputs(projectType) {
-        return this.OUTPUT_TYPES[projectType] || this.OUTPUT_TYPES.default;
+        const outputs = this.OUTPUT_TYPES[projectType] || this.OUTPUT_TYPES.default;
+        return outputs;
     }
 
     async handleDownload(projectName, outputType) {
         try {
-            return await ApiService.downloadFile(projectName, outputType);
+            const result = await ApiService.downloadFile(projectName, outputType);
+            return result;
         } catch (error) {
-            console.error('handleDownload error:', error);
             throw error;
         }
     }

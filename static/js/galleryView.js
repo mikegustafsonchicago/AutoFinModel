@@ -153,33 +153,19 @@ export class GalleryView {
     async handleGalleryUpload(files) {
         console.log('GalleryView: Starting gallery upload with files:', files);
         
-        // Process each uploaded file
         for (const file of Array.from(files)) {
-            console.log('GalleryView: Processing file:', file.name, 'type:', file.type);
-            
-            // Only process image files
             if (file.type.startsWith('image/')) {
-                console.log('GalleryView: Valid image file detected, attempting upload');
                 try {
-                    const projectName = this.stateManager.currentProject;
-                    const result = await this.galleryManager.uploadImage(file, projectName);
-                    console.log('GalleryView: Upload result:', result);
+                    const result = await this.galleryManager.uploadImage(file);
                     
                     if (result.success) {
-                        console.log('GalleryView: Upload successful, adding to gallery:', result.filename);
                         this.addImageToGallery(result.filename);
-                    } else {
-                        console.warn('GalleryView: Upload completed but was not successful');
                     }
                 } catch (error) {
                     console.error('GalleryView: Failed to upload image:', error);
                 }
-            } else {
-                console.warn('GalleryView: Skipping non-image file:', file.name, file.type);
             }
         }
-        console.log('GalleryView: Finished processing all files');
-        window.app.galleryManager.refreshGallery();
     }
 
     /**
@@ -192,8 +178,8 @@ export class GalleryView {
     
         const img = document.createElement('img');
         const state = this.stateManager.getState();
-        const username = state.user;
-        const projectName = this.stateManager.currentProject;
+        const username = state.user.username;
+        const projectName = state.current_project.name;
         img.src = ApiService.getImageUrl(username, projectName, filename);
         img.alt = filename;
         img.className = 'gallery-image';

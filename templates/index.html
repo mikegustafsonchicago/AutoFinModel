@@ -20,7 +20,8 @@
     <!-- Title Area -->
     <div class="card mb-4">
         <div class="card-header">
-            <h2 class="card-title"><strong>This Software Really Needs a Name</strong></h2>
+            <h2 class="card-title"><strong>Robo-Financial-Model BETA</strong></h2>
+            <small class="text-muted">Ask about our contest to name the software!</small>
             <div class="user-info">
                 <p>Welcome back, <span id="currentUsername">{{ session['username'] }}</span></p>
             </div>
@@ -168,69 +169,68 @@
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
 
-            <!-- New Project Modal -->
-            <div class="modal fade" id="newProjectModal" tabindex="-1" aria-labelledby="newProjectModalLabel" aria-hidden="true">
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="newProjectModalLabel">Create New Project</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">
-                            <div class="input-group">
-                                <input type="text" class="form-control" id="newProjectName" placeholder="Project Name">
-                                <select class="form-select" id="projectType">
-                                    <!-- Options will be populated dynamically via JavaScript -->
-                                </select>
-                            </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                            <button type="button" class="btn btn-primary" id="createProjectBtn">Create</button>
-                        </div>
+    <!-- Move modals here, at the end of body but before scripts -->
+    <div class="modal fade" id="newProjectModal" tabindex="-1" aria-labelledby="newProjectModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="newProjectModalLabel">Create New Project</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="newProjectName" placeholder="Project Name">
+                        <select class="form-select" id="projectType">
+                            <!-- Options will be populated dynamically via JavaScript -->
+                        </select>
                     </div>
                 </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="createProjectBtn">Create</button>
+                </div>
             </div>
+        </div>
+    </div>
 
-            <!-- New Table Modal -->
-            <div class="modal fade" id="newTableModal" tabindex="-1" aria-labelledby="newTableModalLabel" aria-hidden="true">
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="newTableModalLabel">Create New Table</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">
-                            <div class="input-group mb-3">
-                                <label class="input-group-text" for="tableType">Table Type</label>
-                                <select class="form-select" id="tableType">
-                                    <option value="revenue">Revenue Data</option>
-                                    <option value="purchases">Inventory and COGS Data</option>
-                                    <option value="employees">Employees Data</option>
-                                    <option value="capex">CAPEX Data</option>
-                                    <option value="opex">OPEX Data</option>
-                                    <option value="historical">Historical Financial Data</option>
-                                    <option value="comparables">Valuation Comparables</option>
-                                    <option value="custom">Custom Table</option>
-                                </select>
-                            </div>
-                            <div id="customTableFields" style="display: none;">
-                                <div class="input-group mb-3">
-                                    <label class="input-group-text" for="tableName">Table Name</label>
-                                    <input type="text" class="form-control" id="tableName" placeholder="Enter table name">
-                                </div>
-                                <div id="columnDefinitions">
-                                    <!-- Column definitions will be added here for custom tables -->
-                                </div>
-                                <button type="button" class="btn btn-secondary" id="addColumnBtn">Add Column</button>
-                            </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                            <button type="button" class="btn btn-primary" id="createTableBtn">Create Table</button>
-                        </div>
+    <div class="modal fade" id="newTableModal" tabindex="-1" aria-labelledby="newTableModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="newTableModalLabel">Create New Table</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="input-group mb-3">
+                        <label class="input-group-text" for="tableType">Table Type</label>
+                        <select class="form-select" id="tableType">
+                            <option value="revenue">Revenue Data</option>
+                            <option value="purchases">Inventory and COGS Data</option>
+                            <option value="employees">Employees Data</option>
+                            <option value="capex">CAPEX Data</option>
+                            <option value="opex">OPEX Data</option>
+                            <option value="historical">Historical Financial Data</option>
+                            <option value="comparables">Valuation Comparables</option>
+                            <option value="custom">Custom Table</option>
+                        </select>
                     </div>
+                    <div id="customTableFields" style="display: none;">
+                        <div class="input-group mb-3">
+                            <label class="input-group-text" for="tableName">Table Name</label>
+                            <input type="text" class="form-control" id="tableName" placeholder="Enter table name">
+                        </div>
+                        <div id="columnDefinitions">
+                            <!-- Column definitions will be added here for custom tables -->
+                        </div>
+                        <button type="button" class="btn btn-secondary" id="addColumnBtn">Add Column</button>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="createTableBtn">Create Table</button>
                 </div>
             </div>
         </div>

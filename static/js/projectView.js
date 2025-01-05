@@ -23,6 +23,11 @@ export class ProjectView {
         this.populateProjectsTable = this.populateProjectsTable.bind(this);
         this.updateProjectsTable = this.updateProjectsTable.bind(this);
         this.showNewProjectModal = this.showNewProjectModal.bind(this);
+
+        // Subscribe to state changes
+        this.projectManager.stateManager.subscribe((state) => {
+            this.updateProjectsTable(state.user.portfolio.projects);
+        });
     }
 
     async initialize() {
@@ -83,8 +88,8 @@ export class ProjectView {
                 const modal = bootstrap.Modal.getInstance(document.getElementById('newProjectModal'));
                 modal?.hide();
 
-                // Refresh projects table
-                await this.populateProjectsTable();
+                // Refresh table
+                this.populateProjectsTable();
             }
         } catch (error) {
             console.error('ProjectView: Error creating project:', error);
@@ -92,78 +97,94 @@ export class ProjectView {
         }
     }
 
-    /**
-     * Populate the existing projects table with data from the server
-     * Fetches context data and creates table rows for each project
+   /**
+     * Populate the existing projects table with data from the server.
+     * Fetches context data and creates table rows for each project.
+     * Handles both cases where projects exist and where no projects exist yet.
      */
     async populateProjectsTable() {
+        // Validate table element exists in DOM
         if (!this.projectsTable) {
             console.warn('ProjectView: projectsTable element not found');
             return;
         }
 
         try {
-            const response = await fetch('/api/context');
-            const contextData = await response.json();
+            // Fetch project data from server
+            const { projects, metadata, projectTypes } = await this.projectManager.getProjectsData();
             
+            // Clear existing table contents
             this.projectsTable.innerHTML = '';
             
-            // Initialize storage objects
-            this.projectMetadata = {};
-            this.projectData = {};
+            // Store metadata and project types for later use
+            this.projectMetadata = metadata || {};
+            this.projectData = projectTypes || {};
             
-            // Process each project
-            contextData.available_projects.forEach(project => {
-                // Get metadata with defaults for legacy projects
-                this.projectMetadata[project] = {
-                    created_at: null,
-                    last_modified_at: null,
-                    project_type: 'real_estate',  // Default type
-                    ...contextData.project_metadata?.[project]  // Spread operator will override defaults if they exist
-                };
-                
-                // Store project type
-                this.projectData[project] = contextData.project_types?.[project] || 'real_estate';
-            });
+            // Handle case where no projects exist yet
+            if (!projects || projects.length === 0) {
+                this.showEmptyProjectsMessage();
+                return;
+            }
             
-            contextData.available_projects.forEach(project => {
+            // Create and append row for each existing project
+            projects.forEach(project => {
                 const row = this.createProjectRow(project);
                 this.projectsTable.appendChild(row);
             });
         } catch (error) {
-            console.error('ProjectView: Error loading context:', error);
-        }
+            console.error('ProjectView: Error populating projects table:', error);
+            this.showErrorState();
+        } 
     }
 
     /**
-     * Populate the project type dropdown for new project creation
-     * Fetches available project types from server context
+     * Populates the project type dropdown menu for new project creation.
+     * This method:
+     * 1. Fetches available project types from the server's context API endpoint
+     * 2. Clears any existing dropdown options
+     * 3. Adds a default "Select type" option as the first choice
+     * 4. Populates the remaining options with available project types
+     * 
+     * The dropdown is used in the new project creation modal to let users
+     * select what type of project they want to create (e.g. real_estate, 
+     * financial, etc).
      */
     async populateNewProjectTypeDropdown() {
+        console.log('ProjectView: Starting populateNewProjectTypeDropdown');
+        
         if (!this.projectTypeDropdown) {
-            console.warn('ProjectView: Project type dropdown not found');
+            console.warn('ProjectView: Project type dropdown element not found in DOM');
             return;
         }
         
         try {
-            const response = await fetch('/api/context');
-            const contextData = await response.json();
-            
+            console.log('ProjectView: Clearing existing dropdown options');
+            // Clear existing options
             this.projectTypeDropdown.innerHTML = '';
             
-            // Add a default "Select type" option
+            // Add default option
             const defaultOption = document.createElement('option');
             defaultOption.value = '';
             defaultOption.textContent = 'Select project type';
             this.projectTypeDropdown.appendChild(defaultOption);
             
-            // Add each project type as an option
-            contextData.project_types.forEach(type => {
-                const option = document.createElement('option');
-                option.value = type;
-                option.textContent = type;
-                this.projectTypeDropdown.appendChild(option);
-            });
+
+            // Get project types from ProjectManager
+            const projectTypes = await this.projectManager.getProjectTypes();
+
+            
+            // Check if we have project types
+            if (Object.keys(projectTypes).length > 0) {
+                // Iterate over the object entries
+                Object.entries(projectTypes).forEach(([label, value]) => {
+                    const option = document.createElement('option');
+                    option.value = value;
+                    option.textContent = label;
+                    this.projectTypeDropdown.appendChild(option);
+                });
+            } else {
+                console.warn('ProjectView: No project types received from server');
+            }
         } catch (error) {
             console.error('ProjectView: Error populating project type dropdown:', error);
         }
@@ -177,7 +198,16 @@ export class ProjectView {
         if (!this.projectsTable) return;
         
         this.projectsTable.innerHTML = '';
-        projects.forEach(project => {
+        
+        // Ensure projects is an array
+        const projectsArray = Array.isArray(projects) ? projects : [];
+        
+        if (projectsArray.length === 0) {
+            this.showEmptyProjectsMessage();
+            return;
+        }
+        
+        projectsArray.forEach(project => {
             const row = this.createProjectRow(project);
             this.projectsTable.appendChild(row);
         });
@@ -190,83 +220,132 @@ export class ProjectView {
     }
 
     handleLoadProject(projectName) {
-        this.projectManager.loadProject(projectName);
+        this.projectManager.loadProject(projectName)
+          .then(() => {
+            // Now that the state has changed, either call populate or update
+            this.populateProjectsTable();
+          })
+          .catch(error => console.error(error));
     }
+      
 
-    handleDeleteProject(project) {
-        this.projectManager.deleteProject(project);
+    handleDeleteProject(projectName) {
+        this.projectManager.deleteProject(projectName)
+          .then(() => {
+            // Re-populate table after delete
+            this.populateProjectsTable();
+          })
+          .catch(error => console.error(error));
     }
+      
 
     /**
      * Create a table row for a single project
      * @param {Object} project - Project data to display in row
      * @returns {HTMLTableRowElement} The created table row
      */
-    createProjectRow(project) {
+    createProjectRow(projectName) {
         const row = document.createElement('tr');
+        const state = this.projectManager.stateManager.getState();
+        
+        // Ensure projects is an array
+        const projects = Array.isArray(state.user?.portfolio?.projects) 
+            ? state.user.portfolio.projects 
+            : [];
+        
+        // Simple equality check instead of find since we just have strings
+        const projectData = projects.includes(projectName) ? projectName : null;
+        const metadata = state.current_project?.metadata || {};
         
         // Create name column
         const nameCell = document.createElement('td');
-        nameCell.textContent = project;
+        nameCell.textContent = projectName;
         row.appendChild(nameCell);
         
         // Create type column
         const typeCell = document.createElement('td');
-        typeCell.textContent = this.projectData[project] || '-';
+        typeCell.textContent = state.current_project?.type || '-';
         row.appendChild(typeCell);
         
-        // Create created date column
-        const createdCell = document.createElement('td');
-        const metadata = this.projectMetadata?.[project] || {};
-        if (metadata.created_at) {
-            const createdDate = new Date(metadata.created_at);
-            createdCell.textContent = createdDate.toLocaleDateString();
-        } else {
-            createdCell.textContent = '-';
-        }
-        row.appendChild(createdCell);
+        // Create dates columns
+        this.addDateColumns(row, metadata);
         
-        // Create last modified column
-        const modifiedCell = document.createElement('td');
-        if (metadata.last_modified_at) {
-            const modifiedDate = new Date(metadata.last_modified_at);
-            modifiedCell.textContent = modifiedDate.toLocaleDateString();
-        } else {
-            modifiedCell.textContent = '-';
-        }
-        row.appendChild(modifiedCell);
-        
-        // Create load button column with bound handler
-        const loadCell = document.createElement('td');
-        const loadButton = document.createElement('button');
-        loadButton.className = 'btn btn-primary btn-sm';
-        loadButton.textContent = 'Load';
-        
-        // Check if this is the current project and disable button if it is
-        const currentProject = this.projectManager.stateManager.getCurrentProject()?.name;
-        if (project === currentProject) {
-            loadButton.disabled = true;
-            loadButton.className = 'btn btn-secondary btn-sm';
-            loadButton.textContent = 'Active';
-        }
-        
-        loadButton.addEventListener('click', () => this.handleLoadProject(project));
-        loadCell.appendChild(loadButton);
-        row.appendChild(loadCell);
-        
-        // Create delete button column with bound handler
-        const deleteCell = document.createElement('td');
-        const deleteButton = document.createElement('button');
-        deleteButton.className = 'btn btn-danger btn-sm';
-        deleteButton.textContent = 'Delete';
-        deleteButton.addEventListener('click', () => this.handleDeleteProject(project));
-        deleteCell.appendChild(deleteButton);
-        row.appendChild(deleteCell);
+        // Create action buttons
+        this.addActionButtons(row, projectName);
 
         // Add click handler to highlight selected row
         row.addEventListener('click', () => this.handleRowClick(row));
         
         return row;
+    }
+
+    addDateColumns(row, metadata) {
+        // Created date
+        const createdCell = document.createElement('td');
+        if (metadata.created_at) {
+            createdCell.textContent = new Date(metadata.created_at).toLocaleDateString();
+        } else {
+            createdCell.textContent = '-';
+        }
+        row.appendChild(createdCell);
+        
+        // Modified date
+        const modifiedCell = document.createElement('td');
+        if (metadata.last_modified_at) {
+            modifiedCell.textContent = new Date(metadata.last_modified_at).toLocaleDateString();
+        } else {
+            modifiedCell.textContent = '-';
+        }
+        row.appendChild(modifiedCell);
+    }
+
+    addActionButtons(row, projectName) {
+        // Load button
+        const loadCell = document.createElement('td');
+        const loadButton = document.createElement('button');
+        loadButton.className = 'btn btn-primary btn-sm';
+        loadButton.textContent = 'Load';
+        
+        // Check if this is the current project
+        const currentProject = this.projectManager.stateManager.getCurrentProject()?.name;
+        if (projectName === currentProject) {
+            loadButton.disabled = true;
+            loadButton.className = 'btn btn-secondary btn-sm';
+            loadButton.textContent = 'Active';
+        }
+        
+        loadButton.addEventListener('click', () => this.handleLoadProject(projectName));
+        loadCell.appendChild(loadButton);
+        row.appendChild(loadCell);
+        
+        // Delete button
+        const deleteCell = document.createElement('td');
+        const deleteButton = document.createElement('button');
+        deleteButton.className = 'btn btn-danger btn-sm';
+        deleteButton.textContent = 'Delete';
+        deleteButton.addEventListener('click', () => this.handleDeleteProject(projectName));
+        deleteCell.appendChild(deleteButton);
+        row.appendChild(deleteCell);
+    }
+
+    showEmptyProjectsMessage() {
+        const emptyRow = document.createElement('tr');
+        emptyRow.innerHTML = `
+            <td colspan="6" class="text-center text-muted">
+                No projects created yet. Create a new project to get started.
+            </td>
+        `;
+        this.projectsTable.appendChild(emptyRow);
+    }
+
+    showErrorState() {
+        this.projectsTable.innerHTML = `
+            <tr>
+                <td colspan="6" class="text-center text-danger">
+                    Error loading projects. Please try refreshing the page.
+                </td>
+            </tr>
+        `;
     }
 
     showNewProjectModal() {
