@@ -10,7 +10,7 @@ import os
 import boto3
 from botocore.exceptions import ClientError
 from config import ALLOWABLE_PROJECT_TYPES, OUTPUTS_FOR_PROJECT_TYPE
-from file_manager import list_projects, get_project_metadata, get_available_structure_files, get_uploads_contents, get_gallery_contents, ensure_user_exists, get_user_path
+from file_manager import list_projects, get_project_metadata, get_available_structure_files, get_uploads_contents, get_gallery_contents, ensure_user_exists, get_user_path, create_new_user
 from datetime import datetime as dt
 
 # Configure S3 client for AWS access
@@ -147,16 +147,19 @@ def get_or_create_user_id():
     """Get existing user ID or create a new one and initialize their context."""
     from datetime import datetime
     import uuid
-    from file_manager import ensure_user_exists
+    from file_manager import ensure_user_exists, create_new_user
+    import logging
     
+    # Check if user already exists in session
     if 'user' in session and 'username' in session['user']:
         return session['user']['username']
     
     # Generate new unique ID
     unique_id = f"user_{datetime.now().strftime('%Y%m%d')}_{str(uuid.uuid4())[:8]}"
+    logging.info(f"[get_or_create_user_id] Generated new user ID: {unique_id}")
     
-    # Initialize user session structure
-    if 'user' not in session:
+    try:
+        # Initialize user session structure first
         session['user'] = {
             'username': unique_id,
             'is_authenticated': True,
@@ -164,16 +167,35 @@ def get_or_create_user_id():
                 'projects': []
             }
         }
-    else:
-        session['user']['username'] = unique_id
-    
-    # Ensure S3 folder structure exists
-    if not ensure_user_exists(unique_id):
-        logging.error(f"[get_or_create_user_id] Failed to create S3 structure for: {unique_id}")
-        raise Exception("Failed to initialize user storage")
-    
-    logging.info(f"[get_or_create_user_id] Created new user: {unique_id}")
-    return unique_id
+        
+        session['current_project'] = {
+            'name': None,
+            'type': None,
+            'metadata': None,
+            'available_tables': [],
+            'uploaded_files': [],
+            'available_outputs': [],
+            'gallery': []
+        }
+        
+        session['application'] = {
+            'available_project_types': ALLOWABLE_PROJECT_TYPES,
+            'is_initialized': False
+        }
+        
+        session.permanent = True
+        
+        # Create S3 folder structure
+        if not create_new_user():
+            logging.error(f"[get_or_create_user_id] Failed to create S3 structure for: {unique_id}")
+            raise Exception("Failed to initialize user storage")
+            
+        logging.info(f"[get_or_create_user_id] Successfully created new user: {unique_id}")
+        return unique_id
+        
+    except Exception as e:
+        logging.error(f"[get_or_create_user_id] Error creating user: {str(e)}")
+        raise
 
 def initialize_empty_project_context(project_name, project_type):
     """Initialize context for a new project."""
