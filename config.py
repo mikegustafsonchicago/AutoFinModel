@@ -28,6 +28,20 @@ if DEVELOPMENT_ENVIRONMENT == "DEBUG":
 else:
     OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY') #Works on hosted server
 
+#=============================================================  
+#AWS Configuration
+#=============================================================
+if DEVELOPMENT_ENVIRONMENT == "DEBUG":  
+    AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')
+    AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
+    AWS_REGION = os.getenv('AWS_REGION')
+    BUCKET_NAME = os.getenv('AWS_BUCKET_NAME')
+else:
+    AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID')
+    AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY')
+    AWS_REGION = os.environ.get('AWS_REGION')
+    BUCKET_NAME = os.environ.get('AWS_BUCKET_NAME')
+
 #=============================================================
 #Default Configuration
 #=============================================================
@@ -41,8 +55,6 @@ ALLOWED_GALLERY_EXTENSIONS = {'.pdf', '.txt', '.png', '.jpg', '.jpeg', '.gif', '
 RUNNING_SUMMARY_DIR = os.path.join(os.getcwd(), "temp_business_data")
 BASE_PROMPT_DIR = os.path.join(os.getcwd(), "static", "prompts")
 STRUCTURE_FILES_DIR = os.path.join(os.getcwd(), "static", "json_structure_data")
-
-BUCKET_NAME = 'autofinmodel'
 
 # Dictionary mapping table names to their structure files for financial project
 FINANCIALS_TABLE = [
