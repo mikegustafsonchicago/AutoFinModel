@@ -17,7 +17,7 @@ from file_manager import (
 )
 from config import (
     STRUCTURE_FILES_DIR, 
-    FINANCIALS_TABLE, REAL_ESTATE_TABLE, CATALYST_TABLE, DEFAULT_PROJECT_METADATA,
+    FINANCIALS_TABLE, REAL_ESTATE_TABLE, CATALYST_TABLE, FUND_ANALYSIS_TABLE, DEFAULT_PROJECT_METADATA,
     OUTPUTS_FOR_PROJECT_TYPE, TA_GRADING_TABLE
 )
 from excel_generation.ingredients_code import Ingredient
@@ -145,6 +145,9 @@ class JsonManager:
         elif project_type == "ta_grading":
             structure_files = TA_GRADING_TABLE
             logging.debug(f"Using TA_GRADING_TABLE with {len(TA_GRADING_TABLE)} files")
+        elif project_type == "fund_analysis":
+            structure_files = FUND_ANALYSIS_TABLE
+            logging.debug(f"Using FUND_ANALYSIS_TABLE with {len(FUND_ANALYSIS_TABLE)} files")
         else:
             logging.error(f"initialize_user_json_structures: Invalid project type: {project_type}")
             return False
@@ -264,29 +267,43 @@ class JsonManager:
         Returns:
             dict: The schema and display settings if found, None if not found
         """
+        logging.debug(f"[get_table_schema] Getting schema for table: {table_name}")
         try:
             structures_path = get_project_structures_path()
             structure_path = f"{structures_path}/{table_name}_structure.json"
+            logging.debug(f"[get_table_schema] Looking for structure file at: {structure_path}")
             
             try:
                 structure_data = read_json(structure_path)
+                logging.debug(f"[get_table_schema] Successfully read structure file: {table_name}_structure.json. Full structure data: {structure_data}")
+                
                 table_data = structure_data[table_name]
+                logging.debug(f"[get_table_schema] Found table data for key: {table_name}. Table data contents: {table_data}")
                 
                 schema = {
                     "structure": table_data.get('structure'),
                     "display": table_data.get('display')
                 }
+                logging.debug(f"[get_table_schema] Created schema dict with structure: {schema['structure']} and display: {schema['display']}")
                 
                 if schema["structure"]:
+                    logging.debug(f"[get_table_schema] Found valid schema structure. Full schema being returned: {schema}")
                     return schema
+                else:
+                    logging.debug(f"[get_table_schema] No structure found in schema. Full schema object: {schema}")
                 
+            except KeyError as ke:
+                logging.debug(f"[get_table_schema] KeyError accessing table data. Available keys: {list(structure_data.keys())}. Error: {str(ke)}")
+                pass
             except Exception as inner_e:
+                logging.debug(f"[get_table_schema] Inner exception processing {table_name}_structure.json. Structure data: {structure_data}. Error: {str(inner_e)}")
                 pass
             
+            logging.debug(f"[get_table_schema] No valid schema found for {table_name}_structure.json, returning None")
             return None
             
         except Exception as e:
-            logging.error(f"Error retrieving schema for {table_name}: {str(e)}", exc_info=True)
+            logging.error(f"[get_table_schema] Error retrieving schema for {table_name}: {str(e)}", exc_info=True)
             return None
 
     def create_project_metadata(self, project_base, project_type):

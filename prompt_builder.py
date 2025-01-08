@@ -70,9 +70,14 @@ class PromptBuilder:
         Load the base prompt file from the project's data directory based on project type.
         If the prompt file does not exist, attempts to copy it from a base directory.
         """
-        username = session.get('username')
-        current_project = session.get('current_project')
-        self.project_type = session.get('project_type')
+        username = session.get('user', {}).get('username')
+        current_project = session.get('current_project', {})
+        
+        # Get project type from current_project
+        if not self.project_type:  # Only set if not already set
+            self.project_type = current_project.get('type')
+        
+
         prompt_path = get_project_data_path()
 
         # Determine prompt filename from project type

@@ -140,6 +140,7 @@ def get_init_data():
     logging.info("\n\n----Starting /api/init endpoint----")
     try:
         init_data = initialize_session_context()
+        logging.debug(f"[get_init_data] Username: {session['user']['username']}")
         return jsonify(init_data), 200
 
     except Exception as e:
@@ -158,18 +159,27 @@ def get_table_schema(table_name):
     Get the schema (structure) and display settings of a given table.
     The schema defines the columns and their properties.
     """
+    logging.debug(f"\n\n[app.py /api/schema/{table_name}] ----Starting /api/schema/{table_name} endpoint----")
+    
     # Get user and project info from session
     username = session['user']['username']  # From before_request
     current_project = session['current_project']['name']  # From before_request
     project_type = session['current_project']['type']  # From before_request
     
+    logging.debug(f"Context - User: {username}, Project: {current_project}, Type: {project_type}")
+    
     try:
+        logging.debug(f"Getting schema for table: {table_name}")
         json_manager = app.config['json_manager']
         schema = json_manager.get_table_schema(table_name)
         
+        logging.debug(f"Retrieved schema: {schema}")
+        
         if schema and schema.get("structure"):
+            logging.debug("Schema found with structure, returning")
             return jsonify(schema)
         else:
+            logging.warning(f"No schema or structure found for table: {table_name}")
             return jsonify({"error": f"No schema defined for {table_name}"}), 404
             
     except Exception as e:
@@ -472,19 +482,15 @@ def delete_project_endpoint():
         ]
     }
     """
-    logging.info("\n\n\n-----Delete Project Endpoint-----")
     try:
         data = request.json
         items = data.get('items', [])
-        logging.debug(f"[delete_project_endpoint] Request data: {data}")
 
         if not items:
-            logging.warning("[delete_project_endpoint] No items provided for deletion")
             return jsonify({"error": "No items provided for deletion"}), 400
 
         username = session.get('user')['username']
         current_project = session.get('current_project')['name']
-        logging.debug(f"[delete_project_endpoint] User: {username}, Current project: {current_project}")
         
         results = []
         errors = []
@@ -493,10 +499,8 @@ def delete_project_endpoint():
             delete_type = item.get('type')
             item_name = item.get('name')
             project_name = item.get('projectName')
-            logging.debug(f"[delete_project_endpoint] Processing item - Type: {delete_type}, Name: {item_name}, Project: {project_name}")
 
             if not delete_type or not item_name:
-                logging.error(f"[delete_project_endpoint] Missing required fields for item: {item}")
                 errors.append(f"Delete type and item name are required for item: {item}")
                 continue
 
@@ -504,26 +508,20 @@ def delete_project_endpoint():
                 if delete_type == 'project':
                     # Validate project existence
                     available_projects = session['user']['portfolio']['projects']
-                    logging.debug(f"[delete_project_endpoint] Available projects: {available_projects}")
                     
                     if item_name not in available_projects:
-                        logging.warning(f"[delete_project_endpoint] Project does not exist: {item_name}")
                         errors.append(f"Project does not exist: {item_name}")
                         continue
 
                     # Delete the project directory and contents
                     delete_result = delete_project(item_name)
-                    logging.debug(f"[delete_project_endpoint] Project deletion result: {delete_result}")
                     
                     if not delete_result:
-                        logging.error(f"[delete_project_endpoint] Failed to delete project: {item_name}")
                         errors.append(f"Failed to delete project: {item_name}")
                         continue
 
                     # If deleting current project, clear project context
                     if current_project == item_name:
-                        logging.debug(f"[delete_project_endpoint] Clearing project context for deleted project: {item_name}")
-                        logging.debug(f"Call to clear project context. Missing a clear call that was in context_manager.py")
                         session.pop('current_project', None)
                         session.pop('project_type', None)
 
@@ -532,7 +530,6 @@ def delete_project_endpoint():
                 elif delete_type in ['file', 'gallery']:
                     # Project name required for file/gallery operations
                     if not project_name:
-                        logging.error(f"[delete_project_endpoint] Missing project name for {delete_type} deletion: {item_name}")
                         errors.append(f"Project name is required for {delete_type} deletion: {item_name}")
                         continue
 
@@ -541,25 +538,20 @@ def delete_project_endpoint():
                         s3_path = f"users/{username}/projects/{current_project}/uploads/{item_name}"
                     else:  # gallery
                         s3_path = f"users/{username}/projects/{current_project}/gallery/{item_name}"
-                    logging.debug(f"[delete_project_endpoint] Constructed S3 path: {s3_path}")
 
                     # Delete from S3
                     delete_result = delete_file_from_s3(s3_path)
-                    logging.debug(f"[delete_project_endpoint] File deletion result: {delete_result}")
                     
                     if not delete_result:
-                        logging.error(f"[delete_project_endpoint] Failed to delete {delete_type}: {item_name}")
                         errors.append(f"Failed to delete {delete_type}: {item_name}")
                         continue
 
                     results.append(f"{delete_type.capitalize()} {item_name} deleted successfully")
 
                 else:
-                    logging.error(f"[delete_project_endpoint] Invalid delete type for item: {item}")
                     errors.append(f"Invalid delete type for item: {item}")
 
             except Exception as item_error:
-                logging.error(f"[delete_project_endpoint] Error processing {delete_type} {item_name}: {str(item_error)}", exc_info=True)
                 errors.append(f"Error processing {delete_type} {item_name}: {str(item_error)}")
 
         response = {
@@ -568,14 +560,11 @@ def delete_project_endpoint():
         }
         if errors:
             response["errors"] = errors
-            logging.warning(f"[delete_project_endpoint] Completed with errors: {errors}")
             return jsonify(response), 207  # Multi-Status response
 
-        logging.info("[delete_project_endpoint] Deletion completed successfully")
         return jsonify(response), 200
 
     except Exception as e:
-        logging.error(f"[delete_project_endpoint] Error in delete operation: {str(e)}", exc_info=True)
         return jsonify({"error": str(e)}), 500
 
 
@@ -588,11 +577,14 @@ def download_output():
     """
     Generate and download the requested output file (Excel or PowerPoint) for the current project.
     """
+    logging.info("\n\n\n-----Download Output Endpoint-----")
     try:
         username = session.get('user')['username']
         current_project = session.get('current_project')
         output_type = request.args.get('type')
-        project_type = session.get('project_type')
+        project_type = current_project.get('type')
+        
+        logging.debug(f"Request parameters - username: {username}, project: {current_project}, output_type: {output_type}, project_type: {project_type}")
         
         if not output_type:
             logging.error(f"No output type found for user: {username}")
@@ -608,40 +600,56 @@ def download_output():
 
         # Validate output type is allowed for this project type
         if output_type not in OUTPUTS_FOR_PROJECT_TYPE.get(project_type, []):
+            logging.error(f"Output type {output_type} not allowed for project type {project_type}")
             return jsonify({"error": f"Output type {output_type} not available for {project_type} projects"}), 400
 
         logging.debug(f"Generating {output_type} for project type: {project_type}")
 
         # Get the outputs directory for this user's project
         outputs_path = get_project_outputs_path()
+        logging.debug(f"Got outputs path: {outputs_path}")
+        
         if not outputs_path:
+            logging.error("Failed to get project outputs path")
             return jsonify({"error": "Could not access project outputs directory"}), 500
 
         # Generate the appropriate file based on output type and get the S3 path
+        logging.debug(f"Starting file generation for output type: {output_type}")
         if output_type in ['excel_model', 'excel_overview']:
             if project_type == "financial":
+                logging.debug("Generating financial Excel model")
                 file_path = generate_excel_model()
             elif project_type == "catalyst":
+                logging.debug("Generating catalyst Excel summary")
                 file_path = make_catalyst_summary()
             else:
+                logging.error(f"Excel output not supported for project type: {project_type}")
                 return jsonify({"error": "Excel output not supported for this project type"}), 400
         elif output_type == 'powerpoint_overview':
             if project_type == "financial":
+                logging.debug("Generating financial PowerPoint")
                 file_path = generate_ppt()
             elif project_type == "real_estate":
+                logging.debug("Generating real estate PowerPoint")
                 from powerpoint_generation.ppt_real_estate import generate_ppt
                 file_name = generate_ppt()
                 file_path = f"{outputs_path}/{file_name}"
             else:
+                logging.error(f"PowerPoint generation not supported for project type: {project_type}")
                 return jsonify({"error": "PowerPoint generation not supported for this project type"}), 400
         else:
+            logging.error(f"Invalid output type: {output_type}")
             return jsonify({"error": "Invalid output type"}), 400
+
+        logging.debug(f"File generated successfully at path: {file_path}")
 
         # Download from S3 to temporary file
         temp_dir = 'temp'
         os.makedirs(temp_dir, exist_ok=True)
         filename = os.path.basename(file_path)
         temp_path = os.path.join(temp_dir, filename)
+        
+        logging.debug(f"Attempting to download file from S3 path {file_path} to temp path {temp_path}")
         
         if not download_file_from_s3(file_path, temp_path):
             logging.error(f"Failed to download file from S3: {file_path}")
@@ -650,13 +658,29 @@ def download_output():
         logging.info(f"Successfully retrieved {output_type} file from S3: {file_path}")
 
         try:
+            logging.debug("Preparing file for download")
             response = send_file(temp_path, as_attachment=True)
             response.headers["Content-Disposition"] = f"attachment; filename={filename}"
+            
+            # Instead of deleting immediately, schedule the file for deletion after the response
+            @response.call_on_close
+            def cleanup():
+                try:
+                    if os.path.exists(temp_path):
+                        logging.debug(f"Cleaning up temporary file: {temp_path}")
+                        os.remove(temp_path)
+                except Exception as e:
+                    logging.error(f"Failed to clean up temporary file: {e}")
+            
+            logging.debug("File ready for download")
             return response
-        finally:
-            # Clean up temporary file
+            
+        except Exception as e:
+            logging.error(f"Error preparing file for download: {str(e)}")
+            # Clean up if send_file fails
             if os.path.exists(temp_path):
                 os.remove(temp_path)
+            return jsonify({"error": "Failed to prepare file for download"}), 500
 
     except Exception as e:
         logging.error(f"Error generating {output_type} file: {str(e)}", exc_info=True)

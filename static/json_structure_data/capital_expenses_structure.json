@@ -71,23 +71,39 @@
                             "display_name": "Amount Notes",
                             "order": 4
                         },
+                        "purchase_year": {
+                            "type": "number",
+                            "ai_instructions": "The year in which the capital expenditure will be made",
+                            "display_name": "Purchase Year",
+                            "minimum": 2000,
+                            "maximum": 2100,
+                            "order": 5
+                        },
+                        "depreciation_life": {
+                            "type": "number",
+                            "ai_instructions": "The number of years over which this capital expenditure will be depreciated",
+                            "display_name": "Depreciation Life (Years)",
+                            "minimum": 1,
+                            "maximum": 40,
+                            "order": 6
+                        },
                         "frequency": {
                             "type": "string",
                             "ai_instructions": "Timing or frequency of the expenditure (e.g., One-time, Annual)",
                             "display_name": "Frequency",
-                            "order": 5
+                            "order": 7
                         },
                         "frequency_notes": {
                             "type": "string",
                             "ai_instructions": "Explain why this frequency was chosen. If you don't have a referenceable justification, write 'assumption'",
                             "display_name": "Frequency Notes",
-                            "order": 6
+                            "order": 8
                         },
                         "frequency_source": {
                             "type": "source_object",
                             "ai_instructions": "Source information for the frequency data. You must provide specific page numbers, paragraph numbers, or sections where the information was found. If no referenceable source exists, use '-No Source-' for all fields.",
                             "display_name": "Frequency Source",
-                            "order": 7,
+                            "order": 9,
                             "required": ["ai_instructions", "url", "text_context"],
                             "properties": {
                                 "object_type": {

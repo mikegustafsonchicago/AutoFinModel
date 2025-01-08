@@ -1,49 +1,59 @@
 {
-    "revenue": {
-        "filename": "revenue.json",
-        "root_key": "revenue_sources", 
-        "ai_instructions": "Stores revenue sources and pricing information",
-        "version": "1.0",
+    "FUND_ANALYSIS_investment_team": {
         "display": {
             "defaultLayout": "normal",
             "allowToggle": true,
-            "frozen_column": true
-            },
-            "structure": {
-            "revenue_sources": {
+            "frozen_column": true  
+        },
+        "filename": "investment_team.json",
+        "root_key": "team_members", 
+        "ai_instructions": "The Investment Team table details the key members of a private equity firm's investment team, including their roles, experience, and background",
+        "version": "1.0",
+        "explanation_file": "investment_team_explanation.txt",
+        "structure": {
+            "team_members": {
                 "type": "array",
+                "ai_instructions": "Array of investment team members. The data must be returned as a flat list of team members.",
                 "items": {
                     "type": "object",
                     "required": [
-                        "revenue_source_name",
-                        "revenue_source_price",
-                        "price_source",
-                        "price_notes",
-                        "monthly_transactions", 
-                        "frequency_notes",
-                        "frequency_source"
+                        "name",
+                        "title",
+                        "join_date",
+                        "join_date_source",
+                        "join_date_notes",
+                        "background",
+                        "background_source",
+                        "background_notes"
                     ],
                     "properties": {
-                        "revenue_source_name": {
+                        "name": {
                             "type": "string",
-                            "ai_instructions": "Name of the revenue stream or service being offered",
-                            "display_name": "Revenue Source",
+                            "ai_instructions": "Full name of the team member",
+                            "display_name": "Team Member Name",
                             "min_length": 1,
                             "max_length": 100,
                             "order": 1
                         },
-                        "revenue_source_price": {
-                            "type": "number",
-                            "ai_instructions": "Price charged per unit/service",
-                            "display_name": "Price per Unit ($)",
-                            "minimum": 0,
+                        "title": {
+                            "type": "string",
+                            "ai_instructions": "Their title or role within the firm",
+                            "display_name": "Title",
+                            "min_length": 1,
+                            "max_length": 100,
                             "order": 2
                         },
-                        "price_source": {
+                        "join_date": {
+                            "type": ["integer", "null"],
+                            "ai_instructions": "Year the team member joined the firm",
+                            "display_name": "Join Year",
+                            "order": 3
+                        },
+                        "join_date_source": {
                             "type": "source_object",
-                            "ai_instructions": "Source information for the pricing data. You must provide specific page numbers, paragraph numbers, or sections where the information was found. If no referenceable source exists, use '-No Source-' for all fields.",
-                            "display_name": "Price Source",
-                            "order": 3,
+                            "ai_instructions": "Source information for the join date. You must provide specific page numbers, paragraph numbers, or sections where the information was found. If no referenceable source exists, use '-No Source-' for all fields.",
+                            "display_name": "Join Date Source",
+                            "order": 4,
                             "required": ["ai_instructions", "url", "text_context"],
                             "properties": {
                                 "object_type": {
@@ -65,29 +75,22 @@
                                 }
                             }
                         },
-                        "price_notes": {
+                        "join_date_notes": {
                             "type": "string",
-                            "ai_instructions": "Additional context about how the price was determined",
-                            "display_name": "Price Notes",
-                            "order": 4
-                        },
-                        "monthly_transactions": {
-                            "type": "number",
-                            "ai_instructions": "Number of transactions expected per month",
-                            "display_name": "Monthly Transactions",
-                            "minimum": 0,
+                            "ai_instructions": "Additional context about how the join date was determined",
+                            "display_name": "Join Date Notes",
                             "order": 5
                         },
-                        "frequency_notes": {
+                        "background": {
                             "type": "string",
-                            "ai_instructions": "Explain why this frequency was chosen. If you don't have a referenceable justification, write 'assumption'",
-                            "display_name": "Frequency Notes",
+                            "ai_instructions": "Professional background and experience of the team member",
+                            "display_name": "Background",
                             "order": 6
                         },
-                        "frequency_source": {
+                        "background_source": {
                             "type": "source_object",
-                            "ai_instructions": "Source information for the frequency data. You must provide specific page numbers, paragraph numbers, or sections where the information was found. If no referenceable source exists, use '-No Source-' for all fields.",
-                            "display_name": "Frequency Source",
+                            "ai_instructions": "Source information for the background details. You must provide specific page numbers, paragraph numbers, or sections where the information was found. If no referenceable source exists, use '-No Source-' for all fields.",
+                            "display_name": "Background Source",
                             "order": 7,
                             "required": ["ai_instructions", "url", "text_context"],
                             "properties": {
@@ -109,31 +112,38 @@
                                     "ai_instructions": "Exact quote from source with page/paragraph reference. If no direct quote available, use '-No Source-'"
                                 }
                             }
+                        },
+                        "background_notes": {
+                            "type": "string",
+                            "ai_instructions": "Additional context about the background information",
+                            "display_name": "Background Notes",
+                            "order": 8
                         }
                     }
                 }
             }
         },
         "default_content": {
-            "revenue_sources": [
+            "team_members": [
                 {
-                    "revenue_source_name": "Sample Revenue Stream",
-                    "revenue_source_price": 25.00,
-                    "price_source": {
+                    "name": "Sample Team Member",
+                    "title": "Partner",
+                    "join_date": 2020,
+                    "join_date_source": {
                         "object_type": "source_object",
                         "display_value": "-No Source-",
                         "url": "-No Source-",
                         "text_context": "-No Source-"
                     },
-                    "price_notes": "Price selected from historical data",
-                    "monthly_transactions": 100,
-                    "frequency_notes": "Frequency set to produce acceptable monthly revenue",
-                    "frequency_source": {
+                    "join_date_notes": "Join date based on firm announcement",
+                    "background": "15 years of private equity experience",
+                    "background_source": {
                         "object_type": "source_object",
                         "display_value": "-No Source-",
                         "url": "-No Source-",
                         "text_context": "-No Source-"
-                    }
+                    },
+                    "background_notes": "Background compiled from public sources"
                 }
             ]
         }

@@ -2,6 +2,14 @@ import os
 import xlsxwriter
 from datetime import datetime
 import calendar
+import sys
+
+# Add parent directory to path to import file_manager
+current_dir = os.path.dirname(os.path.abspath(__file__))
+parent_dir = os.path.dirname(current_dir)
+sys.path.append(parent_dir)
+
+from file_manager import upload_file_to_s3, get_project_outputs_path
 from helper_functions import FormatManager, number_to_column_letter, get_cell_identifier
 
 #----Workbook Manager----#
@@ -24,38 +32,59 @@ class WorkbookManager:
         else:
             raise ValueError(f"Invalid project name: {project_type}")
         
-        
-        # Get absolute path to project root directory
+        # Create local temp directory for Excel generation
         current_dir = os.path.dirname(os.path.abspath(__file__))
-        self.full_name = os.path.join(current_dir, self.name)
         parent_dir = os.path.dirname(current_dir)
-        
-        # Create outputs directory in project root
-        self.output_dir = os.path.join(parent_dir, 'outputs')
-        os.makedirs(self.output_dir, exist_ok=True)
+        self.temp_dir = os.path.join(parent_dir, 'temp')
+        os.makedirs(self.temp_dir, exist_ok=True)
 
-        # Set full output path and create workbook
-        self.output_path = os.path.join(self.output_dir, self.name)
-        print(f"Creating Excel file at: {self.output_path}")
-        self.workbook = xlsxwriter.Workbook(self.output_path)
+        # Set temporary local path for workbook creation
+        self.local_path = os.path.join(self.temp_dir, self.name)
+        
+        # Get S3 output path
+        s3_outputs_path = get_project_outputs_path()
+        self.s3_path = f"{s3_outputs_path}/{self.name}" if s3_outputs_path else None
+        
+        # Create workbook
+        print(f"Creating Excel file temporarily at: {self.local_path}")
+        self.workbook = xlsxwriter.Workbook(self.local_path)
         
         self.num_forecasted_years=10
         self.cell_info={}
         self.sheets = {}  # Dictionary to store worksheet references
 
         if project_type == "financials":    
-            self.format_manager = FormatManager(self.workbook)  # Initialize formats once
+            self.format_manager = FormatManager(self.workbook)
         elif project_type == "catalyst_partners":
-            self.format_manager = FormatManager(self.workbook, config_file='catalystPartners.yaml')  # Initialize formats once
-        
+            self.format_manager = FormatManager(self.workbook, config_file='catalystPartners.yaml')
+
     def add_sheet(self, sheet_name):
         sheet = self.workbook.add_worksheet(sheet_name)
         self.sheets[sheet_name] = sheet
         return sheet
     
     def close_workbook(self):
-        # Save the workbook and close
-       self.workbook.close()
+        # Save and close the workbook
+        self.workbook.close()
+        
+        # Upload to S3 if path is available
+        if self.s3_path:
+            if upload_file_to_s3(self.local_path, self.s3_path):
+                print(f"Successfully uploaded workbook to S3: {self.s3_path}")
+                self.output_path = self.s3_path  # Use S3 path as output path
+            else:
+                print("Failed to upload to S3, using local path")
+                self.output_path = self.local_path
+        else:
+            print("No S3 path available, using local path")
+            self.output_path = self.local_path
+
+        # Clean up temporary file
+        try:
+            os.remove(self.local_path)
+            print(f"Cleaned up temporary file: {self.local_path}")
+        except Exception as e:
+            print(f"Failed to clean up temporary file: {e}")
         
     def validate_and_write(self, sheet, row, col, formula_string, format_name='plain', print_formula=False, url_display=None):
         """
@@ -94,9 +123,6 @@ class WorkbookManager:
 
 
 
-
-
-
 class SheetManager:
     def __init__(self, workbook_manager, business_object, sheet_name):
         self.workbook_manager = workbook_manager
@@ -108,7 +134,7 @@ class SheetManager:
         
 
         self.num_forecasted_years=self.workbook_manager.num_forecasted_years
-        self.num_hist_years = len(self.business_object.hist_IS) if self.business_object.hist_IS else 0
+        self.num_hist_years = len(self.business_object.historical_financials) if self.business_object.historical_financials else 0
      #--------Function Definitions--------#
     def create_annual_sum_from_months_line(self, row):
         for col in range(self.annual_start_col, self.annual_start_col+self.num_forecasted_years):

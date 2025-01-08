@@ -1,0 +1,132 @@
+{
+    "FUND_ANALYSIS_fundamentals": {
+        "display": {
+            "defaultLayout": "transposed",
+            "allowToggle": true,
+            "frozen_column": true  
+        },
+        "filename": "fundamentals.json",
+        "root_key": "fundamentals",
+        "ai_instructions": "The Fundamentals table provides essential information about a private equity firm, including its founding year, structure, office location, and key attributes like diversity status and total assets under management",
+        "version": "1.0",
+        "explanation_file": "fundamentals_explanation.txt",
+        "structure": {
+            "fundamentals": {
+                "type": "array",
+                "ai_instructions": "Array of fundamental firm information entries",
+                "items": {
+                    "type": "object",
+                    "required": [
+                        "firm_name",
+                        "founded_year", 
+                        "primary_office",
+                        "ownership_structure",
+                        "total_employees",
+                        "diversity_status",
+                        "website",
+                        "source",
+                        "source_notes"
+                    ],
+                    "properties": {
+                        "firm_name": {
+                            "type": "string",
+                            "ai_instructions": "The name of the private equity firm, identifying it clearly",
+                            "display_name": "Firm Name",
+                            "order": 1
+                        },
+                        "founded_year": {
+                            "type": "integer", 
+                            "ai_instructions": "The year the firm was established",
+                            "display_name": "Founded Year",
+                            "order": 2
+                        },
+                        "primary_office": {
+                            "type": "string",
+                            "ai_instructions": "Location of the firm's main office, typically a city and state or country",
+                            "display_name": "Primary Office",
+                            "order": 3
+                        },
+                        "ownership_structure": {
+                            "type": "string",
+                            "ai_instructions": "Indicates whether the firm is privately or publicly owned",
+                            "display_name": "Ownership Structure",
+                            "order": 4
+                        },
+                        "total_employees": {
+                            "type": "integer",
+                            "ai_instructions": "Number of employees working at the firm",
+                            "display_name": "Total Employees",
+                            "minimum": 0,
+                            "order": 5
+                        },
+                        "diversity_status": {
+                            "type": "string",
+                            "ai_instructions": "Diversity designation, if applicable (e.g., 'Minority-Owned' or 'Diverse Leadership')",
+                            "display_name": "Diversity Status",
+                            "order": 6
+                        },
+                        "website": {
+                            "type": "string",
+                            "ai_instructions": "URL to the firm's official website, providing more information",
+                            "display_name": "Website",
+                            "format": "uri",
+                            "order": 7
+                        },
+                        "source": {
+                            "type": "source_object",
+                            "ai_instructions": "Source information for the firm data. You must provide specific page numbers, paragraph numbers, or sections where the information was found. If no referenceable source exists, use '-No Source-' for all fields.",
+                            "display_name": "Source",
+                            "order": 8,
+                            "required": ["ai_instructions", "url", "text_context"],
+                            "properties": {
+                                "object_type": {
+                                    "type": "string",
+                                    "ai_instructions": "Must be 'source_object' for parsing purposes"
+                                },
+                                "display_value": {
+                                    "type": "string",
+                                    "ai_instructions": "Provide specific source details like 'Page 5, Paragraph 2' or 'Section 3.1'. If from an uploaded document, specify exact location. If no referenceable source, use '-No Source-'"
+                                },
+                                "url": {
+                                    "type": "string",
+                                    "ai_instructions": "Full URL to source. If from an uploaded document or no referenceable source, use '-No Source-'",
+                                    "format": "uri"
+                                },
+                                "text_context": {
+                                    "type": "string",
+                                    "ai_instructions": "Exact quote from source with page/paragraph reference. If no direct quote available, use '-No Source-'"
+                                }
+                            }
+                        },
+                        "source_notes": {
+                            "type": "string",
+                            "ai_instructions": "Additional context about how the firm information was determined",
+                            "display_name": "Source Notes",
+                            "order": 9
+                        }
+                    }
+                }
+            }
+        },
+        "default_content": {
+            "fundamentals": [
+                {
+                    "firm_name": "Sample Private Equity Firm",
+                    "founded_year": 2020,
+                    "primary_office": "New York, NY",
+                    "ownership_structure": "Private", 
+                    "total_employees": 100,
+                    "diversity_status": "N/A",
+                    "website": "https://www.samplefirm.com",
+                    "source": {
+                        "object_type": "source_object",
+                        "display_value": "-No Source-",
+                        "url": "-No Source-",
+                        "text_context": "-No Source-"
+                    },
+                    "source_notes": "Sample firm information for demonstration"
+                }
+            ]
+        }
+    }
+}

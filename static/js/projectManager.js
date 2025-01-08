@@ -54,6 +54,9 @@ export class ProjectManager {
                 }
             });
             
+            // Refresh the page after successful load
+            window.location.reload();
+            
             return true;
         } catch (error) {
             this.stateManager.setState({

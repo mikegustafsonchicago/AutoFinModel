@@ -6,7 +6,7 @@ Created on Wed Sep 25 13:06:07 2024
 """
 
 
-
+import logging
 from helper_functions import number_to_column_letter, get_cell_identifier
 import calendar
 from workbook_sheet_manager_code import SheetManager
@@ -91,10 +91,11 @@ class EmployeePage(SheetManager):
         row+=1
         
         for employee in self.business_object.employees:
+            logging.debug(f"Employee: {employee}")
             self.write_to_sheet(row, col, employee["role"])
             self.write_to_sheet(row, col + 1, employee["number"], format_name="input")
             if employee["wage_type"]=="salary":
-                self.write_to_sheet(row, col + 2, employee["wage"], format_name="currency_input") #Don't write in cents for a salaried employees amount. Too many digits
+                self.write_to_sheet(row, col + 2, employee["wage"], format_name="currency_input")
             else:
                 self.write_to_sheet(row, col + 2, employee["wage"], format_name="currency_input_cents")
             self.write_to_sheet(row, col + 3, employee["wage_type"], format_name="input")
@@ -104,8 +105,11 @@ class EmployeePage(SheetManager):
             monthly_hours_cell = get_cell_identifier(row, col+4)
             formula_string = f'=if({wage_type_cell}="salary",{wage_amount_cell}/12, {monthly_hours_cell}*{wage_amount_cell})'
             self.write_to_sheet(row, col + 5, formula_string, format_name='currency')
-            self.write_to_sheet(row, col + 6, employee["notes"])
-            self.write_to_sheet(row, col + 7, " ")#Prevents notes text from running into more cells
+            
+            # Combine wage and hours notes
+            combined_notes = f"Wage: {employee.get('wage_notes', '')}\nHours: {employee.get('hours_notes', '')}"
+            self.write_to_sheet(row, col + 6, combined_notes)
+            self.write_to_sheet(row, col + 7, " ")  # Prevents notes text from running into more cells
             
             self.create_monthly_same_sheet_line(row, get_cell_identifier(row, col+5), self.xlsxwriter_sheet)
             self.create_annual_sum_from_months_line(row)
@@ -122,6 +126,13 @@ class EmployeePage(SheetManager):
         row+=1
         for item in self.business_object.employees: 
             self.write_to_sheet(row, col, item['role'], format_name='small_italic')
-            self.write_to_sheet(row, col+1, item['source_link'], format_name="URL_small")
-            self.xlsxwriter_sheet.set_row(row, 10) #Make the row heighth smaller
+            
+            # Combine wage and hours sources with labels
+            wage_source = item.get('wage_source', '-No Source-')
+            hours_source = item.get('hours_source', '-No Source-')
+            
+            source_text = f"Wage: {wage_source}\nHours: {hours_source}"
+            self.write_to_sheet(row, col+1, source_text, format_name="small")
+            
+            self.xlsxwriter_sheet.set_row(row, 10) #Make the row height smaller
             row+=1

@@ -1,49 +1,56 @@
 {
-    "revenue": {
-        "filename": "revenue.json",
-        "root_key": "revenue_sources", 
-        "ai_instructions": "Stores revenue sources and pricing information",
-        "version": "1.0",
+    "FUND_ANALYSIS_deal_history": {
         "display": {
             "defaultLayout": "normal",
             "allowToggle": true,
-            "frozen_column": true
-            },
-            "structure": {
-            "revenue_sources": {
+            "frozen_column": true  
+        },
+        "filename": "deal_history.json",
+        "root_key": "deals",
+        "ai_instructions": "The Deal History table tracks the firm's investment history, including details about portfolio companies, investment amounts, realization status, and co-investment partners",
+        "version": "1.0",
+        "explanation_file": "deal_history_explanation.txt",
+        "structure": {
+            "deals": {
                 "type": "array",
+                "ai_instructions": "Array of deal history entries. The data must be returned as a flat list of deals.",
                 "items": {
                     "type": "object",
                     "required": [
-                        "revenue_source_name",
-                        "revenue_source_price",
-                        "price_source",
-                        "price_notes",
-                        "monthly_transactions", 
-                        "frequency_notes",
-                        "frequency_source"
+                        "date",
+                        "firm", 
+                        "amount",
+                        "amount_source",
+                        "amount_notes",
+                        "realized",
+                        "syndicate_partners",
+                        "syndicate_source",
+                        "syndicate_notes"
                     ],
                     "properties": {
-                        "revenue_source_name": {
+                        "date": {
                             "type": "string",
-                            "ai_instructions": "Name of the revenue stream or service being offered",
-                            "display_name": "Revenue Source",
-                            "min_length": 1,
-                            "max_length": 100,
+                            "ai_instructions": "The date when the investment was made",
+                            "display_name": "Investment Date",
                             "order": 1
                         },
-                        "revenue_source_price": {
-                            "type": "number",
-                            "ai_instructions": "Price charged per unit/service",
-                            "display_name": "Price per Unit ($)",
-                            "minimum": 0,
+                        "firm": {
+                            "type": "string", 
+                            "ai_instructions": "Name of the portfolio company or investment target",
+                            "display_name": "Portfolio Company",
                             "order": 2
                         },
-                        "price_source": {
+                        "amount": {
+                            "type": "string",
+                            "ai_instructions": "Investment amount deployed by the firm",
+                            "display_name": "Investment Amount",
+                            "order": 3
+                        },
+                        "amount_source": {
                             "type": "source_object",
-                            "ai_instructions": "Source information for the pricing data. You must provide specific page numbers, paragraph numbers, or sections where the information was found. If no referenceable source exists, use '-No Source-' for all fields.",
-                            "display_name": "Price Source",
-                            "order": 3,
+                            "ai_instructions": "Source information for the investment amount. You must provide specific page numbers, paragraph numbers, or sections where the information was found. If no referenceable source exists, use '-No Source-' for all fields.",
+                            "display_name": "Amount Source",
+                            "order": 4,
                             "required": ["ai_instructions", "url", "text_context"],
                             "properties": {
                                 "object_type": {
@@ -55,7 +62,7 @@
                                     "ai_instructions": "Provide specific source details like 'Page 5, Paragraph 2' or 'Section 3.1'. If from an uploaded document, specify exact location. If no referenceable source, use '-No Source-'"
                                 },
                                 "url": {
-                                    "type": "string",
+                                    "type": "string", 
                                     "ai_instructions": "Full URL to source. If from an uploaded document or no referenceable source, use '-No Source-'",
                                     "format": "uri"
                                 },
@@ -65,30 +72,29 @@
                                 }
                             }
                         },
-                        "price_notes": {
+                        "amount_notes": {
                             "type": "string",
-                            "ai_instructions": "Additional context about how the price was determined",
-                            "display_name": "Price Notes",
-                            "order": 4
-                        },
-                        "monthly_transactions": {
-                            "type": "number",
-                            "ai_instructions": "Number of transactions expected per month",
-                            "display_name": "Monthly Transactions",
-                            "minimum": 0,
+                            "ai_instructions": "Additional context about how the investment amount was determined",
+                            "display_name": "Amount Notes",
                             "order": 5
                         },
-                        "frequency_notes": {
+                        "realized": {
                             "type": "string",
-                            "ai_instructions": "Explain why this frequency was chosen. If you don't have a referenceable justification, write 'assumption'",
-                            "display_name": "Frequency Notes",
+                            "ai_instructions": "Whether the investment has been realized/exited ('Yes'/'No')",
+                            "display_name": "Realized",
                             "order": 6
                         },
-                        "frequency_source": {
+                        "syndicate_partners": {
+                            "type": "string",
+                            "ai_instructions": "Names of co-investors or syndicate partners in the deal",
+                            "display_name": "Co-Investors",
+                            "order": 7
+                        },
+                        "syndicate_source": {
                             "type": "source_object",
-                            "ai_instructions": "Source information for the frequency data. You must provide specific page numbers, paragraph numbers, or sections where the information was found. If no referenceable source exists, use '-No Source-' for all fields.",
-                            "display_name": "Frequency Source",
-                            "order": 7,
+                            "ai_instructions": "Source information for the syndicate partners. You must provide specific page numbers, paragraph numbers, or sections where the information was found. If no referenceable source exists, use '-No Source-' for all fields.",
+                            "display_name": "Syndicate Source",
+                            "order": 8,
                             "required": ["ai_instructions", "url", "text_context"],
                             "properties": {
                                 "object_type": {
@@ -109,31 +115,39 @@
                                     "ai_instructions": "Exact quote from source with page/paragraph reference. If no direct quote available, use '-No Source-'"
                                 }
                             }
+                        },
+                        "syndicate_notes": {
+                            "type": "string",
+                            "ai_instructions": "Additional context about the syndicate partners",
+                            "display_name": "Syndicate Notes",
+                            "order": 9
                         }
                     }
                 }
             }
         },
         "default_content": {
-            "revenue_sources": [
+            "deals": [
                 {
-                    "revenue_source_name": "Sample Revenue Stream",
-                    "revenue_source_price": 25.00,
-                    "price_source": {
+                    "date": "2023-01-01",
+                    "firm": "Sample Portfolio Company",
+                    "amount": "$10,000,000",
+                    "amount_source": {
                         "object_type": "source_object",
                         "display_value": "-No Source-",
                         "url": "-No Source-",
                         "text_context": "-No Source-"
                     },
-                    "price_notes": "Price selected from historical data",
-                    "monthly_transactions": 100,
-                    "frequency_notes": "Frequency set to produce acceptable monthly revenue",
-                    "frequency_source": {
+                    "amount_notes": "Sample investment amount",
+                    "realized": "No",
+                    "syndicate_partners": "Partner A, Partner B",
+                    "syndicate_source": {
                         "object_type": "source_object",
                         "display_value": "-No Source-",
                         "url": "-No Source-",
                         "text_context": "-No Source-"
-                    }
+                    },
+                    "syndicate_notes": "Sample syndicate arrangement"
                 }
             ]
         }

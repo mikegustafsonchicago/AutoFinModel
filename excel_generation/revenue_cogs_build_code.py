@@ -1,5 +1,5 @@
-
 import calendar
+import logging
 from datetime import datetime
 from workbook_sheet_manager_code import SheetManager
 from helper_functions import number_to_column_letter, get_cell_identifier
@@ -8,7 +8,7 @@ class RevenueCogsBuildPage(SheetManager):
     def __init__(self, workbook_manager, business_object, sheet_name):
         super().__init__(workbook_manager, business_object, sheet_name)
         self.num_forecasted_years = self.workbook_manager.num_forecasted_years
-        self.num_hist_years = len(self.business_object.hist_IS) if self.business_object.hist_IS else 0
+        self.num_hist_years = len(self.business_object.historical_financials) if self.business_object.historical_financials else 0
         
         # Set start columns
         self.annual_hist_start = 7
@@ -59,6 +59,20 @@ class RevenueCogsBuildPage(SheetManager):
 
         revenue_sources = self.business_object.revenue_sources
         for source in revenue_sources:
+            details = []
+            for key, value in source.items():
+                if isinstance(value, dict):
+                    # Handle nested dictionaries like price_source and frequency_source
+                    for subkey, subvalue in value.items():
+                        details.append(f"{key}.{subkey}: {subvalue}")
+                elif key == 'revenue_source_price':
+                    details.append(f"{key}: ${value:.2f}")
+                else:
+                    details.append(f"{key}: {value}")
+            
+            logging.debug(f"""[RevenueCogsBuildPage] Revenue source details:
+                {chr(10).join('    ' + detail for detail in details)}
+            """)
             # Write revenue source data in specified order
             self.write_to_sheet(row, col, source["revenue_source_name"])
             self.write_to_sheet(row, col+1, source["revenue_source_price"], format_name="currency_input") 
@@ -69,14 +83,46 @@ class RevenueCogsBuildPage(SheetManager):
             self.write_to_sheet(row, col+3, formula_string, format_name="currency")
             self.write_to_sheet(row, col+5, source["price_notes"])  
             self.write_to_sheet(row, col+6, source["frequency_notes"])
-            # Add price source as link
-            self.write_to_sheet(row, col+7, f'=HYPERLINK("{source["price_source_link"]}", "{source["price_source"]}")', format_name='URL')
-            # Add frequency source as link
-            self.write_to_sheet(row, col+8, f'=HYPERLINK("{source["frequency_source_link"]}", "{source["frequency_source"]}")', format_name='URL')
+            
+            # Handle both old and new source structures
+            price_source = source.get("price_source", "-No Source-")
+            freq_source = source.get("frequency_source", "-No Source-")
+            
+            # For price source
+            if isinstance(price_source, dict):
+                price_url = price_source.get("url", "-No Source-")
+                price_display = price_source.get("display_value", "-No Source-")
+            else:
+                price_url = "-No Source-"
+                price_display = str(price_source)
+                
+            # For frequency source
+            if isinstance(freq_source, dict):
+                freq_url = freq_source.get("url", "-No Source-")
+                freq_display = freq_source.get("display_value", "-No Source-")
+            else:
+                freq_url = "-No Source-"
+                freq_display = str(freq_source)
+            
+            # Write the sources with the processed values
+            self.write_to_sheet(
+                row, col+7, 
+                f'=HYPERLINK("{price_url}", "{price_display}")', 
+                format_name='URL'
+            )
+            self.write_to_sheet(
+                row, col+8, 
+                f'=HYPERLINK("{freq_url}", "{freq_display}")', 
+                format_name='URL'
+            )
 
             # Save reference to price cell for this revenue source
-            self.cell_manager.add_cell_reference(self.sheet_name, source["revenue_source_name"],
-                                               row=row, col=col+3)
+            self.cell_manager.add_cell_reference(
+                self.sheet_name, 
+                source["revenue_source_name"],
+                row=row, 
+                col=col+3
+            )
             
             row += 1
         self.write_to_sheet(row, col+2, "Total", format_name="bold_right")
@@ -102,6 +148,7 @@ class RevenueCogsBuildPage(SheetManager):
                 self.write_to_sheet(row, i+col, header, format_name="underline")
         row += 1
 
+        logging.debug(f"[RevenueCogsBuildPage] Cost of sales items: {self.business_object.cost_of_sales_items}")
         for direct_cost in self.business_object.cost_of_sales_items:
             # Write cost item data
             self.write_to_sheet(row, col, direct_cost['cost_item_name'])
@@ -113,14 +160,46 @@ class RevenueCogsBuildPage(SheetManager):
             self.write_to_sheet(row, col+3, formula_string, format_name="currency")
             self.write_to_sheet(row, col+5, direct_cost['cost_notes'])
             self.write_to_sheet(row, col+6, direct_cost['frequency_notes'])
-            # Add cost source as link
-            self.write_to_sheet(row, col+7, f'=HYPERLINK("{direct_cost["cost_source_link"]}", "{direct_cost["cost_source"]}")', format_name='URL')
-            # Add frequency source as link
-            self.write_to_sheet(row, col+8, f'=HYPERLINK("{direct_cost["frequency_source_link"]}", "{direct_cost["frequency_source"]}")', format_name='URL')
+            
+            # Handle both old and new source structures
+            cost_source = direct_cost["cost_source"]
+            freq_source = direct_cost["frequency_source"]
+            
+            # For cost source
+            if isinstance(cost_source, dict):
+                cost_url = cost_source.get("url", "-No Source-")
+                cost_display = cost_source.get("display_value", "-No Source-")
+            else:
+                cost_url = "-No Source-"
+                cost_display = str(cost_source)
+                
+            # For frequency source
+            if isinstance(freq_source, dict):
+                freq_url = freq_source.get("url", "-No Source-")
+                freq_display = freq_source.get("display_value", "-No Source-")
+            else:
+                freq_url = "-No Source-"
+                freq_display = str(freq_source)
+            
+            # Write the sources with the processed values
+            self.write_to_sheet(
+                row, col+7, 
+                f'=HYPERLINK("{cost_url}", "{cost_display}")', 
+                format_name='URL'
+            )
+            self.write_to_sheet(
+                row, col+8, 
+                f'=HYPERLINK("{freq_url}", "{freq_display}")', 
+                format_name='URL'
+            )
 
             # Save reference to cost per unit cell for this cost item
-            self.cell_manager.add_cell_reference(self.sheet_name, direct_cost['cost_item_name'],
-                                               row=row, col=col+3)
+            self.cell_manager.add_cell_reference(
+                self.sheet_name, 
+                direct_cost['cost_item_name'],
+                row=row, 
+                col=col+3
+            )
 
             row += 1
         self.write_to_sheet(row, col+2, "Total", format_name="bold_right")

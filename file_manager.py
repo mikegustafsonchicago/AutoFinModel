@@ -172,7 +172,6 @@ def list_s3_directory_contents(prefix, create_if_missing=True):
             Prefix=prefix,
             MaxKeys=1
         )
-        
         # If directory doesn't exist and we should create it
         if 'Contents' not in response and create_if_missing:
             try:
@@ -557,13 +556,19 @@ def get_project_gallery_path():
         return None
 
 def get_project_structures_path():
-    """Get S3 path to project's structures directory"""
+    """Get the path to the project's structures directory"""
     try:
-        username = session['user']['username']
-        current_project = session['current_project']['name']
-        return f"users/{username}/projects/{current_project}/data/structures"
+        data_path = get_project_data_path()
+        if not data_path:
+            logging.error("Could not get project data path")
+            return None
+            
+        structures_path = f"{data_path}/structures"
+        logging.debug(f"Structures path: {structures_path}")
+        return structures_path
+        
     except Exception as e:
-        logging.error(f"Error getting project structures path: {str(e)}")
+        logging.error(f"Error getting structures path: {str(e)}")
         return None
     
 def get_projects_path():
@@ -594,6 +599,8 @@ def copy_prompt_to_project():
             src_prompt = "real_estate_prompt.txt"
         elif project_type == "ta_grading":
             src_prompt = "ta_grading_prompt.txt"
+        elif project_type == "fund_analysis":
+            src_prompt = "fund_analysis_prompt.txt"
         else:
             logging.error(f"Invalid project type: {project_type} - cannot copy prompt")
             return False
@@ -665,3 +672,42 @@ def ensure_user_exists(username):
     except Exception as e:
         logging.error(f"Error ensuring user exists: {str(e)}")
         return False
+
+def list_project_data_files(data_path):
+    """Lists only data files (not structure files) in the project's data directory."""
+    try:
+        # Normalize path - remove trailing slash if present
+        normalized_path = data_path.rstrip('/') + '/'
+        
+        response = s3_client.list_objects_v2(
+            Bucket=BUCKET_NAME,
+            Prefix=normalized_path,
+            Delimiter="/"
+        )
+        
+        # Check both Contents and CommonPrefixes
+        files = []
+        if 'Contents' in response:
+            files = [
+                obj['Key'].split('/')[-1]
+                for obj in response['Contents']
+                if (
+                    obj['Key'].endswith('.json') 
+                    and not obj['Key'].endswith('_structure.json')
+                    and not obj['Key'].endswith('/') 
+                )
+            ]
+            
+        logging.debug(f"Found data files: {files}")
+        if not files:
+            logging.warning(f"No data files found at path: {normalized_path}")
+            logging.debug(f"Directory contents: {response.get('CommonPrefixes', [])}")
+            
+        return files
+        
+    except ClientError as e:
+        logging.error(f"AWS Error listing project data files: {str(e)}")
+        return []
+    except Exception as e:
+        logging.error(f"Unexpected error listing project data files: {str(e)}")
+        return []

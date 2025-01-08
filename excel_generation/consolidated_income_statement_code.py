@@ -38,8 +38,8 @@ class ConsolidatedIncomeStatement(SheetManager):
         #Historical headers
         self.write_to_sheet(row-1, self.annual_hist_start, 'Historical', format_name='bold')
         col = self.annual_hist_start
-        if self.business_object.hist_IS and "historical_financials" in self.business_object.hist_IS:
-            for year_data in self.business_object.hist_IS["historical_financials"]:
+        if self.business_object.historical_financials and "historical_financials" in self.business_object.historical_financials:
+            for year_data in self.business_object.historical_financials["historical_financials"]:
                 ref_year = datetime(year_data["year"], 1, 1)
                 self.write_to_sheet(row, col, ref_year, format_name='year_format')
                 col+=1

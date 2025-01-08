@@ -71,6 +71,7 @@ class ComparablesQuantPage(SheetManager):
             # Write each comparable company's data
             start_row = row
             for comp in self.business_object.comparables_valuation:
+                logging.debug(f"Comparable Company: {comp}")
                 self.write_to_sheet(row, col, comp["company_name"])
                 self.write_to_sheet(row, col + 1, comp["enterprise_value"], format_name="number")
                 self.write_to_sheet(row, col + 2, comp["market_cap"], format_name="number")
@@ -78,8 +79,26 @@ class ComparablesQuantPage(SheetManager):
                 self.write_to_sheet(row, col + 4, comp["equity_beta"], format_name="number")
                 self.write_to_sheet(row, col + 5, comp["asset_beta"], format_name="number")
                 self.write_to_sheet(row, col + 6, comp["ev_ebitda_multiple"], format_name="number")
-                self.write_to_sheet(row, col + 7, comp["source"])
-                self.write_to_sheet(row, col + 8, comp["source_date"])
+                
+                # Handle source fields with new structure
+                metrics_source = comp.get("metrics_source", "-No Source-")
+                metrics_notes = comp.get("metrics_notes", "")
+                
+                # Write source information
+                if isinstance(metrics_source, dict):
+                    source_display = metrics_source.get("display_value", "-No Source-")
+                    source_url = metrics_source.get("url", "-No Source-")
+                    self.write_to_sheet(
+                        row, col + 7, 
+                        f'=HYPERLINK("{source_url}", "{source_display}")', 
+                        format_name="URL"
+                    )
+                else:
+                    self.write_to_sheet(row, col + 7, metrics_source)
+                
+                # Write notes in the last column
+                self.write_to_sheet(row, col + 8, metrics_notes)
+                
                 row += 1
             
             # Add median row

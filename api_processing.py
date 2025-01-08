@@ -15,6 +15,8 @@ from logging.handlers import RotatingFileHandler  # Import RotatingFileHandler
 from os import getenv
 from dotenv import load_dotenv
 from flask import session
+from datetime import datetime
+
 # Local imports
 from config import (
     OPENAI_API_KEY,
@@ -24,7 +26,7 @@ from config import (
 )
 from pdf_processing import get_page_token_counts, get_pdf_content_by_page_indices
 from prompt_builder import PromptBuilder
-from file_manager import get_project_data_path, list_s3_directory_contents, write_file
+from file_manager import get_project_data_path, list_s3_directory_contents, write_file, list_project_data_files
 from upload_file_manager import count_tokens
 
 #=============================================================
@@ -32,8 +34,7 @@ from upload_file_manager import count_tokens
 #=============================================================
 
 # Create a logger for this module
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)  # Set minimum logging level to INFO
+logging.getLogger(__name__).setLevel(logging.DEBUG)  # Set minimum logging level to DEBUG for more verbose output
 
 # Suppress lower-level logs from specific libraries to reduce noise
 logging.getLogger("pdfminer").setLevel(logging.WARNING)
@@ -76,43 +77,77 @@ def manage_api_calls(business_description, user_input, update_scope="all", file_
         Output dictionary and HTTP status code
     """
 
-    logger.info("Starting manage_api_calls function")
+    logging.debug("Starting manage_api_calls function with params:")
+    logging.debug(f"business_description: {business_description[:100] if business_description else 'None'}...")
+    logging.debug(f"user_input: {user_input}")
+    logging.debug(f"update_scope: {update_scope}")
+    logging.debug(f"file_name: {file_name}")
 
-    external_utities_check = initialize_and_check_external_utilities(prompt_manager, json_manager)
+    # Get and validate project type immediately
+    current_project = session.get('current_project', {})
+    project_type = current_project.get('type')
+    
+    logging.debug("Session state at start of manage_api_calls:")
+    logging.debug(f"Current project data: {current_project}")
+    logging.debug(f"Project type value: {project_type}")
+    
+    # Store project type locally to prevent it from changing
+    if not project_type:
+        logging.error(f"No project type found in session current_project: {current_project}")
+        return {"error": "Project type not set"}, 400
+
+    # Validate project type with explicit comparison
+    valid_types = ['financial', 'catalyst', 'real_estate', 'ta_grading']
+    if project_type not in valid_types:
+        logging.error(f"Invalid project type: '{project_type}'. Must be one of: {valid_types}")
+        return {"error": f"Invalid project type: {project_type}"}, 400
+
+    # Continue with validated project_type
+    external_utities_check = initialize_and_check_external_utilities(prompt_manager, json_manager, project_type)
+    logging.debug(f"External utilities check result: {external_utities_check}")
+    
     if not external_utities_check:
-        logger.error("Failed to initialize external utilities.")
+        logging.error("Failed to initialize external utilities.")
         return {"error": "Failed to initialize utilities"}, 500
-
+    
     # Add user's input to the user prompt
     prompt_manager.update_user_input(user_input)
     prompt_manager.update_system_prompt_info(business_description=business_description)
+    logging.debug("Updated prompt manager with user input and system prompt info")
 
     # Initialize the output container
     data_path = get_project_data_path()  # Error handling in initialize_and_check_external_utilities
+    logging.debug(f"Retrieved data path: {data_path}")
 
     # Create the update and context tables data as a dictionary
     update_tables_data, context_tables_data = get_tables_data(data_path, json_manager, update_scope)
+    logging.debug(f"Retrieved tables data - Update tables: {list(update_tables_data.keys())}")
+    logging.debug(f"Context tables: {list(context_tables_data.keys())}")
 
-    logger.info(f"The update tables are: {list(update_tables_data.keys())}")
-    logger.info(f"Here's the list of context tables: {list(context_tables_data.keys())}")
+    logging.info(f"The update tables are: {list(update_tables_data.keys())}")
+    logging.info(f"Here's the list of context tables: {list(context_tables_data.keys())}")
 
     # Break the tables into groups of NUMBER_OF_UPDATE_TABLES_PER_CALL and find out the max token count for the group + the base prompt  + (optional) the context tables
     max_table_group_token_count = get_table_group_token_list(update_tables_data, context_tables_data, business_description, NUMBER_OF_UPDATE_TABLES_PER_CALL, SEND_CONTEXT_TABLES_TO_OPENAI, prompt_manager)
+    logging.debug(f"Max table group token count: {max_table_group_token_count}")
     
     # Determine how many tokens remain for PDF content
     available_tokens_for_pdf = MAX_TOKENS_PER_CALL - max_table_group_token_count
+    logging.debug(f"Available tokens for PDF content: {available_tokens_for_pdf}")
+    
     if available_tokens_for_pdf <= 0:
-        logger.error("Not enough token space available for PDF content.")
+        logging.error("Not enough token space available for PDF content.")
         return {"error": "Token limit exceeded without PDF content"}, 400
 
     chunk_list = process_pdf_into_chunks(file_name, available_tokens_for_pdf)
-    logger.info(f"Chunk list: {chunk_list}")
+    logging.debug(f"Generated chunk list with {len(chunk_list)} chunks")
+    logging.info(f"Chunk list: {chunk_list}")
 
     # Example of logging dynamic data
     page_groups = [{"start_page": chunk["start_page"], "end_page": chunk["end_page"], "token_count": chunk["token_count"]} for chunk in chunk_list]
-    logger.info(f"Here's the list of page groups and their associated counts: {page_groups}")
+    logging.info(f"Here's the list of page groups and their associated counts: {page_groups}")
 
-    result = send_tables_and_chunks_to_openai(
+    result, status_code = send_tables_and_chunks_to_openai(
         chunk_list,
         update_tables_data,
         context_tables_data,
@@ -123,13 +158,16 @@ def manage_api_calls(business_description, user_input, update_scope="all", file_
         NUMBER_OF_UPDATE_TABLES_PER_CALL,
         SEND_CONTEXT_TABLES_TO_OPENAI
     )
+    
+    # Add safety check before logging
+    logging.debug(f"Final result status: {status_code}")
+        
+    return result, status_code  # Make sure to return both values
 
-    return result, 200
 
 
 
-
-def initialize_and_check_external_utilities(prompt_manager, json_manager):
+def initialize_and_check_external_utilities(prompt_manager, json_manager, project_type):
     # Validate prompt_manager and json_manager
     initialize_module_logging()
 
@@ -139,7 +177,22 @@ def initialize_and_check_external_utilities(prompt_manager, json_manager):
     if json_manager is None:
         raise ValueError("json_manager must be initialized and passed to manage_api_calls.")
         return False
-    #Setup prompt manager
+        
+    if not project_type:
+        raise ValueError("project_type must be set before initializing utilities.")
+        return False
+
+    #Setup prompt manager with project type
+    prompt_manager.project_type = project_type
+    prompt_manager.load_static_prompt_file()
+    prompt_manager.reset_prompts()
+
+    #Check the data path
+    data_path = get_project_data_path()
+    if not data_path:
+        logging.error("Could not get project data path.")
+        return False
+    return True
     prompt_manager.load_static_prompt_file()
     prompt_manager.reset_prompts()
 
@@ -153,30 +206,36 @@ def initialize_and_check_external_utilities(prompt_manager, json_manager):
 def initialize_module_logging():
     # Create a StreamHandler (logs to console)
     stream_handler = logging.StreamHandler()
-    stream_handler.setLevel(logging.INFO)
+    stream_handler.setLevel(logging.DEBUG)  # Set to DEBUG for more detailed logs
     formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(name)s - %(message)s')
     stream_handler.setFormatter(formatter)
-    logger.addHandler(stream_handler)
+    logging.getLogger(__name__).addHandler(stream_handler)
 
 def get_tables_data(data_path, json_manager, update_scope="all"):
-    all_tables = []
-    # List files in S3 with data_path prefix
-    s3_files = list_s3_directory_contents(data_path)
-    if s3_files:
-        all_tables = [
-            os.path.splitext(os.path.basename(f))[0] for f in s3_files 
-            if f.endswith('.json')
-        ]
-    if not all_tables:
-        logger.error("No table data files found.")
-        return {"error": "No table data available"}, 404
+    logging.debug(f"Getting tables data from {data_path} with update_scope: {update_scope}")
+    
+    # Use new function to get only data files
+    s3_files = list_project_data_files(data_path)
+    logging.debug(f"Retrieved data files: {s3_files}")
+    
+    if not s3_files:
+        logging.error("No table data files found.")
+        return {"error": "No table data available"}
+        
+    all_tables = [os.path.splitext(os.path.basename(f))[0] for f in s3_files]
+    
     # Determine which tables to update vs. use as context
     update_tables = all_tables if update_scope == "all" else [update_scope]
     context_tables = [table for table in all_tables if table not in update_tables]
+    
+    logging.debug(f"Update tables: {update_tables}")
+    logging.debug(f"Context tables: {context_tables}")
 
     # Load JSON data for update and context tables
     tables_data = {table: json_manager.load_json_data(table) for table in update_tables}
     context_data = {table: json_manager.load_json_data(table) for table in context_tables}
+    
+    logging.debug(f"Loaded {len(tables_data)} update tables and {len(context_data)} context tables")
     return tables_data, context_data
 
 def get_table_group_token_list(update_tables_data, context_tables_data, business_description, NUMBER_OF_UPDATE_TABLES_PER_CALL, SEND_CONTEXT_TABLES_TO_OPENAI, prompt_builder):
@@ -201,18 +260,27 @@ def get_table_group_token_list(update_tables_data, context_tables_data, business
     list
         List of tuples containing (start_idx, end_idx, token_count) for each group
     """
+    logging.debug("Starting get_table_group_token_list calculation")
+    
     table_groups = []
     update_tables = list(update_tables_data.keys())
+    logging.debug(f"Processing {len(update_tables)} update tables")
     
     # Calculate total token count from context tables
     context_token_count = 0
-    for table_data in context_tables_data.values():
-        context_token_count += count_tokens(json.dumps(table_data))
+    for table_name, table_data in context_tables_data.items():
+        table_tokens = count_tokens(json.dumps(table_data))
+        context_token_count += table_tokens
+        logging.debug(f"Context table {table_name} token count: {table_tokens}")
 
     # Get static prompt token count
     static_prompt_tokens = count_tokens(prompt_builder.system_prompt) if prompt_builder.system_prompt else 0
     user_prompt_tokens = count_tokens(prompt_builder.user_prompt) if prompt_builder.user_prompt else 0 
     business_description_tokens = count_tokens(business_description) if business_description else 0
+    
+    logging.debug(f"Static prompt tokens: {static_prompt_tokens}")
+    logging.debug(f"User prompt tokens: {user_prompt_tokens}")
+    logging.debug(f"Business description tokens: {business_description_tokens}")
 
     # Group update tables
     for i in range(0, len(update_tables), NUMBER_OF_UPDATE_TABLES_PER_CALL):
@@ -222,29 +290,32 @@ def get_table_group_token_list(update_tables_data, context_tables_data, business
         # Add token count for tables in this group
         for j in range(i, end_idx):
             table_name = update_tables[j]
-            group_token_count += count_tokens(json.dumps(update_tables_data[table_name]))
+            table_tokens = count_tokens(json.dumps(update_tables_data[table_name]))
+            group_token_count += table_tokens
+            logging.debug(f"Update table {table_name} token count: {table_tokens}")
         
         # Add context token count if enabled
         if SEND_CONTEXT_TABLES_TO_OPENAI:
             group_token_count += context_token_count
+            logging.debug(f"Added context token count: {context_token_count}")
             
         table_groups.append((i, end_idx - 1, group_token_count))
-    logger.info(f"Table group token counts (start_idx, end_idx, token_count): {table_groups}")
-    # Return the highest token count from all groups
+        logging.debug(f"Created group {len(table_groups)}: {(i, end_idx - 1, group_token_count)}")
+        
+    logging.info(f"Table groups: {table_groups}")
     max_tokens = max(group[2] for group in table_groups) if table_groups else 0
     return max_tokens
     
 def process_pdf_into_chunks(file_name, available_tokens_for_pdf):
-    logger.info(f"Starting process_pdf_into_chunks with file: {file_name}")
-    
-    # If a PDF is provided, get token counts per page
+    logging.info(f"Processing PDF: {file_name}")
     page_token_counts = get_page_token_counts(file_name) if file_name else []
 
-    logger.info(f"Processing PDF into chunks. Total pages: {len(page_token_counts)}")
+    logging.info(f"Processing PDF into chunks. Total pages: {len(page_token_counts)}")
     # Chunk the PDF pages to fit into available token space
     chunk_list = []
     active_chunk = {"start_page": 0, "end_page": 0, "token_count": 0}
     
+    chunk_summary = []
     for page_num, token_count in enumerate(page_token_counts):
         # If adding this page fits within the token budget for current chunk
         if active_chunk['token_count'] + token_count < available_tokens_for_pdf:
@@ -253,13 +324,17 @@ def process_pdf_into_chunks(file_name, available_tokens_for_pdf):
         else:
             # Start a new chunk since adding this page would exceed the limit
             chunk_list.append(active_chunk)
+            chunk_summary.append(f"Chunk {len(chunk_list)}: Pages {active_chunk['start_page']}-{active_chunk['end_page']} ({active_chunk['token_count']} tokens)")
             active_chunk = {"start_page": page_num, "end_page": page_num, "token_count": token_count}
 
         # If it's the final page, push the last chunk
         if page_num == len(page_token_counts) - 1:
             chunk_list.append(active_chunk)
+            chunk_summary.append(f"Chunk {len(chunk_list)}: Pages {active_chunk['start_page']}-{active_chunk['end_page']} ({active_chunk['token_count']} tokens)")
+    
+    logging.info("PDF chunk summary:\n" + "\n".join(chunk_summary))
             
-    logger.info(f"Created {len(chunk_list)} chunks from PDF")
+    logging.info(f"Created {len(chunk_list)} chunks from PDF")
     return chunk_list
 
 def send_tables_and_chunks_to_openai(
@@ -318,15 +393,18 @@ def send_tables_and_chunks_to_openai(
         "errors": []
     }
 
-    logger.info(f"Starting OpenAI processing with {len(chunk_list)} chunks and {len(update_tables_data)} tables")
+    logging.info(f"Starting OpenAI processing with {len(chunk_list)} chunks and {len(update_tables_data)} tables")
+    logging.debug(f"Send context tables: {send_context_tables}")
+    logging.debug(f"Number of tables per call: {number_tables_per_call}")
 
     # Convert update_tables_data keys into a list
     all_update_table_names = list(update_tables_data.keys())
+    logging.debug(f"Update table names: {all_update_table_names}")
     
     # Process table subsets
     for i in range(0, len(all_update_table_names), number_tables_per_call):
         subset_names = all_update_table_names[i : i + number_tables_per_call]
-        logger.info(f"Processing table subset {i//number_tables_per_call + 1}/{(len(all_update_table_names) + number_tables_per_call - 1)//number_tables_per_call}: {subset_names}")
+        logging.info(f"Processing table subset {i//number_tables_per_call + 1}/{(len(all_update_table_names) + number_tables_per_call - 1)//number_tables_per_call}: {subset_names}")
 
         current_subset_data = {name: update_tables_data[name] for name in subset_names}
 
@@ -338,6 +416,7 @@ def send_tables_and_chunks_to_openai(
             context_tables=context_tables_data if send_context_tables else None,
             business_description=business_description
         )
+        logging.debug("Updated prompt manager with current subset data")
 
         # Process PDF chunks for this table subset
         for chunk_idx, chunk_dict in enumerate(chunk_list):
@@ -361,17 +440,20 @@ def send_tables_and_chunks_to_openai(
                 json_manager=json_manager,
                 prompt_manager=prompt_manager
             )
+            logging.debug(f"API call completed with status code: {status_code}")
 
             if status_code != 200:
                 error_msg = f"API call failed for chunk {chunk_idx + 1} (pages {start_page}-{end_page})"
                 result["errors"].append(error_msg)
                 result["success"] = False
                 result["message"] = "Failed due to API errors"
+                logging.error(error_msg)
                 return result
 
             # Aggregate results
             result["data"]["text"] += response.get("text", "")
             result["data"]["json_data"].update(response.get("JSONData", {}))
+            logging.debug(f"Updated result data with new response. Current JSON keys: {list(result['data']['json_data'].keys())}")
 
     # Final processing
     logging.info(f"Completed all processing. Processed {len(chunk_list)} chunks across {len(all_update_table_names)} tables")
@@ -380,12 +462,14 @@ def send_tables_and_chunks_to_openai(
         prompt_manager.display_tokens_and_cost(result["data"])
         json_manager.update_json_files(result["data"]["json_data"])
         result["message"] = "Successfully processed all chunks and tables"
+        logging.debug("Final processing completed successfully")
+        return result, 200
     except Exception as e:
         result["success"] = False
         result["message"] = f"Failed during final processing: {str(e)}"
         result["errors"].append(str(e))
-
-    return result
+        logging.error(f"Error during final processing: {str(e)}")
+        return result, 500
 
 
 
@@ -413,7 +497,10 @@ def manage_call_for_payload(pdf_chunk, page_start, page_end, json_manager, promp
     tuple (dict, int)
         The processed response and the HTTP status code.
     """
+
+    
     if prompt_manager is None:
+        logging.error("prompt_manager not provided to manage_call_for_payload")
         raise ValueError("prompt_manager must be provided to manage_call_for_payload.")
 
     # Retrieve the full system and user prompts
@@ -422,6 +509,7 @@ def manage_call_for_payload(pdf_chunk, page_start, page_end, json_manager, promp
 
     # Make the API call with the current prompts
     raw_response, status_code = make_openai_api_call(system_prompt=system_prompt, user_prompt=user_prompt)
+    
     if status_code != 200:
         logging.error(f"API call failed with status {status_code}: {raw_response}")
         return {"error": "API call failed"}, status_code
@@ -429,6 +517,7 @@ def manage_call_for_payload(pdf_chunk, page_start, page_end, json_manager, promp
     # Process and handle the OpenAI response
     processed_response, _ = handle_openai_response(raw_response, json_manager, prompt_manager)
     json_data = processed_response.get("JSONData", {})
+    
     json_manager.update_json_files(json_data)
 
     logging.info(f"Completed processing pages {page_start} through {page_end}.")
@@ -451,8 +540,10 @@ def make_openai_api_call(system_prompt, user_prompt):
     tuple (dict, int)
         The OpenAI response JSON and HTTP status code.
     """
+    logging.debug("Starting OpenAI API call")
     
     if not OPENAI_API_KEY:
+        logging.error("OPENAI_API_KEY not found in environment variables")
         raise ValueError("OPENAI_API_KEY not found in environment variables.")
 
     payload = {
@@ -476,7 +567,10 @@ def make_openai_api_call(system_prompt, user_prompt):
 
     # Perform the API request
     try:
+        logging.debug(f"[{datetime.now().strftime('%H:%M:%S')}] Sending request to OpenAI API")
         response = requests.post('https://api.openai.com/v1/chat/completions', headers=headers, json=payload)
+        logging.debug(f"[{datetime.now().strftime('%H:%M:%S')}] Received response with status code: {response.status_code}")
+        
         if response.status_code == 200:
             return response.json(), 200
         else:
@@ -507,6 +601,8 @@ def handle_openai_response(response, json_manager, prompt_manager):
         A tuple of processed response dict and status code.
         Processed response dict keys: "text", "JSONData"
     """
+    logging.debug("Starting to handle OpenAI response")
+    
     # Extract AI content
     try:
         ai_content = response['choices'][0]['message']['content']
@@ -530,6 +626,7 @@ def handle_openai_response(response, json_manager, prompt_manager):
 
         # Update the running summary in prompt_manager
         prompt_manager.update_summary(running_summary)
+        logging.debug("Updated running summary in prompt manager")
 
         # Attempt to fix and parse JSON part
         json_part = json_manager.fix_incomplete_json(json_part_raw)
@@ -563,8 +660,11 @@ def extract_text_from_response(response):
     str
         The extracted text content, or empty string if not found.
     """
+    logging.debug("Attempting to extract text from response")
     try:
-        return response['choices'][0]['message']['content']
+        text_content = response['choices'][0]['message']['content']
+        logging.debug(f"Successfully extracted text content of length: {len(text_content)}")
+        return text_content
     except (KeyError, IndexError) as e:
         logging.error(f"Error extracting text: {e}")
         return ""

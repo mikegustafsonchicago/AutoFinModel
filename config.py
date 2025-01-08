@@ -76,6 +76,15 @@ CATALYST_TABLE = [
     "service_providers_structure.json"
 ]
 
+FUND_ANALYSIS_TABLE = [
+    "FUND_ANALYSIS_deal_history_structure.json",
+    "FUND_ANALYSIS_fees_key_terms_structure.json",
+    "FUND_ANALYSIS_fundamentals_structure.json",
+    "FUND_ANALYSIS_investment_team_structure.json",
+    "FUND_ANALYSIS_seed_terms_structure.json",
+    "FUND_ANALYSIS_service_providers_structure.json"
+]
+
 REAL_ESTATE_TABLE = [
     "property_zoning_structure.json",
     "property_financials_structure.json",
@@ -88,8 +97,8 @@ TA_GRADING_TABLE = [
     "GRADING_MMMM_structure.json",
     "GRADING_FACES_structure.json"
 ]
-
-ALLOWABLE_PROJECT_TYPES = {"Financial Model": "financial", "Catalyst": "catalyst", "Real Estate": "real_estate", "TA Grading": "ta_grading"}
+ 
+ALLOWABLE_PROJECT_TYPES = {"Financial Model": "financial", "Real Estate": "real_estate", "Fund Analysis": "fund_analysis"}
 
 RUNNING_SUMMARY_FILE = os.path.join(RUNNING_SUMMARY_DIR,'running_summary.txt')
 
@@ -97,6 +106,7 @@ RUNNING_SUMMARY_FILE = os.path.join(RUNNING_SUMMARY_DIR,'running_summary.txt')
 OUTPUTS_FOR_PROJECT_TYPE = {
     "financial": ["excel_model", "powerpoint_overview"],
     "catalyst": ["excel_overview"],
+    "fund_analysis": ["powerpoint_overview"],
     "real_estate": ["powerpoint_overview"],
     "ta_grading": []
 }
