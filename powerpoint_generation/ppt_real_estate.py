@@ -45,33 +45,15 @@ from .shared_ppt_utilities import (
 )
 
 # Configure logging
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
-
-# Create console handler
-console_handler = logging.StreamHandler()
-console_handler.setLevel(logging.INFO)
-
-# Create file handler
-log_dir = os.path.dirname(get_project_outputs_path())
-log_file = os.path.join(log_dir, 'ppt_generation.log')
-file_handler = logging.FileHandler(log_file)
-file_handler.setLevel(logging.DEBUG)
-
-# Create formatters and add to handlers
-console_format = logging.Formatter('%(levelname)s - %(message)s')
-file_format = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-console_handler.setFormatter(console_format)
-file_handler.setFormatter(file_format)
-
-# Add handlers to logger
-logger.addHandler(console_handler)
-logger.addHandler(file_handler)
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(levelname)s - %(message)s'
+)
 
 #------------------------------------------------------------------------------
 # Main Presentation Generation
 #------------------------------------------------------------------------------
-def generate_ppt():
+def generate_real_estate_ppt():
 
     class PresentationData:
         def __init__(self):
@@ -90,7 +72,7 @@ def generate_ppt():
                 self.property_financials = load_json(os.path.join(self.data_path, "property_financials.json"))
                 self.firm_data = load_json(os.path.join(os.path.dirname(__file__), "firm_data.json"))
             except Exception as e:
-                logger.error(f"Error loading property or firm data: {str(e)}")
+                logging.error(f"Error loading property or firm data: {str(e)}")
                 raise
             
     ppt_data = PresentationData()
@@ -116,7 +98,7 @@ def generate_ppt():
     # Create single instance to use throughout
     template_dims = TemplateDimensions(presentation)
 
-    logger.info(f"Template Dimensions:\n Title Height: {template_dims.title_height}, Footer Height: {template_dims.footer_height}")
+    logging.info(f"Template Dimensions:\n Title Height: {template_dims.title_height}, Footer Height: {template_dims.footer_height}")
     
 
 
@@ -125,64 +107,64 @@ def generate_ppt():
         add_title_slide(presentation, ppt_data, template_dims)
     
     except Exception as e:
-        logger.error(f"Error creating title slide: {str(e)}")
+        logging.error(f"Error creating title slide: {str(e)}")
 
     #--- 2 --- Property Fundamentals Slide---
     try:
         add_property_fundamentals_slide(presentation, ppt_data, template_dims)
     except Exception as e:
-        logger.error(f"Error creating property fundamentals slide: {str(e)}")
+        logging.error(f"Error creating property fundamentals slide: {str(e)}")
 
     
     #--- 3 --- Zoning & Financial Details Slide---
     try:
         add_zoning_financial_details_slide(presentation, ppt_data, template_dims)
     except Exception as e:
-        logger.error(f"Error creating zoning & financial details slide: {str(e)}")
+        logging.error(f"Error creating zoning & financial details slide: {str(e)}")
 
     
     #--- 4 through end-2 --- Photo Gallery Slides---
     try:
         add_photo_gallery_slides(presentation, ppt_data, template_dims)
     except Exception as e:
-        logger.error(f"Error creating photo gallery slides: {str(e)}")
+        logging.error(f"Error creating photo gallery slides: {str(e)}")
 
     
     #--- Last-1 --- About Us Slide---
     try:
         add_about_us_slide(presentation, ppt_data, template_dims)
     except Exception as e:
-        logger.error(f"Error creating about us slide: {str(e)}")
+        logging.error(f"Error creating about us slide: {str(e)}")
 
     
     #--- Last --- Legal Disclaimer Slide---
     try:
         add_legal_disclaimer_slide(presentation, ppt_data, template_dims)
     except Exception as e:
-        logger.error(f"Error creating legal disclaimer slide: {str(e)}")
+        logging.error(f"Error creating legal disclaimer slide: {str(e)}")
 
 
     #---Last +1 --- Diagnostics Slide---
     try:
         add_diagnostics_slide(presentation, ppt_data, template_dims)
     except Exception as e:
-        logger.error(f"Error creating diagnostics slide: {str(e)}")
+        logging.error(f"Error creating diagnostics slide: {str(e)}")
 
 
     # Generate template diagnostics text file
     try:
         generate_template_diagnostics(ppt_data.template_name, ppt_data.output_path)
     except Exception as e:
-        logger.error(f"Error creating diagnostics text: {str(e)}")
+        logging.error(f"Error creating diagnostics text: {str(e)}")
 
     # Save PowerPoint
     output_file = os.path.join(ppt_data.output_path, ppt_data.file_name)
     presentation.save(output_file)
-    logger.info(f"Presentation saved to {ppt_data.output_path}")
+    logging.info(f"Presentation saved to {ppt_data.output_path}")
     return ppt_data.file_name
 
 if __name__ == "__main__":
-    generate_ppt()
+    generate_real_estate_ppt()
 
 
 
@@ -198,7 +180,7 @@ def add_title_slide(presentation, ppt_data, presentation_dims):
     # Add background image first
     background_img_path = os.path.join(ppt_data.gallery_path, ppt_data.title_image_name)
     if not os.path.exists(background_img_path):
-        logger.warning(f"Title slide background image not found at {background_img_path}. Using default background.")
+        logging.warning(f"Title slide background image not found at {background_img_path}. Using default background.")
         background_img_path = os.path.join(os.path.dirname(__file__), "default_background.jpg")
 
     left = Inches(0)
@@ -323,7 +305,7 @@ def add_property_fundamentals_slide(presentation, ppt_data, presentation_dims):
                                         image_width, image_height)
             gallery_running_index += 1
     except Exception as e:
-        logger.error(f"Failed to add property fundamentals slide: {str(e)}")
+        logging.error(f"Failed to add property fundamentals slide: {str(e)}")
         # Continue without this slide rather than failing presentation generation
 
 
@@ -347,14 +329,14 @@ def add_zoning_financial_details_slide(presentation, ppt_data, presentation_dims
         top_y = Inches(1.5)
         height = Inches(4.00)
         left_table = slide.shapes.add_table(rows, cols, left_x, top_y, width, height).table
-        logger.debug("-" * 80)
-        logger.debug(f"Left Table Dimensions:")
-        logger.debug(f"Left: {left_x}")
-        logger.debug(f"Top: {top_y}")
-        logger.debug(f"Width: {width}")
-        logger.debug(f"Height: {height}")
-        logger.debug(f"Slide width: {presentation_dims.slide_width}")
-        logger.debug("-" * 80)
+        logging.debug("-" * 80)
+        logging.debug(f"Left Table Dimensions:")
+        logging.debug(f"Left: {left_x}")
+        logging.debug(f"Top: {top_y}")
+        logging.debug(f"Width: {width}")
+        logging.debug(f"Height: {height}")
+        logging.debug(f"Slide width: {presentation_dims.slide_width}")
+        logging.debug("-" * 80)
 
         # Merge header cells and set text
         left_table.cell(0, 0).merge(left_table.cell(0, 1))
@@ -375,14 +357,14 @@ def add_zoning_financial_details_slide(presentation, ppt_data, presentation_dims
         width = int((presentation_dims.slide_width/2)*.8) 
         left_x = int(((presentation_dims.slide_width/2) - width)/2+presentation_dims.slide_width/2)
         right_table = slide.shapes.add_table(rows, cols, left_x, top_y, width, height).table
-        logger.debug("-" * 80)
-        logger.debug(f"Right Table Dimensions:")
-        logger.debug(f"Left: {left_x}")
-        logger.debug(f"Top: {top_y}")
-        logger.debug(f"Width: {width}")
-        logger.debug(f"Height: {height}")
-        logger.debug(f"Slide width: {presentation_dims.slide_width}")
-        logger.debug("-" * 80)
+        logging.debug("-" * 80)
+        logging.debug(f"Right Table Dimensions:")
+        logging.debug(f"Left: {left_x}")
+        logging.debug(f"Top: {top_y}")
+        logging.debug(f"Width: {width}")
+        logging.debug(f"Height: {height}")
+        logging.debug(f"Slide width: {presentation_dims.slide_width}")
+        logging.debug("-" * 80)
 
         # Merge header cells and set text
         right_table.cell(0, 0).merge(right_table.cell(0, 1))
@@ -396,7 +378,7 @@ def add_zoning_financial_details_slide(presentation, ppt_data, presentation_dims
 
         apply_table_styles(right_table)
     except Exception as e:
-        logger.error(f"Failed to add property fundamentals slide: {str(e)}")
+        logging.error(f"Failed to add property fundamentals slide: {str(e)}")
         # Continue without this slide rather than failing presentation generation 
 
 
@@ -435,12 +417,12 @@ def add_photo_gallery_slides(presentation, ppt_data, presentation_dims):
                 image_aspect_ratio = img_width / img_height
                 full_area_ratio = presentation_dims.slide_width / (presentation_dims.slide_height - presentation_dims.title_height)
 
-                logger.debug(f" Image Name: {image_file}")
-                logger.debug(f" Image Aspect Ratio: {round(image_aspect_ratio, 2)}")
-                logger.debug(f" Full Aspect Ratio: {round(full_area_ratio, 2)}")
-                logger.debug(f" Delta: {round(abs(image_aspect_ratio - full_area_ratio), 2)}")
-                logger.debug(f" SLIDE_HEIGHT: {presentation_dims.slide_height}, TITLE_HEIGHT: {presentation_dims.title_height}, FOOTER_HEIGHT: {presentation_dims.footer_height}")
-                logger.debug("\n")
+                logging.debug(f" Image Name: {image_file}")
+                logging.debug(f" Image Aspect Ratio: {round(image_aspect_ratio, 2)}")
+                logging.debug(f" Full Aspect Ratio: {round(full_area_ratio, 2)}")
+                logging.debug(f" Delta: {round(abs(image_aspect_ratio - full_area_ratio), 2)}")
+                logging.debug(f" SLIDE_HEIGHT: {presentation_dims.slide_height}, TITLE_HEIGHT: {presentation_dims.title_height}, FOOTER_HEIGHT: {presentation_dims.footer_height}")
+                logging.debug("\n")
                 
                 # Set max dimensions while preserving aspect ratio
                 max_width = presentation_dims.slide_width
@@ -477,7 +459,7 @@ def add_photo_gallery_slides(presentation, ppt_data, presentation_dims):
         slide.shapes.add_picture(img_path, left, top_y, width, height)
     
     except Exception as e:
-        logger.error(f"Failed to add property fundamentals slide: {str(e)}")
+        logging.error(f"Failed to add property fundamentals slide: {str(e)}")
         # Continue without this slide rather than failing presentation generation
             
 
@@ -533,7 +515,7 @@ def add_about_us_slide(presentation, ppt_data, presentation_dims):
             p.space_after = Pt(8)
     
     except Exception as e:
-        logger.error(f"Failed to add property fundamentals slide: {str(e)}")
+        logging.error(f"Failed to add property fundamentals slide: {str(e)}")
         # Continue without this slide rather than failing presentation generation
 
 #--------------------------------------------------------------------------
@@ -569,5 +551,5 @@ def add_legal_disclaimer_slide(presentation, ppt_data, presentation_dims):
                 p.space_after = Pt(12)  # Add spacing between paragraphs
     '''
     except Exception as e:
-        logger.error(f"Failed to add property fundamentals slide: {str(e)}")
+        logging.error(f"Failed to add property fundamentals slide: {str(e)}")
         # Continue without this slide rather than failing presentation generation

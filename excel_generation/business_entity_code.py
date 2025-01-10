@@ -49,12 +49,12 @@ class BusinessEntity:
                 "service_providers": "service_providers"
             },
             "fund_analysis":{
-                "fundamentals": "fundamentals",
-                "investment_team": "investment_team",
-                "seed_terms": "seed_terms",
-                "fees_key_terms": "fees_key_terms",
-                "deal_history": "deal_history",
-                "service_providers": "service_providers"
+                "fundamentals": "FUND_ANALYSIS_fundamentals",
+                "investment_team": "FUND_ANALYSIS_investment_team", 
+                "seed_terms": "FUND_ANALYSIS_seed_terms",
+                "fees_key_terms": "FUND_ANALYSIS_fees_key_terms",
+                "deal_history": "FUND_ANALYSIS_deal_history",
+                "service_providers": "FUND_ANALYSIS_service_providers"
             }
         }
         

@@ -19,6 +19,7 @@ Key components:
 import os
 import json
 import yaml
+import logging
 from pptx import Presentation
 from pptx.util import Inches, Pt
 from pptx.dml.color import RGBColor
@@ -27,6 +28,7 @@ import sys
 from pathlib import Path
 sys.path.append(str(Path(__file__).parent.parent / 'excel_generation'))
 from business_entity_code import BusinessEntity
+from io import BytesIO
 
 #------------------------------------------------------------------------------
 # Utility Functions
@@ -85,185 +87,166 @@ def apply_table_styles(table, header_font_size=14):
 #------------------------------------------------------------------------------
 # Main Presentation Generation
 #------------------------------------------------------------------------------
-def generate_ppt():
-    """
-    Generate complete PowerPoint presentation with financial analysis.
-    Creates slides for:
-    - Title page
-    - Revenue sources
-    - Cost of sales
-    - Employee overview
-    - Operating expenses
-    - Capital expenditures
-    """
-    current_directory = os.getcwd()
-    file_name = "output_ppt.pptx"
-    data_path = "temp_business_data"
-    output_path = os.path.join(current_directory, "outputs", file_name)
-    data_path = os.path.join(current_directory, data_path)
+def generate_fund_analysis_ppt():
+    """Generate a PowerPoint presentation for fund analysis"""
+    from io import BytesIO
+    
+    # Create your PowerPoint
+    prs = Presentation()
     
     # Load data using BusinessEntity
     try:
-        business = BusinessEntity("financials")
-        employees = {"employees": business.employees}
-        revenue = {"revenue_sources": business.revenue_sources}
-        cost_of_sales = {"cost_items": business.cost_of_sales_items}
-        operating_expenses = {"expenses": business.operating_expenses}
-        capex = {"expenses": business.capex_items}
+        business = BusinessEntity("fund_analysis")
+        fundamentals = business.fundamentals
+        investment_team = business.investment_team
+        seed_terms = business.seed_terms
+        fees_key_terms = business.fees_key_terms
+        deal_history = business.deal_history
+        service_providers = business.service_providers
     except Exception as e:
-        print(f"Error loading business data: {str(e)}")
+        logging.error(f"Error loading fund data: {str(e)}")
         raise
 
-    # Create PowerPoint presentation
-    presentation = Presentation()
-    
-    #--------------------------------------------------------------------------
-    # Generate Individual Slides
-    #--------------------------------------------------------------------------
-    
-    # Title slide
-    title_slide = presentation.slides.add_slide(presentation.slide_layouts[0])
-    title = title_slide.shapes.title
-    subtitle = title_slide.placeholders[1]
-    title.text = "Business Plan Financial Analysis"
-    subtitle.text = "Financial Projections and Analysis"
+    #--- 1 --- Title Slide ---
+    try:
+        slide = prs.slides.add_slide(prs.slide_layouts[0])
+        title = slide.shapes.title
+        subtitle = slide.placeholders[1]
+        title.text = "Fund Analysis Overview"
+        subtitle.text = "Investment Strategy and Performance"
+    except Exception as e:
+        logging.error(f"Error creating title slide: {str(e)}")
 
-    # Revenue Sources slide
-    slide = presentation.slides.add_slide(presentation.slide_layouts[5])
-    title = slide.shapes.title
-    title.text = "Revenue Sources"
-    
-    rows = len(revenue["revenue_sources"]) + 1
-    cols = 4
-    table = slide.shapes.add_table(rows, cols, Inches(1), Inches(1.5), Inches(8), Inches(4)).table
+    #--- 2 --- Fund Fundamentals Slide ---
+    try:
+        slide = prs.slides.add_slide(prs.slide_layouts[5])
+        title = slide.shapes.title
+        title.text = "Fund Fundamentals"
+        
+        # Get the first fundamentals entry
+        fund_data = fundamentals[0]
+        
+        rows = len(fund_data) + 1
+        cols = 2
+        table = slide.shapes.add_table(rows, cols, Inches(1), Inches(1.5), Inches(8), Inches(4)).table
+        
+        headers = ["Metric", "Value"]
+        for i, header in enumerate(headers):
+            table.cell(0, i).text = header
+            
+        for i, (key, value) in enumerate(fund_data.items(), 1):
+            if key not in ['source', 'source_notes']:
+                table.cell(i, 0).text = key.replace('_', ' ').title()
+                table.cell(i, 1).text = str(value)
+        
+        apply_table_styles(table)
+    except Exception as e:
+        logging.error(f"Error creating fund fundamentals slide: {str(e)}")
 
-    headers = ["Revenue Stream", "Price", "Monthly Transactions", "Source"]
-    for i, header in enumerate(headers):
-        table.cell(0, i).text = header
+    #--- 3 --- Investment Team Slide ---
+    try:
+        slide = prs.slides.add_slide(prs.slide_layouts[5])
+        title = slide.shapes.title
+        title.text = "Investment Team"
+        
+        rows = len(investment_team) + 1
+        cols = 4
+        table = slide.shapes.add_table(rows, cols, Inches(1), Inches(1.5), Inches(8), Inches(4)).table
+        
+        headers = ["Name", "Title", "Join Year", "Background"]
+        for i, header in enumerate(headers):
+            table.cell(0, i).text = header
+            
+        for i, member in enumerate(investment_team, 1):
+            table.cell(i, 0).text = member["name"]
+            table.cell(i, 1).text = member["title"]
+            table.cell(i, 2).text = str(member["join_date"]) if member["join_date"] else "N/A"
+            table.cell(i, 3).text = member["background"]
+        
+        apply_table_styles(table)
+    except Exception as e:
+        logging.error(f"Error creating investment team slide: {str(e)}")
 
-    for i, source in enumerate(revenue["revenue_sources"], 1):
-        table.cell(i, 0).text = source["revenue_source_name"]
-        table.cell(i, 1).text = f"${source['revenue_source_price']}"
-        table.cell(i, 2).text = str(source["monthly_transactions"])
-        table.cell(i, 3).text = source["price_source"]
+    #--- 4 --- Fees and Key Terms Slide ---
+    try:
+        slide = prs.slides.add_slide(prs.slide_layouts[5])
+        title = slide.shapes.title
+        title.text = "Fees and Key Terms"
+        
+        terms_data = fees_key_terms[0]
+        
+        rows = len(terms_data) + 1
+        cols = 2
+        table = slide.shapes.add_table(rows, cols, Inches(1), Inches(1.5), Inches(8), Inches(4)).table
+        
+        headers = ["Term", "Description"]
+        for i, header in enumerate(headers):
+            table.cell(0, i).text = header
+            
+        for i, (term, desc) in enumerate(terms_data.items(), 1):
+            if term not in ['source', 'source_notes']:
+                table.cell(i, 0).text = term.replace('_', ' ').title()
+                table.cell(i, 1).text = str(desc)
+        
+        apply_table_styles(table)
+    except Exception as e:
+        logging.error(f"Error creating fees and key terms slide: {str(e)}")
 
-    apply_table_styles(table)
+    #--- 5 --- Deal History Slide ---
+    try:
+        slide = prs.slides.add_slide(prs.slide_layouts[5])
+        title = slide.shapes.title
+        title.text = "Deal History"
+        
+        rows = len(deal_history) + 1
+        cols = 4
+        table = slide.shapes.add_table(rows, cols, Inches(1), Inches(1.5), Inches(8), Inches(4)).table
+        
+        headers = ["Company", "Investment Date", "Exit Date", "Multiple"]
+        for i, header in enumerate(headers):
+            table.cell(0, i).text = header
+            
+        for i, deal in enumerate(deal_history, 1):
+            table.cell(i, 0).text = deal["company"]
+            table.cell(i, 1).text = deal["investment_date"]
+            table.cell(i, 2).text = deal["exit_date"] if deal["exit_date"] else "Active"
+            table.cell(i, 3).text = f"{deal['multiple']}x" if deal["multiple"] else "N/A"
+        
+        apply_table_styles(table)
+    except Exception as e:
+        logging.error(f"Error creating deal history slide: {str(e)}")
 
-    # Cost of Sales slide
-    slide = presentation.slides.add_slide(presentation.slide_layouts[5])
-    title = slide.shapes.title
-    title.text = "Cost of Sales"
+    #--- 6 --- Service Providers Slide ---
+    try:
+        slide = prs.slides.add_slide(prs.slide_layouts[5])
+        title = slide.shapes.title
+        title.text = "Service Providers"
+        
+        rows = len(service_providers) + 1
+        cols = 2
+        table = slide.shapes.add_table(rows, cols, Inches(1), Inches(1.5), Inches(8), Inches(4)).table
+        
+        headers = ["Role", "Provider"]
+        for i, header in enumerate(headers):
+            table.cell(0, i).text = header
+            
+        for i, provider in enumerate(service_providers, 1):
+            table.cell(i, 0).text = provider["role"]
+            table.cell(i, 1).text = provider["name"]
+        
+        apply_table_styles(table)
+    except Exception as e:
+        logging.error(f"Error creating service providers slide: {str(e)}")
 
-    rows = len(cost_of_sales["cost_items"]) + 1
-    cols = 4
-    table = slide.shapes.add_table(rows, cols, Inches(1), Inches(1.5), Inches(8), Inches(4)).table
-
-    headers = ["Cost Item", "Cost per Unit", "Monthly Units", "Source"]
-    for i, header in enumerate(headers):
-        table.cell(0, i).text = header
-
-    for i, item in enumerate(cost_of_sales["cost_items"], 1):
-        table.cell(i, 0).text = item["cost_item_name"]
-        table.cell(i, 1).text = f"${item['cost_per_unit']}"
-        table.cell(i, 2).text = str(item["monthly_transactions"])
-        table.cell(i, 3).text = item["cost_source"]
-
-    apply_table_styles(table)
-
-    # Employees slide
-    slide = presentation.slides.add_slide(presentation.slide_layouts[5])
-    title = slide.shapes.title
-    title.text = "Firm Employees"
-
-    rows = len(employees["employees"]) + 1
-    cols = 4
-    table = slide.shapes.add_table(rows, cols, Inches(1), Inches(1.5), Inches(8), Inches(4)).table
-
-    headers = ["Role", "Number", "Wage", "Monthly Hours"]
-    for i, header in enumerate(headers):
-        table.cell(0, i).text = header
-
-    for i, employee in enumerate(employees["employees"], 1):
-        table.cell(i, 0).text = employee["role"]
-        table.cell(i, 1).text = str(employee["number"])
-        table.cell(i, 2).text = f"${employee['wage']}/{'hr' if employee['wage_type']=='hourly' else 'yr'}"
-        table.cell(i, 3).text = str(employee["monthly_hours"])
-
-    apply_table_styles(table)
-
-    # Operating Expenses slide
-    slide = presentation.slides.add_slide(presentation.slide_layouts[5])
-    title = slide.shapes.title
-    title.text = "Operating Expenses"
-
-    rows = len(operating_expenses["expenses"]) + 1
-    cols = 3
-    table = slide.shapes.add_table(rows, cols, Inches(1), Inches(1.5), Inches(8), Inches(3)).table
-
-    headers = ["Expense Name", "Amount", "Frequency"]
-    for i, header in enumerate(headers):
-        table.cell(0, i).text = header
-
-    for i, expense in enumerate(operating_expenses["expenses"], 1):
-        table.cell(i, 0).text = expense["expense_name"]
-        table.cell(i, 1).text = f"${expense['amount']}"
-        table.cell(i, 2).text = expense["frequency"]
-
-    apply_table_styles(table)
-
-    # Capital Expenditures slide
-    slide = presentation.slides.add_slide(presentation.slide_layouts[5])
-    title = slide.shapes.title
-    title.text = "Capital Expenditures"
-
-    rows = len(capex["expenses"]) + 1
-    cols = 4
-    table = slide.shapes.add_table(rows, cols, Inches(1), Inches(1.5), Inches(8), Inches(3)).table
-
-    headers = ["Item", "Amount", "Purchase Year", "Depreciation Life"]
-    for i, header in enumerate(headers):
-        table.cell(0, i).text = header
-
-    for i, expense in enumerate(capex["expenses"], 1):
-        table.cell(i, 0).text = expense["expense_name"]
-        table.cell(i, 1).text = f"${expense['amount']}"
-        table.cell(i, 2).text = str(expense["purchase_year"])
-        table.cell(i, 3).text = f"{expense['depreciation_life']} years"
-
-    apply_table_styles(table)
-
-
-    # Historical Financials slide
-    slide = presentation.slides.add_slide(presentation.slide_layouts[5])
-    title = slide.shapes.title
-    title.text = "Historical Financial Performance"
-
-    # Create table for historical financials
-    rows = len(business.historical_financials) + 1
-    cols = 6
-    table = slide.shapes.add_table(rows, cols, Inches(1), Inches(1.5), Inches(8), Inches(3)).table
-
-    # Set headers
-    headers = ["Year", "Revenue", "EBITDA", "EBIT", "Net Income", "EBITDA Margin"]
-    for i, header in enumerate(headers):
-        table.cell(0, i).text = header
-
-    # Populate data
-    for i, year_data in enumerate(business.historical_financials, 1):
-        table.cell(i, 0).text = str(year_data["year"])
-        table.cell(i, 1).text = f"${year_data['revenue']:,.0f}"
-        table.cell(i, 2).text = f"${year_data['ebitda']:,.0f}"
-        table.cell(i, 3).text = f"${year_data['ebit']:,.0f}"
-        table.cell(i, 4).text = f"${year_data['net_income']:,.0f}"
-        # Calculate EBITDA margin as percentage
-        ebitda_margin = (year_data['ebitda'] / year_data['revenue']) * 100
-        table.cell(i, 5).text = f"{ebitda_margin:.1f}%"
-
-    apply_table_styles(table)
-
-    # Save PowerPoint
-    presentation.save(output_path)
-    print(f"Presentation saved to {output_path}")
+    # Save to bytes
+    try:
+        ppt_bytes = BytesIO()
+        prs.save(ppt_bytes)
+        ppt_bytes.seek(0)
+        return ppt_bytes.getvalue()
+    except Exception as e:
+        logging.error(f"Error saving PowerPoint to bytes: {str(e)}")
+        raise
 
 if __name__ == "__main__":
-    generate_ppt()
+    generate_fund_analysis_ppt()

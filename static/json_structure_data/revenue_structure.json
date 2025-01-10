@@ -41,7 +41,7 @@
                         },
                         "price_source": {
                             "type": "source_object",
-                            "ai_instructions": "Source information for the pricing data. You must provide specific page numbers, paragraph numbers, or sections where the information was found. If no referenceable source exists, use '-No Source-' for all fields.",
+                            "ai_instructions": "Source information for the cost data. Write '-No Source-' if no referenceable source exists. If you have a referenceable source, provide specific page numbers, paragraph numbers, or sections where the information was found.",
                             "display_name": "Price Source",
                             "order": 3,
                             "required": ["ai_instructions", "url", "text_context"],
@@ -67,7 +67,7 @@
                         },
                         "price_notes": {
                             "type": "string",
-                            "ai_instructions": "Additional context about how the price was determined",
+                            "ai_instructions": "Additional context about how the cost was determined",
                             "display_name": "Price Notes",
                             "order": 4
                         },
@@ -86,7 +86,7 @@
                         },
                         "frequency_source": {
                             "type": "source_object",
-                            "ai_instructions": "Source information for the frequency data. You must provide specific page numbers, paragraph numbers, or sections where the information was found. If no referenceable source exists, use '-No Source-' for all fields.",
+                            "ai_instructions": "Source information for the frequency data. Write '-No Source-' if no referenceable source exists. If you have a referenceable source, provide specific page numbers, paragraph numbers, or sections where the information was found.",
                             "display_name": "Frequency Source",
                             "order": 7,
                             "required": ["ai_instructions", "url", "text_context"],

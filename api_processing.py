@@ -348,44 +348,6 @@ def send_tables_and_chunks_to_openai(
     number_tables_per_call=2,
     send_context_tables=False
 ):
-    """
-    Loops over subsets of update tables based on number_tables_per_call,
-    and over the PDF chunks in chunk_list.
-    
-    For each subset of update tables:
-      1) Prepare the prompt with those tables (and context if enabled).
-      2) For each PDF chunk, add chunk text, call the API, and aggregate results.
-
-    Parameters
-    ----------
-    chunk_list : list of dict
-        Each dict has { "start_page": int, "end_page": int, "token_count": int }.
-    update_tables_data : dict
-        {table_name: table_json_data} for all tables that need updates.
-    context_tables_data : dict
-        {table_name: table_json_data} for context tables, if needed.
-    business_description : str
-        Overall business description to inject into the prompt if desired.
-    prompt_manager : PromptBuilder
-        Manages prompt text/tokens (unchanged logic).
-    json_manager : JsonManager
-        Loads/saves JSON data (unchanged logic).
-    file_name : str or None
-        Path to the PDF file, if needed for chunk text extraction.
-    number_tables_per_call : int
-        How many update tables to include in each call (or chunk of calls).
-    send_context_tables : bool
-        Whether to add context_tables_data to each prompt call.
-
-    Returns
-    -------
-    dict
-        A dictionary containing:
-        - success: bool indicating if all operations completed successfully
-        - message: str with details about the operation
-        - data: dict containing the aggregated results if successful
-        - errors: list of any errors encountered
-    """
     result = {
         "success": True,
         "message": "",
@@ -394,82 +356,78 @@ def send_tables_and_chunks_to_openai(
     }
 
     logging.info(f"Starting OpenAI processing with {len(chunk_list)} chunks and {len(update_tables_data)} tables")
-    logging.debug(f"Send context tables: {send_context_tables}")
-    logging.debug(f"Number of tables per call: {number_tables_per_call}")
-
-    # Convert update_tables_data keys into a list
     all_update_table_names = list(update_tables_data.keys())
-    logging.debug(f"Update table names: {all_update_table_names}")
     
     # Process table subsets
     for i in range(0, len(all_update_table_names), number_tables_per_call):
         subset_names = all_update_table_names[i : i + number_tables_per_call]
         logging.info(f"Processing table subset {i//number_tables_per_call + 1}/{(len(all_update_table_names) + number_tables_per_call - 1)//number_tables_per_call}: {subset_names}")
 
-        current_subset_data = {name: update_tables_data[name] for name in subset_names}
+        try:
+            current_subset_data = {name: update_tables_data[name] for name in subset_names}
+            logging.debug(f"[send_tables_and_chunks_to_openai] Processing tables: {list(current_subset_data.keys())}")
 
-        # Reset and prepare prompt manager
-        prompt_manager.reset_prompts()
-        prompt_manager.load_static_prompt_file()
-        prompt_manager.update_system_prompt_info(
-            update_tables=current_subset_data,
-            context_tables=context_tables_data if send_context_tables else None,
-            business_description=business_description
-        )
-        logging.debug("Updated prompt manager with current subset data")
-
-        # Process PDF chunks for this table subset
-        for chunk_idx, chunk_dict in enumerate(chunk_list):
-            start_page = chunk_dict.get("start_page", None)
-            end_page = chunk_dict.get("end_page", None)
-            logging.info(f"Processing chunk {chunk_idx + 1}/{len(chunk_list)} (pages {start_page}-{end_page}) for table subset {subset_names}")
-
-            # Extract chunk text if needed
-            chunk_text = ""
-            if file_name and start_page is not None and end_page is not None:
-                chunk_text = get_pdf_content_by_page_indices(file_name, start_page, end_page)
-
-            if chunk_text:
-                prompt_manager.add_pdf_chunk(chunk_text)
-
-            # Make API call
-            response, status_code = manage_call_for_payload(
-                pdf_chunk=chunk_text,
-                page_start=start_page,
-                page_end=end_page,
-                json_manager=json_manager,
-                prompt_manager=prompt_manager
+            # Reset and prepare prompt manager
+            prompt_manager.reset_prompts()
+            prompt_manager.load_static_prompt_file()
+            prompt_manager.update_system_prompt_info(
+                update_tables=current_subset_data,
+                context_tables=context_tables_data if send_context_tables else None,
+                business_description=business_description
             )
-            logging.debug(f"API call completed with status code: {status_code}")
 
-            if status_code != 200:
-                error_msg = f"API call failed for chunk {chunk_idx + 1} (pages {start_page}-{end_page})"
-                result["errors"].append(error_msg)
-                result["success"] = False
-                result["message"] = "Failed due to API errors"
-                logging.error(error_msg)
-                return result
+            # Process chunks for this table subset
+            chunk_success = False
+            for chunk_idx, chunk_dict in enumerate(chunk_list):
+                try:
+                    start_page = chunk_dict.get("start_page", None)
+                    end_page = chunk_dict.get("end_page", None)
+                    chunk_text = ""
+                    if file_name and start_page is not None and end_page is not None:
+                        chunk_text = get_pdf_content_by_page_indices(file_name, start_page, end_page)
 
-            # Aggregate results
-            result["data"]["text"] += response.get("text", "")
-            result["data"]["json_data"].update(response.get("JSONData", {}))
-            logging.debug(f"Updated result data with new response. Current JSON keys: {list(result['data']['json_data'].keys())}")
+                    if chunk_text:
+                        prompt_manager.add_pdf_chunk(chunk_text)
+
+                    response, status_code = manage_call_for_payload(
+                        pdf_chunk=chunk_text,
+                        page_start=start_page,
+                        page_end=end_page,
+                        json_manager=json_manager,
+                        prompt_manager=prompt_manager
+                    )
+
+                    if status_code == 200:
+                        result["data"]["text"] += response.get("text", "")
+                        result["data"]["json_data"].update(response.get("JSONData", {}))
+                        chunk_success = True
+                        logging.debug(f"Successfully processed chunk {chunk_idx + 1} for tables {subset_names}")
+                    else:
+                        logging.error(f"API call failed for chunk {chunk_idx + 1} with status {status_code}")
+                        result["errors"].append(f"Failed to process chunk {chunk_idx + 1} for tables {subset_names}")
+                except Exception as e:
+                    logging.error(f"Error processing chunk {chunk_idx + 1} for tables {subset_names}: {str(e)}")
+                    result["errors"].append(f"Error in chunk {chunk_idx + 1} for tables {subset_names}: {str(e)}")
+                    continue
+
+            if not chunk_success:
+                logging.error(f"All chunks failed for table subset {subset_names}")
+                result["errors"].append(f"Failed to process any chunks for tables {subset_names}")
+
+        except Exception as e:
+            logging.error(f"Error processing table subset {subset_names}: {str(e)}")
+            result["errors"].append(f"Failed to process table subset {subset_names}: {str(e)}")
+            continue
 
     # Final processing
-    logging.info(f"Completed all processing. Processed {len(chunk_list)} chunks across {len(all_update_table_names)} tables")
-    
-    try:
-        prompt_manager.display_tokens_and_cost(result["data"])
-        json_manager.update_json_files(result["data"]["json_data"])
-        result["message"] = "Successfully processed all chunks and tables"
-        logging.debug("Final processing completed successfully")
-        return result, 200
-    except Exception as e:
+    if result["errors"]:
         result["success"] = False
-        result["message"] = f"Failed during final processing: {str(e)}"
-        result["errors"].append(str(e))
-        logging.error(f"Error during final processing: {str(e)}")
-        return result, 500
+        result["message"] = "Completed with errors"
+    else:
+        result["message"] = "Successfully processed all chunks and tables"
+
+    logging.info(f"Completed processing. Success: {result['success']}, Errors: {len(result['errors'])}")
+    return result, 200 if result["success"] else 500
 
 
 
@@ -584,39 +542,14 @@ def make_openai_api_call(system_prompt, user_prompt):
 def handle_openai_response(response, json_manager, prompt_manager):
     """
     Parses and processes the OpenAI API response. Extracts text, JSON data, and summary.
-    Saves JSON data to file, updates running summary, and returns structured data.
-
-    Parameters
-    ----------
-    response : dict
-        The raw response from the OpenAI API.
-    json_manager : instance
-        Manages saving/loading JSON data.
-    prompt_manager : PromptBuilder instance
-        Manages the prompt and summary.
-
-    Returns
-    -------
-    tuple (dict, int)
-        A tuple of processed response dict and status code.
-        Processed response dict keys: "text", "JSONData"
     """
     logging.debug("Starting to handle OpenAI response")
     
-    # Extract AI content
     try:
         ai_content = response['choices'][0]['message']['content']
     except (KeyError, IndexError):
         logging.error("Failed to extract content from the OpenAI response.")
         return {"error": "No usable content in response"}, 400
-
-    # Debug: Save raw AI response to a text file
-    save_directory = get_project_data_path()
-    if save_directory:
-        s3_path = f"{save_directory}/ai_responses/DEBUG_FILE_openai_response.txt"
-        write_file(s3_path, ai_content)
-    else:
-        logging.error("Could not get project data path to save AI response")
 
     try:
         # Extract TEXT, JSON, and SUMMARY parts from AI response
@@ -632,15 +565,35 @@ def handle_openai_response(response, json_manager, prompt_manager):
         json_part = json_manager.fix_incomplete_json(json_part_raw)
         parsed_data = json.loads(json_part)
 
-        # Validate parsed JSON data type
-        if isinstance(parsed_data, list):
-            logging.error("OpenAI response returned a list; expected a dictionary for table data.")
-            raise ValueError("Invalid response format: Expected dict but got list.")
+        # Restructure the data if needed based on structure files
+        processed_data = {}
+        for key, value in parsed_data.items():
+            # Handle both cases: direct table name or root_key
+            try:
+                structure_file = f"static/json_structure_data/{key}_structure.json"
+                if os.path.exists(structure_file):
+                    # If key is a table name, use it directly
+                    processed_data[key] = value
+                else:
+                    # Check if this is a root_key, find corresponding table name
+                    for struct_file in os.listdir("static/json_structure_data"):
+                        if struct_file.endswith("_structure.json"):
+                            with open(f"static/json_structure_data/{struct_file}") as f:
+                                structure = json.load(f)
+                                table_name = next(iter(structure))
+                                if structure[table_name].get('root_key') == key:
+                                    # Found the table this root_key belongs to
+                                    processed_data[table_name] = {key: value}
+                                    logging.debug(f"Mapped root_key '{key}' to table '{table_name}'")
+                                    break
+            except Exception as e:
+                logging.error(f"Error processing structure for key {key}: {e}")
+                processed_data[key] = value  # Fall back to original key if error
 
-        # Save the parsed JSON data
-        json_manager.save_json_to_file(parsed_data)
+        # Save the processed JSON data
+        json_manager.save_json_to_file(processed_data)
 
-        return {"text": text_part, "JSONData": parsed_data}, 200
+        return {"text": text_part, "JSONData": processed_data}, 200
     except (json.JSONDecodeError, IndexError, ValueError) as e:
         logging.error(f"Error parsing OpenAI response: {e}")
         return {"error": "Failed to parse JSON from AI response"}, 400

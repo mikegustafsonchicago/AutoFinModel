@@ -42,7 +42,7 @@
                         },
                         "amount_source": {
                             "type": "source_object",
-                            "ai_instructions": "Source information for the cost data. You must provide specific page numbers, paragraph numbers, or sections where the information was found. If no referenceable source exists, use '-No Source-' for all fields.",
+                            "ai_instructions": "Source information for the cost data. Write '-No Source-' if no referenceable source exists. If you have a referenceable source, provide specific page numbers, paragraph numbers, or sections where the information was found.",
                             "display_name": "Amount Source",
                             "order": 3,
                             "required": ["ai_instructions", "url", "text_context"],
@@ -86,7 +86,7 @@
                         },
                         "frequency_source": {
                             "type": "source_object",
-                            "ai_instructions": "Source information for the frequency data. You must provide specific page numbers, paragraph numbers, or sections where the information was found. If no referenceable source exists, use '-No Source-' for all fields.",
+                            "ai_instructions": "Source information for the frequency data. Write '-No Source-' if no referenceable source exists. If you have a referenceable source, provide specific page numbers, paragraph numbers, or sections where the information was found.",
                             "display_name": "Frequency Source",
                             "order": 7,
                             "required": ["ai_instructions", "url", "text_context"],

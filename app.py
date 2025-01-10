@@ -19,6 +19,8 @@ from session_info_manager import SessionInfoManager
 from prompt_builder import PromptBuilder
 from excel_generation.catalyst_partners_page import make_catalyst_summary
 from powerpoint_generation.ppt_financial import generate_ppt
+from powerpoint_generation.ppt_fund_analysis import generate_fund_analysis_ppt
+from powerpoint_generation.ppt_real_estate import generate_real_estate_ppt
 from config import (  
     DEVELOPMENT_ENVIRONMENT,
     ALLOWABLE_PROJECT_TYPES, 
@@ -159,27 +161,17 @@ def get_table_schema(table_name):
     Get the schema (structure) and display settings of a given table.
     The schema defines the columns and their properties.
     """
-    logging.debug(f"\n\n[app.py /api/schema/{table_name}] ----Starting /api/schema/{table_name} endpoint----")
-    
-    # Get user and project info from session
     username = session['user']['username']  # From before_request
     current_project = session['current_project']['name']  # From before_request
     project_type = session['current_project']['type']  # From before_request
     
-    logging.debug(f"Context - User: {username}, Project: {current_project}, Type: {project_type}")
-    
     try:
-        logging.debug(f"Getting schema for table: {table_name}")
         json_manager = app.config['json_manager']
         schema = json_manager.get_table_schema(table_name)
         
-        logging.debug(f"Retrieved schema: {schema}")
-        
         if schema and schema.get("structure"):
-            logging.debug("Schema found with structure, returning")
             return jsonify(schema)
         else:
-            logging.warning(f"No schema or structure found for table: {table_name}")
             return jsonify({"error": f"No schema defined for {table_name}"}), 404
             
     except Exception as e:
@@ -193,7 +185,6 @@ def call_openai():
     logging.info("\n\n\n----OpenAI Call----")
     """Handle requests to the OpenAI API."""
     data = request.json
-    logging.debug(f"[call_openai] Received data: {data}")
     prompt_manager = app.config['prompt_manager']
     
     response_data, status_code = api_processing.manage_api_calls(
@@ -204,7 +195,6 @@ def call_openai():
         prompt_manager=prompt_manager,
         json_manager=app.config['json_manager']
     )
-    
 
     return jsonify({"text": response_data.get("text", "")}), status_code
 
@@ -584,64 +574,88 @@ def download_output():
         output_type = request.args.get('type')
         project_type = current_project.get('type')
         
-        logging.debug(f"Request parameters - username: {username}, project: {current_project}, output_type: {output_type}, project_type: {project_type}")
+        logging.debug(f"[/download_output] Request parameters - username: {username}, project: {current_project}, output_type: {output_type}, project_type: {project_type}")
         
         if not output_type:
-            logging.error(f"No output type found for user: {username}")
+            logging.error(f"[/download_output] No output type found for user: {username}")
             return jsonify({"error": "Output type is required"}), 400
             
         if not project_type:
-            logging.error(f"No project type found for user: {username}")
+            logging.error(f"[/download_output] No project type found for user: {username}")
             return jsonify({"error": "Project type is required"}), 400
 
         if project_type not in ALLOWABLE_PROJECT_TYPES.values():
-            logging.error(f"Invalid project type: {project_type}")
+            logging.error(f"[/download_output] Invalid project type: {project_type}")
             return jsonify({"error": "Invalid project type"}), 400
 
         # Validate output type is allowed for this project type
         if output_type not in OUTPUTS_FOR_PROJECT_TYPE.get(project_type, []):
-            logging.error(f"Output type {output_type} not allowed for project type {project_type}")
+            logging.error(f"[/download_output] Output type {output_type} not allowed for project type {project_type}. Allowed types for {project_type}: {OUTPUTS_FOR_PROJECT_TYPE.get(project_type, [])}. User: {username}, Project: {current_project.get('name')}")
             return jsonify({"error": f"Output type {output_type} not available for {project_type} projects"}), 400
 
-        logging.debug(f"Generating {output_type} for project type: {project_type}")
+        logging.debug(f"[/download_output] Generating {output_type} for project type: {project_type}")
 
         # Get the outputs directory for this user's project
         outputs_path = get_project_outputs_path()
-        logging.debug(f"Got outputs path: {outputs_path}")
+        logging.debug(f"[/download_output] Got outputs path: {outputs_path}")
         
         if not outputs_path:
-            logging.error("Failed to get project outputs path")
+            logging.error("[/download_output] Failed to get project outputs path")
             return jsonify({"error": "Could not access project outputs directory"}), 500
 
         # Generate the appropriate file based on output type and get the S3 path
-        logging.debug(f"Starting file generation for output type: {output_type}")
+        logging.debug(f"[/download_output] Starting file generation for output type: {output_type}")
         if output_type in ['excel_model', 'excel_overview']:
             if project_type == "financial":
-                logging.debug("Generating financial Excel model")
+                logging.debug("[/download_output] Generating financial Excel model")
                 file_path = generate_excel_model()
             elif project_type == "catalyst":
-                logging.debug("Generating catalyst Excel summary")
+                logging.debug("[/download_output] Generating catalyst Excel summary")
                 file_path = make_catalyst_summary()
             else:
-                logging.error(f"Excel output not supported for project type: {project_type}")
+                logging.error(f"[/download_output] Excel output not supported for project type: {project_type}")
                 return jsonify({"error": "Excel output not supported for this project type"}), 400
         elif output_type == 'powerpoint_overview':
             if project_type == "financial":
-                logging.debug("Generating financial PowerPoint")
+                logging.debug("[/download_output] Generating financial PowerPoint")
                 file_path = generate_ppt()
             elif project_type == "real_estate":
-                logging.debug("Generating real estate PowerPoint")
+                logging.debug("[/download_output] Generating real estate PowerPoint")
                 from powerpoint_generation.ppt_real_estate import generate_ppt
-                file_name = generate_ppt()
+                file_name = generate_real_estate_ppt()
                 file_path = f"{outputs_path}/{file_name}"
+            elif project_type == "fund_analysis":
+                logging.debug("[/download_output] Generating fund analysis PowerPoint")
+                from powerpoint_generation.ppt_fund_analysis import generate_fund_analysis_ppt
+                
+                # Generate PowerPoint and get the file object/bytes
+                ppt_bytes = generate_fund_analysis_ppt()  # This should return the PowerPoint as bytes
+                
+                # Generate a unique filename
+                timestamp = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
+                filename = f"fund_analysis_{timestamp}.pptx"
+                s3_path = f"{outputs_path}/{filename}"
+                
+                # Upload bytes directly to S3
+                try:
+                    s3_client.put_object(
+                        Bucket=BUCKET_NAME,
+                        Key=s3_path,
+                        Body=ppt_bytes
+                    )
+                    file_path = s3_path
+                    logging.debug(f"[/download_output] Successfully uploaded PowerPoint to S3: {s3_path}")
+                except Exception as e:
+                    logging.error(f"[/download_output] Failed to upload PowerPoint to S3: {str(e)}")
+                    return jsonify({"error": "Failed to save PowerPoint"}), 500
             else:
-                logging.error(f"PowerPoint generation not supported for project type: {project_type}")
+                logging.error(f"[/download_output] PowerPoint generation not supported for project type: {project_type}")
                 return jsonify({"error": "PowerPoint generation not supported for this project type"}), 400
         else:
-            logging.error(f"Invalid output type: {output_type}")
+            logging.error(f"[/download_output] Invalid output type: {output_type}")
             return jsonify({"error": "Invalid output type"}), 400
 
-        logging.debug(f"File generated successfully at path: {file_path}")
+        logging.debug(f"[/download_output] File generated successfully at path: {file_path}")
 
         # Download from S3 to temporary file
         temp_dir = 'temp'
@@ -649,16 +663,16 @@ def download_output():
         filename = os.path.basename(file_path)
         temp_path = os.path.join(temp_dir, filename)
         
-        logging.debug(f"Attempting to download file from S3 path {file_path} to temp path {temp_path}")
+        logging.debug(f"[/download_output] Attempting to download file from S3 path {file_path} to temp path {temp_path}")
         
         if not download_file_from_s3(file_path, temp_path):
-            logging.error(f"Failed to download file from S3: {file_path}")
+            logging.error(f"[/download_output] Failed to download file from S3: {file_path}")
             return jsonify({"error": f"Failed to retrieve {output_type} file"}), 500
 
-        logging.info(f"Successfully retrieved {output_type} file from S3: {file_path}")
+        logging.info(f"[/download_output] Successfully retrieved {output_type} file from S3: {file_path}")
 
         try:
-            logging.debug("Preparing file for download")
+            logging.debug("[/download_output] Preparing file for download")
             response = send_file(temp_path, as_attachment=True)
             response.headers["Content-Disposition"] = f"attachment; filename={filename}"
             
@@ -667,23 +681,23 @@ def download_output():
             def cleanup():
                 try:
                     if os.path.exists(temp_path):
-                        logging.debug(f"Cleaning up temporary file: {temp_path}")
+                        logging.debug(f"[/download_output] Cleaning up temporary file: {temp_path}")
                         os.remove(temp_path)
                 except Exception as e:
-                    logging.error(f"Failed to clean up temporary file: {e}")
+                    logging.error(f"[/download_output] Failed to clean up temporary file: {e}")
             
-            logging.debug("File ready for download")
+            logging.debug("[/download_output] File ready for download")
             return response
             
         except Exception as e:
-            logging.error(f"Error preparing file for download: {str(e)}")
+            logging.error(f"[/download_output] Error preparing file for download: {str(e)}")
             # Clean up if send_file fails
             if os.path.exists(temp_path):
                 os.remove(temp_path)
             return jsonify({"error": "Failed to prepare file for download"}), 500
 
     except Exception as e:
-        logging.error(f"Error generating {output_type} file: {str(e)}", exc_info=True)
+        logging.error(f"[/download_output] Error generating {output_type} file: {str(e)}", exc_info=True)
         return jsonify({"error": f"Failed to generate {output_type} file: {str(e)}"}), 500
 
 

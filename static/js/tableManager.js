@@ -179,17 +179,45 @@ export class TableManager {
             // Standard layout - generate a column for each property
             columns = Object.entries(properties)
                 .sort((a, b) => (a[1].order || 999) - (b[1].order || 999))
-                .map(([fieldName, fieldDef]) => ({
-                    title: fieldDef.display_name || fieldName,
-                    field: fieldName,
-                    editor: fieldDef.type === 'number' ? "number" : "input",
-                    formatter: this.getColumnFormatter(fieldName, fieldDef),
-                    width: fieldDef.width || 150,
-                    minWidth: fieldDef.minWidth || 100,
-                    maxWidth: fieldDef.maxWidth || 400,
-                    resizable: true,
-                    tooltip: true
-                }));
+                .map(([fieldName, fieldDef]) => {
+                    // Special handling for source_object type
+                    if (fieldDef.type === 'source_object') {
+                        return {
+                            title: fieldDef.display_name || fieldName,
+                            field: fieldName,
+                            formatter: (cell) => {
+                                const value = cell.getValue();
+                                // Handle both string and object values
+                                if (typeof value === 'string') {
+                                    return value;
+                                }
+                                // For source objects, use display_value or fall back to text_context
+                                if (value && typeof value === 'object') {
+                                    return value.display_value || value.text_context || 'No Source';
+                                }
+                                return '';
+                            },
+                            width: fieldDef.width || 150,
+                            minWidth: fieldDef.minWidth || 100,
+                            maxWidth: fieldDef.maxWidth || 400,
+                            resizable: true,
+                            tooltip: true
+                        };
+                    }
+                    
+                    // Default column definition for other types
+                    return {
+                        title: fieldDef.display_name || fieldName,
+                        field: fieldName,
+                        editor: fieldDef.type === 'number' ? "number" : "input",
+                        formatter: this.getColumnFormatter(fieldName, fieldDef),
+                        width: fieldDef.width || 150,
+                        minWidth: fieldDef.minWidth || 100,
+                        maxWidth: fieldDef.maxWidth || 400,
+                        resizable: true,
+                        tooltip: true
+                    };
+                });
         }
 
         return {

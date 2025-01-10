@@ -145,7 +145,7 @@ body {
 
 #uploadedDocsTable th,
 #uploadedDocsTable td {
-    padding: 2px 4px;  /* Reduce vertical padding */
+    padding: 2px 2px;  /* Reduce vertical padding */
     line-height: 1.2;  /* Slightly tighter line height */
     font-size: 0.875rem; /* Optional: slightly smaller font */
     overflow: hidden;
@@ -157,22 +157,22 @@ body {
 /* Set specific widths for each column */
 #uploadedDocsTable th:nth-child(1),
 #uploadedDocsTable td:nth-child(1) {
-    width: 60%;  /* Increased width for filename column */
+    width: 50%;  /* Increased width for filename column */
 }
 
 #uploadedDocsTable th:nth-child(2),
 #uploadedDocsTable td:nth-child(2) {
-    width: 15%;  /* Send to AI column */
+    width: 20%;  /* Send to AI column */
 }
 
 #uploadedDocsTable th:nth-child(3),
 #uploadedDocsTable td:nth-child(3) {
-    width: 15%;  /* Sent? column */
+    width: 10%;  /* Sent? column */
 }
 
 #uploadedDocsTable th:nth-child(4),
 #uploadedDocsTable td:nth-child(4) {
-    width: 10%;  /* Remove column */
+    width: 15%;  /* Remove column */
 }
 
 /* Improve the remove "X" button appearance */

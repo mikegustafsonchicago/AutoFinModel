@@ -275,7 +275,18 @@ class PromptBuilder:
         # Step 2: Add structure info and data for update tables
         for table_name, data in update_tables.items():
             structure_info = self.load_ai_instructions_from_structure(table_name)
+            # Add root key information from structure file
+            try:
+                with open(f"static/json_structure_data/{table_name}_structure.json") as f:
+                    structure = json.load(f)
+                    root_key = structure[table_name].get('root_key')
+                    if root_key:
+                        structure_info = f"Root Key: {root_key}\n{structure_info}"
+            except Exception as e:
+                logging.error(f"Error loading root key for {table_name}: {e}")
+
             formatted_table_data = json.dumps(data, indent=2)
+            
             self.table_data += (
                 f"\n\n--- {table_name} Structure Information ---\n{structure_info}"
                 f"\n\n--- Current {table_name} Data ---\n{formatted_table_data}"
@@ -292,40 +303,21 @@ class PromptBuilder:
                 )
 
     def add_running_summary(self, summary):
-        """
-        Add the running summary to the system prompt.
         
-        Parameters
-        ----------
-        summary : str
-            The summary content to add.
-        """
         if summary:
             self.summary += f"\n\nRunning Summary of Processed PDF:\n{summary}"
 
+
     def add_business_description(self, business_description):
-        """
-        Add the business description to the system prompt.
-        
-        Parameters
-        ----------
-        business_description : str
-            The business description text.
-        """
+
         if business_description:
             self.business_description += f"\n\nBusiness Description:\n{business_description}"
         else:
             self.business_description += "\n\nNo business description is given. Please use the PDF information."
 
+
     def add_pdf_chunk(self, pdf_chunk):
-        """
-        Add a chunk of the PDF content to the system prompt.
-        
-        Parameters
-        ----------
-        pdf_chunk : str
-            The extracted PDF text chunk.
-        """
+
         if pdf_chunk:
             self.pdf_chunk += f"\n\n--- PDF Chunk ---\n{pdf_chunk}"
 

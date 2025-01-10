@@ -62,7 +62,7 @@
                         },
                         "revenue_source": {
                             "type": "source_object",
-                            "ai_instructions": "Source information for the revenue data. You must provide specific page numbers, paragraph numbers, or sections where the information was found. If no referenceable source exists, use '-No Source-' for all fields.",
+                            "ai_instructions": "Source information for the revenue data. You must provide specific page numbers, paragraph numbers, or sections where the information was found. If no referenceable source exists, use '-No Source-' for all fields. If from an uploaded document, specify exact location.",
                             "display_name": "Revenue Source",
                             "order": 3,
                             "required": ["ai_instructions", "url", "text_context"],
@@ -101,7 +101,7 @@
                         },
                         "cost_of_sales_source": {
                             "type": "source_object",
-                            "ai_instructions": "Source information for the cost of sales data. You must provide specific page numbers, paragraph numbers, or sections where the information was found. If no referenceable source exists, use '-No Source-' for all fields.",
+                            "ai_instructions": "Source information for the cost of sales data. You must provide specific page numbers, paragraph numbers, or sections where the information was found. If no referenceable source exists, use '-No Source-' for all fields. If from an uploaded document, specify exact location.",
                             "display_name": "Cost of Sales Source",
                             "order": 6,
                             "required": ["ai_instructions", "url", "text_context"],
@@ -140,7 +140,7 @@
                         },
                         "operating_expenses_source": {
                             "type": "source_object",
-                            "ai_instructions": "Source information for the operating expenses data. You must provide specific page numbers, paragraph numbers, or sections where the information was found. If no referenceable source exists, use '-No Source-' for all fields.",
+                            "ai_instructions": "Source information for the operating expenses data. You must provide specific page numbers, paragraph numbers, or sections where the information was found. If no referenceable source exists, use '-No Source-' for all fields. If from an uploaded document, specify exact location.",
                             "display_name": "Operating Expenses Source",
                             "order": 9,
                             "required": ["ai_instructions", "url", "text_context"],
@@ -178,7 +178,7 @@
                         },
                         "ebitda_source": {
                             "type": "source_object",
-                            "ai_instructions": "Source information for the EBITDA data. You must provide specific page numbers, paragraph numbers, or sections where the information was found. If no referenceable source exists, use '-No Source-' for all fields.",
+                            "ai_instructions": "Source information for the EBITDA data. You must provide specific page numbers, paragraph numbers, or sections where the information was found. If no referenceable source exists, use '-No Source-' for all fields. If from an uploaded document, specify exact location.",
                             "display_name": "EBITDA Source",
                             "order": 12,
                             "required": ["ai_instructions", "url", "text_context"],
@@ -217,7 +217,7 @@
                         },
                         "depreciation_source": {
                             "type": "source_object",
-                            "ai_instructions": "Source information for the depreciation data. You must provide specific page numbers, paragraph numbers, or sections where the information was found. If no referenceable source exists, use '-No Source-' for all fields.",
+                            "ai_instructions": "Source information for the depreciation data. You must provide specific page numbers, paragraph numbers, or sections where the information was found. If no referenceable source exists, use '-No Source-' for all fields. If from an uploaded document, specify exact location.",
                             "display_name": "Depreciation Source",
                             "order": 15,
                             "required": ["ai_instructions", "url", "text_context"],
@@ -255,7 +255,7 @@
                         },
                         "ebit_source": {
                             "type": "source_object",
-                            "ai_instructions": "Source information for the EBIT data. You must provide specific page numbers, paragraph numbers, or sections where the information was found. If no referenceable source exists, use '-No Source-' for all fields.",
+                            "ai_instructions": "Source information for the EBIT data. You must provide specific page numbers, paragraph numbers, or sections where the information was found. If no referenceable source exists, use '-No Source-' for all fields. If from an uploaded document, specify exact location.",
                             "display_name": "EBIT Source",
                             "order": 18,
                             "required": ["ai_instructions", "url", "text_context"],
@@ -294,7 +294,7 @@
                         },
                         "interest_expense_source": {
                             "type": "source_object",
-                            "ai_instructions": "Source information for the interest expense data. You must provide specific page numbers, paragraph numbers, or sections where the information was found. If no referenceable source exists, use '-No Source-' for all fields.",
+                            "ai_instructions": "Source information for the interest expense data. You must provide specific page numbers, paragraph numbers, or sections where the information was found. If no referenceable source exists, use '-No Source-' for all fields. If from an uploaded document, specify exact location.",
                             "display_name": "Interest Expense Source",
                             "order": 21,
                             "required": ["ai_instructions", "url", "text_context"],
@@ -333,7 +333,7 @@
                         },
                         "income_taxes_source": {
                             "type": "source_object",
-                            "ai_instructions": "Source information for the income taxes data. You must provide specific page numbers, paragraph numbers, or sections where the information was found. If no referenceable source exists, use '-No Source-' for all fields.",
+                            "ai_instructions": "Source information for the income taxes data. You must provide specific page numbers, paragraph numbers, or sections where the information was found. If no referenceable source exists, use '-No Source-' for all fields. If from an uploaded document, specify exact location.",
                             "display_name": "Income Taxes Source",
                             "order": 24,
                             "required": ["ai_instructions", "url", "text_context"],
@@ -371,7 +371,7 @@
                         },
                         "net_income_source": {
                             "type": "source_object",
-                            "ai_instructions": "Source information for the net income data. You must provide specific page numbers, paragraph numbers, or sections where the information was found. If no referenceable source exists, use '-No Source-' for all fields.",
+                            "ai_instructions": "Source information for the net income data. You must provide specific page numbers, paragraph numbers, or sections where the information was found. If no referenceable source exists, use '-No Source-' for all fields. If from an uploaded document, specify exact location.",
                             "display_name": "Net Income Source",
                             "order": 27,
                             "required": ["ai_instructions", "url", "text_context"],

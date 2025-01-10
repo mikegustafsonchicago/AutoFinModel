@@ -16,7 +16,7 @@
                     "type": "object",
                     "required": [
                         "role",
-                        "number",
+                        "number", 
                         "wage",
                         "wage_type",
                         "monthly_hours",
@@ -37,7 +37,7 @@
                         "number": {
                             "type": "number",
                             "ai_instructions": "Number of employees in this role",
-                            "display_name": "Number of Employees", 
+                            "display_name": "Number of Employees",
                             "minimum": 0,
                             "order": 2
                         },
@@ -57,7 +57,7 @@
                         },
                         "wage_source": {
                             "type": "source_object",
-                            "ai_instructions": "Source information for the wage data. You must provide specific page numbers, paragraph numbers, or sections where the information was found. If no referenceable source exists, use '-No Source-' for all fields.",
+                            "ai_instructions": "Source information for the cost data. Write '-No Source-' if no referenceable source exists. If you have a referenceable source, provide specific page numbers, paragraph numbers, or sections where the information was found.",
                             "display_name": "Wage Source",
                             "order": 5,
                             "required": ["ai_instructions", "url", "text_context"],
@@ -96,7 +96,7 @@
                         },
                         "hours_source": {
                             "type": "source_object",
-                            "ai_instructions": "Source information for the hours data. You must provide specific page numbers, paragraph numbers, or sections where the information was found. If no referenceable source exists, use '-No Source-' for all fields.",
+                            "ai_instructions": "Source information for the cost data. Write '-No Source-' if no referenceable source exists. If you have a referenceable source, provide specific page numbers, paragraph numbers, or sections where the information was found.",
                             "display_name": "Hours Source",
                             "order": 8,
                             "required": ["ai_instructions", "url", "text_context"],
