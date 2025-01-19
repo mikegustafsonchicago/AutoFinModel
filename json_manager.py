@@ -56,20 +56,26 @@ class JsonManager:
             
             for structure_path in structure_files:
                 try:
+                    logging.debug(f"Processing structure file: {structure_path}")
+                    
                     # Read structure file from S3
                     structure_data = read_json(structure_path)
+                    logging.debug(f"Read structure data: {structure_data.keys()}")
                     
                     # Get the table name from the first key in structure data
                     table_key = next(iter(structure_data))
                     file_info = structure_data[table_key]
+                    logging.debug(f"Table key: {table_key}, File info: {file_info.keys()}")
                     
                     # Create output S3 path by removing _structure from structure filename
                     output_filename = structure_path.split('/')[-1].replace('_structure.json', '.json')
                     output_path = f"{data_path}/{output_filename}"
+                    logging.debug(f"Output path: {output_path}")
                     
                     # Get default content and root key from structure
                     initial_data = {}
                     initial_data[file_info["root_key"]] = file_info["default_content"][file_info["root_key"]]
+                    logging.debug(f"Initial data root key: {file_info['root_key']}")
                     
                     # Write directly to S3
                     write_json(output_path, initial_data)
@@ -192,10 +198,14 @@ class JsonManager:
         """
         Update JSON files with the complete json data from the openai response. This is called once per openai response.
         """
+        logging.debug(f"[update_json_files] Starting update with {len(json_data)} tables")
+        
         username = session.get('username')
         current_project = session.get('current_project')
         project_type = session.get('project_type')
         project_data_path = get_project_data_path()
+        
+        logging.debug(f"[update_json_files] Getting existing files for path: {project_data_path}")
         
         # List existing files in S3 data directory
         response = s3_client.list_objects_v2(
@@ -211,19 +221,23 @@ class JsonManager:
                 if obj['Key'].endswith('.json')
             ]
             
+        logging.debug(f"[update_json_files] Found {len(existing_tables)} existing tables")
+            
         for table_name, new_data in json_data.items():
+            logging.debug(f"[update_json_files] Processing table: {table_name}")
+            
             # Check if table exists in project data directory
             if table_name not in existing_tables:
-                logging.warning(f"update_json_files: Table {table_name} not found in project data directory")
+                logging.warning(f"[update_json_files] Table {table_name} not found in project data directory")
                 continue
 
             # Write updated data to S3
             file_path = f"{project_data_path}/{table_name}.json"
             try:
                 write_json(file_path, new_data)
-                logging.info(f"update_json_files: Successfully updated {table_name}.json for project {project_type}")
+                logging.info(f"[update_json_files] Successfully updated {table_name}.json for project {project_type}")
             except Exception as e:
-                logging.error(f"update_json_files: Failed to update {table_name}.json for project {project_type}: {e}")
+                logging.error(f"[update_json_files] Failed to update {table_name}.json for project {project_type}: {e}")
 
     def fix_incomplete_json(self, json_string):
         """Fix incomplete JSON by adding missing brackets"""

@@ -3,22 +3,22 @@
         "display": {
             "defaultLayout": "transposed",
             "allowToggle": true,
-            "frozen_column": true  
+            "frozen_column": true
         },
         "filename": "fundamentals.json",
-        "root_key": "fundamentals",
+        "root_key": "fund_fundamentals",
         "ai_instructions": "The Fundamentals table provides essential information about a private equity firm, including its founding year, structure, office location, and key attributes like diversity status and total assets under management",
         "version": "1.0",
         "explanation_file": "fundamentals_explanation.txt",
         "structure": {
-            "fundamentals": {
+            "fund_fundamentals": {
                 "type": "array",
                 "ai_instructions": "Array of fundamental firm information entries",
                 "items": {
                     "type": "object",
                     "required": [
                         "firm_name",
-                        "founded_year", 
+                        "founded_year",
                         "primary_office",
                         "ownership_structure",
                         "total_employees",
@@ -35,7 +35,7 @@
                             "order": 1
                         },
                         "founded_year": {
-                            "type": "integer", 
+                            "type": "integer",
                             "ai_instructions": "The year the firm was established",
                             "display_name": "Founded Year",
                             "order": 2
@@ -77,7 +77,11 @@
                             "ai_instructions": "Source information for the firm data. You must provide specific page numbers, paragraph numbers, or sections where the information was found. If no referenceable source exists, use '-No Source-' for all fields.",
                             "display_name": "Source",
                             "order": 8,
-                            "required": ["ai_instructions", "url", "text_context"],
+                            "required": [
+                                "ai_instructions",
+                                "url",
+                                "text_context"
+                            ],
                             "properties": {
                                 "object_type": {
                                     "type": "string",
@@ -103,18 +107,42 @@
                             "ai_instructions": "Additional context about how the firm information was determined",
                             "display_name": "Source Notes",
                             "order": 9
+                        },
+                        "fund_name": {
+                            "type": "string",
+                            "ai_instructions": "If relevant, the specific fund name under this management firm",
+                            "display_name": "Fund Name",
+                            "order": 10
+                        },
+                        "aum": {
+                            "type": "string",
+                            "ai_instructions": "Total assets under management (e.g., '3.5B')",
+                            "display_name": "AUM",
+                            "order": 11
+                        },
+                        "investment_strategy": {
+                            "type": "string",
+                            "ai_instructions": "High-level description of the firm or fund’s strategy (e.g., 'Distressed Debt, Mezz, Growth')",
+                            "display_name": "Investment Strategy",
+                            "order": 12
+                        },
+                        "additional_offices": {
+                            "type": "string",
+                            "ai_instructions": "Other significant office locations beyond the primary office",
+                            "display_name": "Additional Offices",
+                            "order": 13
                         }
                     }
                 }
             }
         },
         "default_content": {
-            "fundamentals": [
+            "fund_fundamentals": [
                 {
                     "firm_name": "Sample Investment Firm",
                     "founded_year": 2020,
                     "primary_office": "New York, NY",
-                    "ownership_structure": "Private", 
+                    "ownership_structure": "Private",
                     "total_employees": 100,
                     "diversity_status": "N/A",
                     "website": "https://www.samplefirm.com",
@@ -124,7 +152,12 @@
                         "url": "-No Source-",
                         "text_context": "-No Source-"
                     },
-                    "source_notes": "Sample firm information for demonstration"
+                    "source_notes": "Sample firm information for demonstration",
+
+                    "fund_name": "Sample Fund I, L.P.",
+                    "aum": "3.5B",
+                    "investment_strategy": "Distressed & Mezzanine Focus",
+                    "additional_offices": "Los Angeles, London"
                 }
             ]
         }

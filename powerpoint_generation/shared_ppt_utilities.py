@@ -6,6 +6,7 @@ from pptx.util import Inches, Pt
 from pptx.dml.color import RGBColor, MSO_THEME_COLOR
 from pptx.enum.shapes import MSO_SHAPE
 from pptx.enum.text import PP_ALIGN
+from pathlib import Path
 
 
 #------------------------------------------------------------------------------
@@ -41,115 +42,199 @@ def load_text(filepath):
         return file.read()
 
 
-def apply_table_styles(table, header_font_size=14):
+def apply_table_styles(table, include_sources=True, header_font_size=11):
     """
-    Apply consistent styling to PowerPoint table headers and cells.
-    Uses template theme colors with orange header.
+    Apply consistent styling to PowerPoint tables and handle source links properly.
     
     Args:
         table: PowerPoint table object
+        include_sources (bool): Whether to process source objects into hyperlinks
         header_font_size (int): Font size for header row
     """
-    # Apply basic table style
+    # Apply basic table style with black borders
     table.style = 'Table Grid'
     
-    # Style headers using theme colors
+    # Apply black borders to all cells
+    for row in table.rows:
+        for cell in row.cells:
+            for border in ['top', 'right', 'bottom', 'left']:
+                border_obj = getattr(cell.border, border)
+                border_obj.color.rgb = RGBColor(0, 0, 0)  # Black
+                border_obj.width = Pt(1)
+    
+    # Style headers - white background with black text
     for cell in table.rows[0].cells:
         cell.fill.solid()
-        # Use theme color (accent2 is typically orange in most templates)
-        cell.fill.fore_color.theme_color = MSO_THEME_COLOR.ACCENT_2
+        cell.fill.fore_color.rgb = RGBColor(255, 255, 255)  # White background
         paragraph = cell.text_frame.paragraphs[0]
         paragraph.font.bold = True
         paragraph.font.size = Pt(header_font_size)
-        # Use theme color for text to ensure contrast
-        paragraph.font.theme_color = MSO_THEME_COLOR.LIGHT_1  # Usually white
+        paragraph.font.color.rgb = RGBColor(0, 0, 0)  # Black text
+        
+        # Add padding through text frame margins
+        text_frame = cell.text_frame
+        text_frame.margin_left = Inches(0.1)
+        text_frame.margin_right = Inches(0.1)
+        text_frame.margin_top = Inches(0.05)
+        text_frame.margin_bottom = Inches(0.05)
+        
+        if include_sources:
+            _process_source_object(cell)
     
-    # Style data cells with subtle alternating shading
+    # Style data cells - white background with black text
     for i in range(1, len(table.rows)):
         for cell in table.rows[i].cells:
             cell.fill.solid()
-            if i % 2 == 0:
-                cell.fill.fore_color.rgb = RGBColor(255, 255, 255)  # White
-            else:
-                cell.fill.fore_color.rgb = RGBColor(250, 250, 250)  # Very light gray
+            cell.fill.fore_color.rgb = RGBColor(255, 255, 255)  # White background
+            
             paragraph = cell.text_frame.paragraphs[0]
-            paragraph.font.size = Pt(12)
-            paragraph.font.color.rgb = RGBColor(51, 51, 51)  # Dark gray for better readability
-        
-        # Adjust column widths at table level
-        table.columns[0].width = Inches(2)  # Make first column narrower
-        table.columns[1].width = Inches(3)  # Make second column wider
-
-def generate_template_diagnostics(template_path, output_dir):
-    """
-    Generate a diagnostic text file with details about the PowerPoint template.
+            paragraph.font.size = Pt(10)
+            paragraph.font.name = 'Calibri'
+            paragraph.font.color.rgb = RGBColor(0, 0, 0)  # Black text
+            
+            # Add consistent cell padding
+            text_frame = cell.text_frame
+            text_frame.margin_left = Inches(0.1)
+            text_frame.margin_right = Inches(0.1)
+            text_frame.margin_top = Inches(0.05)
+            text_frame.margin_bottom = Inches(0.05)
+            
+            if include_sources:
+                _process_source_object(cell)
     
-    Args:
-        template_path (str): Path to the PowerPoint template file
-        output_dir (str): Directory to save the diagnostic output
-    """
-    try:
-        # Load the template
-        prs = Presentation(template_path)
-        
-        # Create diagnostic text
-        diagnostic_text = []
-        diagnostic_text.append(f"PowerPoint Template Diagnostics\n")
-        diagnostic_text.append(f"Template: {os.path.basename(template_path)}\n")
-        diagnostic_text.append("-" * 80 + "\n")
-        
-        # Analyze slide layouts
-        diagnostic_text.append("\nSlide Layouts:")
-        diagnostic_text.append("-" * 40)
-        for idx, layout in enumerate(prs.slide_layouts):
-            diagnostic_text.append(f"\nLayout {idx}:")
+    # Set standard column widths if not already set
+    for col in table.columns:
+        if col.width < Inches(1):
+            col.width = Inches(2)
+
+def _process_source_object(cell):
+    """Helper function to process source objects into hyperlinks"""
+    if isinstance(cell.text, str) and cell.text.startswith("{'object_type': 'source_object'"):
+        try:
+            source_data = eval(cell.text)  # Convert string to dict
+            paragraph = cell.text_frame.paragraphs[0]
+            paragraph.text = ""  # Clear existing text
+            run = paragraph.add_run()
+            run.text = source_data.get('display_value', 'Source')
+            if source_data.get('url') and source_data['url'] != '-No Source-':
+                run.hyperlink.address = source_data['url']
+            run.font.color.rgb = RGBColor(0, 112, 192)  # Blue color for links
+            run.font.underline = True
+        except:
+            # If there's any error parsing, leave as plain text
+            paragraph.text = source_data.get('display_value', 'Source')
+
+def generate_template_diagnostics(presentation, layout_index=0):
+    """Generate diagnostic information about the template."""
+    slide = presentation.slides.add_slide(presentation.slide_layouts[layout_index])  # Use Title and Content layout
+    
+    # Try to use title placeholder first, otherwise add title textbox
+    title_shape = None
+    for shape in slide.placeholders:
+        if shape.placeholder_format.type == 1:  # 1 is title placeholder
+            title_shape = shape
+            break
             
-            # Get placeholders in layout
-            placeholders = []
-            for shape in layout.placeholders:
-                ph_type = str(shape.placeholder_format.type) if shape.placeholder_format else "Unknown"
-                placeholders.append(f"    - Placeholder: idx={shape.placeholder_format.idx}, "
-                                 f"type={ph_type}, "
-                                 f"name='{shape.name}'")
-            
-            if placeholders:
-                diagnostic_text.append("  Placeholders:")
-                diagnostic_text.extend(placeholders)
-            else:
-                diagnostic_text.append("  No placeholders found")
-                
-        # Write to file
-        diagnostic_path = os.path.join(output_dir, "template_diagnostics.txt")
-        with open(diagnostic_path, 'w') as f:
-            f.write("\n".join(diagnostic_text))
-            
-        return diagnostic_path
+    if title_shape is None:
+        # No title placeholder found, create textbox
+        title_shape = slide.shapes.add_textbox(
+            left=Inches(1),
+            top=Inches(0.5),
+            width=Inches(8),
+            height=Inches(0.5)
+        )
         
-    except Exception as e:
-        logging.error(f"Error generating template diagnostics: {str(e)}")
-        raise
+    title_frame = title_shape.text_frame
+    title_frame.text = "Template Diagnostics"
+    title_frame.paragraphs[0].font.bold = True
+    title_frame.paragraphs[0].font.size = Pt(24)
+    
+    # Get template dimensions
+    dims = analyze_template_dimensions(presentation)
+    
+    # Find body placeholder
+    body_shape = None
+    for shape in slide.placeholders:
+        if shape.placeholder_format.type == 2:  # 2 is body placeholder
+            body_shape = shape
+            break
+            
+    # If no body placeholder found, add content directly to slide
+    if body_shape is None:
+        y_pos = Inches(1.5)
+        for i, layout in enumerate(presentation.slide_layouts):
+            text = slide.shapes.add_textbox(Inches(1), y_pos, Inches(8), Inches(0.5))
+            p = text.text_frame.add_paragraph()
+            p.text = f"Layout {i}: {layout.name}"
+            p.font.bold = True
+            y_pos += Inches(0.3)
+            
+            # List all placeholders in this layout
+            for ph in layout.placeholders:
+                text = slide.shapes.add_textbox(Inches(1.5), y_pos, Inches(8), Inches(0.3))
+                p = text.text_frame.add_paragraph()
+                p.text = (f"→ Placeholder {ph.placeholder_format.idx}: {ph.name} "
+                         f"(type: {ph.placeholder_format.type})")
+                if hasattr(ph, 'left'):
+                    p.text += f" at ({ph.left/914400:.2f}\", {ph.top/914400:.2f}\")"
+                y_pos += Inches(0.25)
+            
+            y_pos += Inches(0.2)  # Add space between layouts
+    else:
+        # Add content to body placeholder
+        text_frame = body_shape.text_frame
+        text_frame.clear()  # Clear any existing text
+        
+        for i, layout in enumerate(presentation.slide_layouts):
+            p = text_frame.add_paragraph()
+            p.text = f"Layout {i}: {layout.name}"
+            p.font.bold = True
+            
+            # List all placeholders in this layout
+            for ph in layout.placeholders:
+                p = text_frame.add_paragraph()
+                p.level = 1  # Indent one level
+                p.text = (f"→ Placeholder {ph.placeholder_format.idx}: {ph.name} "
+                         f"(type: {ph.placeholder_format.type})")
+                if hasattr(ph, 'left'):
+                    p.text += f" at ({ph.left/914400:.2f}\", {ph.top/914400:.2f}\")"
+            
+            text_frame.add_paragraph()  # Add blank line between layouts
+    
+    return dims
 
 
 def get_gallery_images(gallery_path):
     """
     Get list of image filenames from the gallery directory.
     
+    Args:
+        gallery_path (str): Path to gallery directory
     Returns:
         list: List of image filenames in the gallery directory
     """
     try:
+        # Convert to proper path object and resolve
+        gallery_path = Path(gallery_path).resolve()
+        logging.info(f"Looking for gallery at: {gallery_path}")
+        
+        if not gallery_path.exists():
+            logging.error(f"Gallery path does not exist: {gallery_path}")
+            return []
+            
         # Get list of files in gallery directory
         image_files = []
-        for filename in os.listdir(gallery_path):
+        for filename in gallery_path.iterdir():
             # Check if file is an image by extension
-            if filename.lower().endswith(('.png', '.jpg', '.jpeg', '.gif', '.bmp')):
-                image_files.append(filename)
+            if filename.suffix.lower() in ('.png', '.jpg', '.jpeg', '.gif', '.bmp'):
+                image_files.append(filename.name)
         
+        logging.info(f"Found {len(image_files)} images in gallery")
         return sorted(image_files)
         
     except Exception as e:
         logging.error(f"Error getting gallery images: {str(e)}")
-        raise
+        return []  # Return empty list instead of raising to avoid presentation failure
 
 
 def estimate_text_width(text, font_size, font_name='Calibri', bold=False):
@@ -323,9 +408,6 @@ def analyze_template_dimensions(presentation):
         dimensions['right_column_width'] = dimensions['left_column_width']
         dimensions['column_spacing'] = Inches(0.25)
         
-        logging.info("Final Template Analysis Results:")
-        for key, value in dimensions.items():
-            logging.info(f"{key}: {value}")
         
         return dimensions
     else:

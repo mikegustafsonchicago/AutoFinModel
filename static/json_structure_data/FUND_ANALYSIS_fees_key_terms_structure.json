@@ -1,9 +1,9 @@
 {
     "FUND_ANALYSIS_fees_key_terms": {
         "display": {
-            "defaultLayout": "true",
+            "defaultLayout": "transposed",
             "allowToggle": true,
-            "frozen_column": true  
+            "frozen_column": true
         },
         "filename": "fees_key_terms.json",
         "root_key": "terms",
@@ -20,7 +20,7 @@
                         "currency",
                         "target_fundraise",
                         "management_fee",
-                        "carried_interest", 
+                        "carried_interest",
                         "preferred_return",
                         "investment_period",
                         "fund_term",
@@ -36,7 +36,7 @@
                             "order": 1
                         },
                         "target_fundraise": {
-                            "type": "string", 
+                            "type": "string",
                             "ai_instructions": "The target amount the firm aims to raise for its fund",
                             "display_name": "Target Fundraise",
                             "order": 2
@@ -82,14 +82,18 @@
                             "ai_instructions": "Source information for the fund terms. You must provide specific page numbers, paragraph numbers, or sections where the information was found. If no referenceable source exists, use '-No Source-' for all fields.",
                             "display_name": "Terms Source",
                             "order": 9,
-                            "required": ["ai_instructions", "url", "text_context"],
+                            "required": [
+                                "ai_instructions",
+                                "url",
+                                "text_context"
+                            ],
                             "properties": {
                                 "object_type": {
                                     "type": "string",
                                     "ai_instructions": "Must be 'source_object' for parsing purposes"
                                 },
                                 "display_value": {
-                                    "type": "string", 
+                                    "type": "string",
                                     "ai_instructions": "Provide specific source details like 'Page 5, Paragraph 2' or 'Section 3.1'. If from an uploaded document, specify exact location. If no referenceable source, use '-No Source-'"
                                 },
                                 "url": {
@@ -108,6 +112,30 @@
                             "ai_instructions": "Additional context about how the terms were determined",
                             "display_name": "Terms Notes",
                             "order": 10
+                        },
+                        "hard_cap": {
+                            "type": "string",
+                            "ai_instructions": "Upper or maximum potential fund size (e.g., '1.0B')",
+                            "display_name": "Hard Cap",
+                            "order": 11
+                        },
+                        "hurdle_rate": {
+                            "type": "string",
+                            "ai_instructions": "The IRR hurdle rate, if distinct from the typical 'preferred return' (e.g., '15%')",
+                            "display_name": "Hurdle Rate",
+                            "order": 12
+                        },
+                        "catch_up_provision": {
+                            "type": "string",
+                            "ai_instructions": "Description of any GP catch-up structure after the pref is met",
+                            "display_name": "Catch-Up Provision",
+                            "order": 13
+                        },
+                        "clawback_terms": {
+                            "type": "string",
+                            "ai_instructions": "Details about clawback if over-distribution occurs (e.g., 'LP-friendly clawback')",
+                            "display_name": "Clawback Terms",
+                            "order": 14
                         }
                     }
                 }
@@ -121,16 +149,21 @@
                     "management_fee": "2%",
                     "carried_interest": "20%",
                     "preferred_return": "8%",
-                    "investment_period": "5 years", 
+                    "investment_period": "5 years",
                     "fund_term": "10 years",
                     "GP_commitment": "5%",
                     "terms_source": {
                         "object_type": "source_object",
                         "display_value": "-No Source-",
-                        "url": "-No Source-", 
+                        "url": "-No Source-",
                         "text_context": "-No Source-"
                     },
-                    "terms_notes": "Sample fund terms and fee structure"
+                    "terms_notes": "Sample fund terms and fee structure",
+
+                    "hard_cap": "150M",
+                    "hurdle_rate": "15%",
+                    "catch_up_provision": "100% catch-up to GP after 8% pref",
+                    "clawback_terms": "Standard clawback mechanism at fund liquidation"
                 }
             ]
         }

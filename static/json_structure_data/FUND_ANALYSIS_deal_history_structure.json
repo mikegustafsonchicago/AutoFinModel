@@ -3,7 +3,7 @@
         "display": {
             "defaultLayout": "normal",
             "allowToggle": true,
-            "frozen_column": true  
+            "frozen_column": true
         },
         "filename": "deal_history.json",
         "root_key": "deals",
@@ -18,7 +18,7 @@
                     "type": "object",
                     "required": [
                         "date",
-                        "firm", 
+                        "firm",
                         "amount",
                         "amount_source",
                         "amount_notes",
@@ -35,7 +35,7 @@
                             "order": 1
                         },
                         "firm": {
-                            "type": "string", 
+                            "type": "string",
                             "ai_instructions": "Name of the portfolio company or investment target",
                             "display_name": "Portfolio Company",
                             "order": 2
@@ -51,7 +51,11 @@
                             "ai_instructions": "Source information for the investment amount. You must provide specific page numbers, paragraph numbers, or sections where the information was found. If no referenceable source exists, use '-No Source-' for all fields.",
                             "display_name": "Amount Source",
                             "order": 4,
-                            "required": ["ai_instructions", "url", "text_context"],
+                            "required": [
+                                "ai_instructions",
+                                "url",
+                                "text_context"
+                            ],
                             "properties": {
                                 "object_type": {
                                     "type": "string",
@@ -62,7 +66,7 @@
                                     "ai_instructions": "Provide specific source details like 'Page 5, Paragraph 2' or 'Section 3.1'. If from an uploaded document, specify exact location. If no referenceable source, use '-No Source-'"
                                 },
                                 "url": {
-                                    "type": "string", 
+                                    "type": "string",
                                     "ai_instructions": "Full URL to source. If from an uploaded document or no referenceable source, use '-No Source-'",
                                     "format": "uri"
                                 },
@@ -80,7 +84,7 @@
                         },
                         "realized": {
                             "type": "string",
-                            "ai_instructions": "Whether the investment has been realized/exited ('Yes'/'No')",
+                            "ai_instructions": "Whether the investment has been realized/exited ('Yes', 'No', or 'Partial')",
                             "display_name": "Realized",
                             "order": 6
                         },
@@ -95,7 +99,11 @@
                             "ai_instructions": "Source information for the syndicate partners. You must provide specific page numbers, paragraph numbers, or sections where the information was found. If no referenceable source exists, use '-No Source-' for all fields.",
                             "display_name": "Syndicate Source",
                             "order": 8,
-                            "required": ["ai_instructions", "url", "text_context"],
+                            "required": [
+                                "ai_instructions",
+                                "url",
+                                "text_context"
+                            ],
                             "properties": {
                                 "object_type": {
                                     "type": "string",
@@ -121,6 +129,48 @@
                             "ai_instructions": "Additional context about the syndicate partners",
                             "display_name": "Syndicate Notes",
                             "order": 9
+                        },
+                        "type_of_investment": {
+                            "type": "string",
+                            "ai_instructions": "Type of investment (e.g., 'Equity', 'Distressed Debt', 'Mezzanine')",
+                            "display_name": "Investment Type",
+                            "order": 10
+                        },
+                        "cost": {
+                            "type": "string",
+                            "ai_instructions": "Original cost basis or equity check (if different from 'amount')",
+                            "display_name": "Cost Basis",
+                            "order": 11
+                        },
+                        "realized_proceeds": {
+                            "type": "string",
+                            "ai_instructions": "Proceeds realized to date (if any)",
+                            "display_name": "Realized Proceeds",
+                            "order": 12
+                        },
+                        "fmv": {
+                            "type": "string",
+                            "ai_instructions": "Current fair market value for the unrealized portion",
+                            "display_name": "FMV",
+                            "order": 13
+                        },
+                        "gross_irr": {
+                            "type": "string",
+                            "ai_instructions": "Gross IRR achieved on the deal (e.g., '25%')",
+                            "display_name": "Gross IRR",
+                            "order": 14
+                        },
+                        "net_irr": {
+                            "type": "string",
+                            "ai_instructions": "Net IRR to the fund (e.g., '23%')",
+                            "display_name": "Net IRR",
+                            "order": 15
+                        },
+                        "multiple": {
+                            "type": "string",
+                            "ai_instructions": "Investment multiple (e.g., '2.0x')",
+                            "display_name": "Multiple",
+                            "order": 16
                         }
                     }
                 }
@@ -147,7 +197,44 @@
                         "url": "-No Source-",
                         "text_context": "-No Source-"
                     },
-                    "syndicate_notes": "Sample syndicate arrangement"
+                    "syndicate_notes": "Sample syndicate arrangement",
+
+                    "type_of_investment": "Mezzanine",
+                    "cost": "$10,000,000",
+                    "realized_proceeds": "N/A",
+                    "fmv": "$10,000,000",
+                    "gross_irr": "N/A",
+                    "net_irr": "N/A",
+                    "multiple": "N/A"
+                },
+                {
+                    "date": "2019-06-15",
+                    "firm": "Distressed Corp Inc.",
+                    "amount": "$8,000,000",
+                    "amount_source": {
+                        "object_type": "source_object",
+                        "display_value": "-No Source-",
+                        "url": "-No Source-",
+                        "text_context": "-No Source-"
+                    },
+                    "amount_notes": "Distressed debt purchase",
+                    "realized": "Partial",
+                    "syndicate_partners": "Co-Investor X",
+                    "syndicate_source": {
+                        "object_type": "source_object",
+                        "display_value": "-No Source-",
+                        "url": "-No Source-",
+                        "text_context": "-No Source-"
+                    },
+                    "syndicate_notes": "Participated in a club deal",
+
+                    "type_of_investment": "Distressed Debt",
+                    "cost": "$6,000,000",
+                    "realized_proceeds": "$2,000,000",
+                    "fmv": "$5,000,000",
+                    "gross_irr": "22%",
+                    "net_irr": "19%",
+                    "multiple": "1.17x"
                 }
             ]
         }

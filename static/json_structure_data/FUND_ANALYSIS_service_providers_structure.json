@@ -1,9 +1,9 @@
 {
     "FUND_ANALYSIS_service_providers": {
         "display": {
-            "defaultLayout": "transposed",
+            "defaultLayout": "normal",
             "allowToggle": true,
-            "frozen_column": true  
+            "frozen_column": true
         },
         "filename": "service_providers.json",
         "root_key": "providers",
@@ -40,7 +40,11 @@
                             "ai_instructions": "Source information for the firm data. You must provide specific page numbers, paragraph numbers, or sections where the information was found. If no referenceable source exists, use '-No Source-' for all fields.",
                             "display_name": "Firm Source",
                             "order": 3,
-                            "required": ["ai_instructions", "url", "text_context"],
+                            "required": [
+                                "ai_instructions",
+                                "url",
+                                "text_context"
+                            ],
                             "properties": {
                                 "object_type": {
                                     "type": "string",
@@ -66,6 +70,36 @@
                             "ai_instructions": "Additional context about the service provider",
                             "display_name": "Firm Notes",
                             "order": 4
+                        },
+                        "key_contact": {
+                            "type": "string",
+                            "ai_instructions": "Name of primary individual contact at the service provider, if relevant",
+                            "display_name": "Key Contact",
+                            "order": 5
+                        },
+                        "engagement_start_date": {
+                            "type": "string",
+                            "ai_instructions": "Date or year when the firm engaged this service provider (e.g., '2020-06-01')",
+                            "display_name": "Engagement Start Date",
+                            "order": 6
+                        },
+                        "service_term": {
+                            "type": "string",
+                            "ai_instructions": "Length or term of the contract (e.g., '3 years', 'Ongoing', etc.)",
+                            "display_name": "Service Term",
+                            "order": 7
+                        },
+                        "provider_location": {
+                            "type": "string",
+                            "ai_instructions": "Geographic location or headquarters of the service provider",
+                            "display_name": "Provider Location",
+                            "order": 8
+                        },
+                        "scope_of_work": {
+                            "type": "string",
+                            "ai_instructions": "Brief description of the scope or nature of the services rendered (e.g., 'Restructuring advice, compliance, etc.')",
+                            "display_name": "Scope of Work",
+                            "order": 9
                         }
                     }
                 }
@@ -74,15 +108,20 @@
         "default_content": {
             "providers": [
                 {
-                    "service_type": "Placeholder Service",
-                    "firm_name": "Placeholder Firm",
+                    "service_type": "Legal Counsel",
+                    "firm_name": "Placeholder Law Firm",
                     "firm_source": {
                         "object_type": "source_object",
                         "display_value": "-No Source-",
                         "url": "-No Source-",
                         "text_context": "-No Source-"
                     },
-                    "firm_notes": "Sample service provider entry"
+                    "firm_notes": "Handles fund formation and regulatory compliance",
+                    "key_contact": "John Doe, Esq.",
+                    "engagement_start_date": "2021-01-15",
+                    "service_term": "Ongoing",
+                    "provider_location": "New York, NY",
+                    "scope_of_work": "Private equity fund formation, compliance, tax structuring"
                 }
             ]
         }

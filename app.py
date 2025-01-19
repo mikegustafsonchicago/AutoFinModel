@@ -11,6 +11,7 @@ from flask_session import Session
 import boto3
 import uuid
 # Internal module imports
+from user_management import *
 import api_processing
 from excel_generation.auto_financial_modeling import generate_excel_model
 from json_manager import JsonManager
@@ -62,24 +63,19 @@ def create_app():
 
     app = Flask(__name__)
     app.logger.setLevel(logging.DEBUG)
-    app.secret_key = 'your_secret_key'
-    app.permanent_session_lifetime = timedelta(days=1)
+    
+    # Initialize user management
+    user_management = UserManagement(app)
+    app.config['user_management'] = user_management
 
-    logging.debug("[create_app] Flask app created with basic configuration")
-
-    # Initialize core services and store them in app config
+    # Initialize core services
     app.config['json_manager'] = JsonManager()
     app.config['prompt_manager'] = PromptBuilder(app.config['json_manager'])
     app.config['session_info_manager'] = SessionInfoManager()
 
-     # Configure server-side sessions
-    app.config['SESSION_TYPE'] = 'filesystem'  
-    app.config['SESSION_FILE_DIR'] = './flask_session_data'  # Example path
-    app.config['SESSION_PERMANENT'] = False
-
     Session(app)  # Initialize the extension
 
-    logging.debug("[create_app] Services initialized: JsonManager, PromptBuilder, SessionInfoManager")
+    logging.debug("[create_app] Services initialized")
 
     return app
 
@@ -89,33 +85,9 @@ app = create_app()
 # SESSION MANAGEMENT
 #=============================================================
 @app.before_request
-def ensure_user_session():
-    """Ensure that a user session is established before each request."""
-    if 'user' not in session:
-        # Generate a unique user ID
-        unique_id = get_or_create_user_id()
-        
-        # Setup initial session data structure
-        session['user'] = {
-            'username': unique_id,
-            'is_authenticated': True,
-            'portfolio': {
-                'projects': []
-            }
-        }
-        
-        session['current_project'] = {
-            'name': None,
-            'type': None,
-            'metadata': None
-        }
-        
-        session['application'] = {
-            'available_project_types': ALLOWABLE_PROJECT_TYPES,
-            'is_initialized': False
-        }
-        
-        session.permanent = True
+def before_request():
+    """Ensure user session before each request"""
+    app.config['user_management'].ensure_user_session()
 
 
 #=============================================================
@@ -574,8 +546,6 @@ def download_output():
         output_type = request.args.get('type')
         project_type = current_project.get('type')
         
-        logging.debug(f"[/download_output] Request parameters - username: {username}, project: {current_project}, output_type: {output_type}, project_type: {project_type}")
-        
         if not output_type:
             logging.error(f"[/download_output] No output type found for user: {username}")
             return jsonify({"error": "Output type is required"}), 400
@@ -593,18 +563,15 @@ def download_output():
             logging.error(f"[/download_output] Output type {output_type} not allowed for project type {project_type}. Allowed types for {project_type}: {OUTPUTS_FOR_PROJECT_TYPE.get(project_type, [])}. User: {username}, Project: {current_project.get('name')}")
             return jsonify({"error": f"Output type {output_type} not available for {project_type} projects"}), 400
 
-        logging.debug(f"[/download_output] Generating {output_type} for project type: {project_type}")
-
         # Get the outputs directory for this user's project
         outputs_path = get_project_outputs_path()
-        logging.debug(f"[/download_output] Got outputs path: {outputs_path}")
         
         if not outputs_path:
             logging.error("[/download_output] Failed to get project outputs path")
             return jsonify({"error": "Could not access project outputs directory"}), 500
 
         # Generate the appropriate file based on output type and get the S3 path
-        logging.debug(f"[/download_output] Starting file generation for output type: {output_type}")
+        logging.info(f"[/download_output] Starting file generation for output type: {output_type}")
         if output_type in ['excel_model', 'excel_overview']:
             if project_type == "financial":
                 logging.debug("[/download_output] Generating financial Excel model")
@@ -617,19 +584,17 @@ def download_output():
                 return jsonify({"error": "Excel output not supported for this project type"}), 400
         elif output_type == 'powerpoint_overview':
             if project_type == "financial":
-                logging.debug("[/download_output] Generating financial PowerPoint")
                 file_path = generate_ppt()
             elif project_type == "real_estate":
-                logging.debug("[/download_output] Generating real estate PowerPoint")
                 from powerpoint_generation.ppt_real_estate import generate_ppt
                 file_name = generate_real_estate_ppt()
                 file_path = f"{outputs_path}/{file_name}"
             elif project_type == "fund_analysis":
-                logging.debug("[/download_output] Generating fund analysis PowerPoint")
+                logging.info("[/download_output] Generating fund analysis PowerPoint")
                 from powerpoint_generation.ppt_fund_analysis import generate_fund_analysis_ppt
                 
                 # Generate PowerPoint and get the file object/bytes
-                ppt_bytes = generate_fund_analysis_ppt()  # This should return the PowerPoint as bytes
+                ppt_bytes = generate_fund_analysis_ppt(debug=debug)
                 
                 # Generate a unique filename
                 timestamp = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
@@ -644,7 +609,7 @@ def download_output():
                         Body=ppt_bytes
                     )
                     file_path = s3_path
-                    logging.debug(f"[/download_output] Successfully uploaded PowerPoint to S3: {s3_path}")
+                    logging.info(f"[/download_output] Successfully uploaded PowerPoint to S3: {s3_path}")
                 except Exception as e:
                     logging.error(f"[/download_output] Failed to upload PowerPoint to S3: {str(e)}")
                     return jsonify({"error": "Failed to save PowerPoint"}), 500
@@ -655,15 +620,11 @@ def download_output():
             logging.error(f"[/download_output] Invalid output type: {output_type}")
             return jsonify({"error": "Invalid output type"}), 400
 
-        logging.debug(f"[/download_output] File generated successfully at path: {file_path}")
-
         # Download from S3 to temporary file
         temp_dir = 'temp'
         os.makedirs(temp_dir, exist_ok=True)
         filename = os.path.basename(file_path)
         temp_path = os.path.join(temp_dir, filename)
-        
-        logging.debug(f"[/download_output] Attempting to download file from S3 path {file_path} to temp path {temp_path}")
         
         if not download_file_from_s3(file_path, temp_path):
             logging.error(f"[/download_output] Failed to download file from S3: {file_path}")
@@ -672,7 +633,6 @@ def download_output():
         logging.info(f"[/download_output] Successfully retrieved {output_type} file from S3: {file_path}")
 
         try:
-            logging.debug("[/download_output] Preparing file for download")
             response = send_file(temp_path, as_attachment=True)
             response.headers["Content-Disposition"] = f"attachment; filename={filename}"
             
@@ -681,12 +641,10 @@ def download_output():
             def cleanup():
                 try:
                     if os.path.exists(temp_path):
-                        logging.debug(f"[/download_output] Cleaning up temporary file: {temp_path}")
                         os.remove(temp_path)
                 except Exception as e:
                     logging.error(f"[/download_output] Failed to clean up temporary file: {e}")
             
-            logging.debug("[/download_output] File ready for download")
             return response
             
         except Exception as e:
@@ -717,3 +675,23 @@ if __name__ == '__main__':
         debug = False
     
     app.run(host='0.0.0.0', port=port, debug=debug)
+
+
+@app.route('/api/user/set_secret_key', methods=['POST'])
+def set_secret_key():
+    """Set or update the user's secret key"""
+    try:
+        data = request.get_json()
+        secret_key = data.get('secret_key')
+        
+        if not secret_key:
+            return jsonify({'error': 'No secret key provided'}), 400
+            
+        if app.config['user_management'].set_user_secret_key(secret_key):
+            return jsonify({'message': 'Secret key updated successfully'}), 200
+        else:
+            return jsonify({'error': 'Failed to update secret key'}), 400
+            
+    except Exception as e:
+        logging.error(f"Error setting secret key: {str(e)}")
+        return jsonify({'error': 'Internal server error'}), 500

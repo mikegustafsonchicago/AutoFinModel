@@ -9,16 +9,26 @@ import { TableManager } from './tableManager.js';
 
 export class TableView {
     constructor(tableManager) {
+        console.debug('[TableView] Initializing with tableManager:', tableManager);
         this.tableManager = tableManager;
         this.tables = {};
     }
 
     async initializeTables() {
         try {
+            console.debug('[initializeTables] Starting table initialization');
             const tableConfigs = await this.tableManager.initializeDynamicTables();
+            console.debug('[initializeTables] Received table configs:', tableConfigs);
             
             for (const config of tableConfigs) {
                 const { tableName, schema, data, containerId, tableId } = config;
+                console.debug(`[initializeTables] Processing table: ${tableName}`, {
+                    schemaPresent: !!schema,
+                    dataLength: data?.length,
+                    containerId,
+                    tableId
+                });
+                
                 await this.createDynamicTable(
                     containerId,
                     tableId,
@@ -42,11 +52,19 @@ export class TableView {
      * @returns {Object} Tabulator table instance
      */
     async createDynamicTable(containerId, tableId, schema, data = [], title) {
-        title = this.formatTitle(title);
+        console.debug(`[createDynamicTable] Creating table: ${tableId}`, {
+            containerId,
+            schemaPresent: !!schema,
+            dataLength: data?.length,
+            title
+        });
 
-        // Create container structure if it doesn't exist
+        title = this.formatTitle(title);
         let container = document.getElementById(containerId);
+        
         if (!container) {
+            console.debug(`[createDynamicTable] Container not found, creating new: ${containerId}`);
+            // Create container structure if it doesn't exist
             container = document.createElement('div');
             container.id = containerId;
             container.className = 'table-container mb-4';
@@ -85,11 +103,23 @@ export class TableView {
 
         try {
             const { columns, display } = this.tableManager.generateColumnsFromStructure(schema);
+            console.debug(`[createDynamicTable] Generated columns for ${tableId}:`, {
+                columnCount: columns.length,
+                displaySettings: display
+            });
+
             const processedData = this.tableManager.transposeTableData(data, schema, display.isTransposed);
+            console.debug(`[createDynamicTable] Processed data for ${tableId}:`, {
+                originalLength: data?.length,
+                processedLength: processedData?.length,
+                isTransposed: display.isTransposed
+            });
             
             if (display.isTransposed) {
+                console.debug(`[createDynamicTable] Creating Bootstrap table for ${tableId}`);
                 return this.createBootstrapTable(tableId, processedData, display);
             } else {
+                console.debug(`[createDynamicTable] Creating Tabulator table for ${tableId}`);
                 return new Tabulator(`#${tableId}`, {
                     data: processedData,
                     columns: columns.map(col => ({
@@ -109,6 +139,11 @@ export class TableView {
     }
 
     createBootstrapTable(containerId, data, display) {
+        console.debug(`[createBootstrapTable] Creating Bootstrap table for ${containerId}`, {
+            dataLength: data?.length,
+            displaySettings: display
+        });
+        
         const container = document.getElementById(containerId);
         if (!container) {
             console.error('[createBootstrapTable] Container not found for Bootstrap table');

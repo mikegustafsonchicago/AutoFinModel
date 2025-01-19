@@ -89,6 +89,8 @@ class PromptBuilder:
             prompt_filename = "real_estate_prompt.txt"
         elif self.project_type == "ta_grading":
             prompt_filename = "ta_grading_prompt.txt"
+        elif self.project_type == "fund_analysis":
+            prompt_filename = "fund_analysis_prompt.txt"
         else:
             logging.error(f"Invalid project type: {self.project_type}")
             raise ValueError(f"Invalid project type: {self.project_type}")

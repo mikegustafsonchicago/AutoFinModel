@@ -3,10 +3,10 @@
         "display": {
             "defaultLayout": "normal",
             "allowToggle": true,
-            "frozen_column": true  
+            "frozen_column": true
         },
         "filename": "investment_team.json",
-        "root_key": "team_members", 
+        "root_key": "team_members",
         "ai_instructions": "The Investment Team table details the key members of a private equity firm's investment team, including their roles, experience, and background",
         "version": "1.0",
         "explanation_file": "investment_team_explanation.txt",
@@ -44,7 +44,10 @@
                             "order": 2
                         },
                         "join_date": {
-                            "type": ["integer", "null"],
+                            "type": [
+                                "integer",
+                                "null"
+                            ],
                             "ai_instructions": "Year the team member joined the firm",
                             "display_name": "Join Year",
                             "order": 3
@@ -54,7 +57,11 @@
                             "ai_instructions": "Source information for the join date. You must provide specific page numbers, paragraph numbers, or sections where the information was found. If no referenceable source exists, use '-No Source-' for all fields.",
                             "display_name": "Join Date Source",
                             "order": 4,
-                            "required": ["ai_instructions", "url", "text_context"],
+                            "required": [
+                                "ai_instructions",
+                                "url",
+                                "text_context"
+                            ],
                             "properties": {
                                 "object_type": {
                                     "type": "string",
@@ -92,7 +99,11 @@
                             "ai_instructions": "Source information for the background details. You must provide specific page numbers, paragraph numbers, or sections where the information was found. If no referenceable source exists, use '-No Source-' for all fields.",
                             "display_name": "Background Source",
                             "order": 7,
-                            "required": ["ai_instructions", "url", "text_context"],
+                            "required": [
+                                "ai_instructions",
+                                "url",
+                                "text_context"
+                            ],
                             "properties": {
                                 "object_type": {
                                     "type": "string",
@@ -118,6 +129,33 @@
                             "ai_instructions": "Additional context about the background information",
                             "display_name": "Background Notes",
                             "order": 8
+                        },
+                        "years_of_industry_experience": {
+                            "type": [
+                                "integer",
+                                "null"
+                            ],
+                            "ai_instructions": "Total years of relevant industry experience",
+                            "display_name": "Years of Industry Experience",
+                            "order": 9
+                        },
+                        "education": {
+                            "type": "string",
+                            "ai_instructions": "List of degrees, schools, or certifications (e.g., 'MBA, Wharton School')",
+                            "display_name": "Education",
+                            "order": 10
+                        },
+                        "prior_employers": {
+                            "type": "string",
+                            "ai_instructions": "List or summary of prior employers (e.g., 'Apollo, Drexel Burnham')",
+                            "display_name": "Prior Employers",
+                            "order": 11
+                        },
+                        "key_responsibilities": {
+                            "type": "string",
+                            "ai_instructions": "Short description of the person's key areas of responsibility (e.g., 'Investment Committee', 'Portfolio Oversight')",
+                            "display_name": "Key Responsibilities",
+                            "order": 12
                         }
                     }
                 }
@@ -143,7 +181,11 @@
                         "url": "-No Source-",
                         "text_context": "-No Source-"
                     },
-                    "background_notes": "Background compiled from public sources"
+                    "background_notes": "Background compiled from public sources",
+                    "years_of_industry_experience": 15,
+                    "education": "MBA, Wharton School",
+                    "prior_employers": "Apollo, Carlyle",
+                    "key_responsibilities": "Deal sourcing, fundraising, sits on investment committee"
                 }
             ]
         }

@@ -23,6 +23,7 @@ from config import (
     MAX_TOKENS_PER_CALL, 
     OPENAI_MODEL, 
     DEFAULT_project_type, 
+    ALLOWABLE_PROJECT_TYPES
 )
 from pdf_processing import get_page_token_counts, get_pdf_content_by_page_indices
 from prompt_builder import PromptBuilder
@@ -97,7 +98,7 @@ def manage_api_calls(business_description, user_input, update_scope="all", file_
         return {"error": "Project type not set"}, 400
 
     # Validate project type with explicit comparison
-    valid_types = ['financial', 'catalyst', 'real_estate', 'ta_grading']
+    valid_types = ALLOWABLE_PROJECT_TYPES.values()
     if project_type not in valid_types:
         logging.error(f"Invalid project type: '{project_type}'. Must be one of: {valid_types}")
         return {"error": f"Invalid project type: {project_type}"}, 400
@@ -550,6 +551,9 @@ def handle_openai_response(response, json_manager, prompt_manager):
     except (KeyError, IndexError):
         logging.error("Failed to extract content from the OpenAI response.")
         return {"error": "No usable content in response"}, 400
+    
+    # Save the unprocessed JSON data
+    json_manager.save_json_to_file(response)
 
     try:
         # Extract TEXT, JSON, and SUMMARY parts from AI response
@@ -564,6 +568,8 @@ def handle_openai_response(response, json_manager, prompt_manager):
         # Attempt to fix and parse JSON part
         json_part = json_manager.fix_incomplete_json(json_part_raw)
         parsed_data = json.loads(json_part)
+
+        
 
         # Restructure the data if needed based on structure files
         processed_data = {}
@@ -590,8 +596,7 @@ def handle_openai_response(response, json_manager, prompt_manager):
                 logging.error(f"Error processing structure for key {key}: {e}")
                 processed_data[key] = value  # Fall back to original key if error
 
-        # Save the processed JSON data
-        json_manager.save_json_to_file(processed_data)
+
 
         return {"text": text_part, "JSONData": processed_data}, 200
     except (json.JSONDecodeError, IndexError, ValueError) as e:

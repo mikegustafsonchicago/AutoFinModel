@@ -3,13 +3,13 @@
         "display": {
             "defaultLayout": "transposed",
             "allowToggle": true,
-            "frozen_column": true  
+            "frozen_column": true
         },
         "filename": "seed_terms.json",
         "root_key": "investments",
         "ai_instructions": "The Seed Terms table captures key information about a firm's seed investment strategy, including target investment sizes, revenue sharing terms, and fundraising timelines",
         "version": "1.0",
-        "explanation_file": "seed_terms_explanation.txt", 
+        "explanation_file": "seed_terms_explanation.txt",
         "structure": {
             "investments": {
                 "type": "array",
@@ -49,7 +49,11 @@
                             "ai_instructions": "Source information for the target investment data. You must provide specific page numbers, paragraph numbers, or sections where the information was found. If no referenceable source exists, use '-No Source-' for all fields.",
                             "display_name": "Target Investment Source",
                             "order": 2,
-                            "required": ["ai_instructions", "url", "text_context"],
+                            "required": [
+                                "ai_instructions",
+                                "url",
+                                "text_context"
+                            ],
                             "properties": {
                                 "object_type": {
                                     "type": "string",
@@ -60,7 +64,7 @@
                                     "ai_instructions": "Provide specific source details like 'Page 5, Paragraph 2' or 'Section 3.1'. If from an uploaded document, specify exact location. If no referenceable source, use '-No Source-'"
                                 },
                                 "url": {
-                                    "type": "string", 
+                                    "type": "string",
                                     "ai_instructions": "Full URL to source. If from an uploaded document or no referenceable source, use '-No Source-'",
                                     "format": "uri"
                                 },
@@ -88,7 +92,11 @@
                             "ai_instructions": "Source information for the initial investment data. You must provide specific page numbers, paragraph numbers, or sections where the information was found. If no referenceable source exists, use '-No Source-' for all fields.",
                             "display_name": "Initial Investment Source",
                             "order": 5,
-                            "required": ["ai_instructions", "url", "text_context"],
+                            "required": [
+                                "ai_instructions",
+                                "url",
+                                "text_context"
+                            ],
                             "properties": {
                                 "object_type": {
                                     "type": "string",
@@ -126,7 +134,11 @@
                             "ai_instructions": "Source information for the fundraising date. You must provide specific page numbers, paragraph numbers, or sections where the information was found. If no referenceable source exists, use '-No Source-' for all fields.",
                             "display_name": "Fundraising Date Source",
                             "order": 8,
-                            "required": ["ai_instructions", "url", "text_context"],
+                            "required": [
+                                "ai_instructions",
+                                "url",
+                                "text_context"
+                            ],
                             "properties": {
                                 "object_type": {
                                     "type": "string",
@@ -166,7 +178,11 @@
                             "ai_instructions": "Source information for the revenue share percentage. You must provide specific page numbers, paragraph numbers, or sections where the information was found. If no referenceable source exists, use '-No Source-' for all fields.",
                             "display_name": "Revenue Share Source",
                             "order": 11,
-                            "required": ["ai_instructions", "url", "text_context"],
+                            "required": [
+                                "ai_instructions",
+                                "url",
+                                "text_context"
+                            ],
                             "properties": {
                                 "object_type": {
                                     "type": "string",
@@ -205,7 +221,11 @@
                             "ai_instructions": "Source information for the revenue share cap. You must provide specific page numbers, paragraph numbers, or sections where the information was found. If no referenceable source exists, use '-No Source-' for all fields.",
                             "display_name": "Revenue Share Cap Source",
                             "order": 14,
-                            "required": ["ai_instructions", "url", "text_context"],
+                            "required": [
+                                "ai_instructions",
+                                "url",
+                                "text_context"
+                            ],
                             "properties": {
                                 "object_type": {
                                     "type": "string",
@@ -245,7 +265,11 @@
                             "ai_instructions": "Source information for the revenue share tail. You must provide specific page numbers, paragraph numbers, or sections where the information was found. If no referenceable source exists, use '-No Source-' for all fields.",
                             "display_name": "Revenue Share Tail Source",
                             "order": 17,
-                            "required": ["ai_instructions", "url", "text_context"],
+                            "required": [
+                                "ai_instructions",
+                                "url",
+                                "text_context"
+                            ],
                             "properties": {
                                 "object_type": {
                                     "type": "string",
@@ -271,6 +295,38 @@
                             "ai_instructions": "Additional context about how the revenue share tail was determined",
                             "display_name": "Revenue Share Tail Notes",
                             "order": 18
+                        },
+                        "security_type": {
+                            "type": "string",
+                            "ai_instructions": "Type of security for the seed deal (e.g., 'Convertible Note', 'SAFE', 'Equity')",
+                            "display_name": "Security Type",
+                            "order": 19
+                        },
+                        "valuation_cap": {
+                            "type": "number",
+                            "ai_instructions": "Valuation cap on the security, if applicable (e.g., 8000000 for $8 million)",
+                            "display_name": "Valuation Cap ($)",
+                            "minimum": 0,
+                            "order": 20
+                        },
+                        "board_observer_rights": {
+                            "type": "boolean",
+                            "ai_instructions": "Whether the firm obtains a board seat or observer rights (true/false)",
+                            "display_name": "Board/Observer Rights",
+                            "order": 21
+                        },
+                        "follow_on_reserves": {
+                            "type": "number",
+                            "ai_instructions": "Additional capital reserved for follow-on investments ($)",
+                            "display_name": "Follow-On Reserves",
+                            "minimum": 0,
+                            "order": 22
+                        },
+                        "industry_focus": {
+                            "type": "string",
+                            "ai_instructions": "Primary industry or sector focus for seed investments (e.g., 'Fintech', 'Healthcare')",
+                            "display_name": "Industry Focus",
+                            "order": 23
                         }
                     }
                 }
@@ -326,7 +382,13 @@
                         "url": "-No Source-",
                         "text_context": "-No Source-"
                     },
-                    "tail_notes": "Sample revenue share tail percentage"
+                    "tail_notes": "Sample revenue share tail percentage",
+
+                    "security_type": "Convertible Note",
+                    "valuation_cap": 8000000,
+                    "board_observer_rights": true,
+                    "follow_on_reserves": 100000,
+                    "industry_focus": "Fintech"
                 }
             ]
         }
